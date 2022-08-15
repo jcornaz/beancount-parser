@@ -1,0 +1,25 @@
+[package]
+name = "beancount-parser"
+version = "0.0.0-dev"
+license = "Unlicense"
+authors = ["Jonathan Cornaz"]
+edition = "2021"
+rust-version = "1.62"
+description = ""
+repository = "https://github.com/jcornaz/beancount-parser"
+
+[profile.dev]
+opt-level = 1
+debug = false
+
+[profile.release]
+lto = true
+codegen-units = 1
+
+[features]
+default = ["std"]
+std = []
+
+[dependencies]
+
+[dev-dependencies]

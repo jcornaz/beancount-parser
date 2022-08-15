@@ -1,0 +1,34 @@
+image:
+  file: .gitpod.Dockerfile
+
+tasks:
+  - name: test
+    before: rustup update beta
+    init: |
+      cp .cargo/fast_compiles_config .cargo/config.toml
+      cargo update
+      cargo deny check
+      cargo +nightly udeps
+      cargo doc --all-features --no-deps
+      cargo clippy --all-features --all-targets
+      cargo test --all-features
+      cargo test --tests
+    command: |
+      cargo watch -x 'test --tests' -x 'test --tests --all-features' -x 'test --all-features' -x 'clippy --all-features --all-targets' -x 'doc --all-features --no-deps' -x 'deny check' -x '+nightly udeps'
+
+vscode:
+  extensions:
+    - belfz.search-crates-io
+    - matklad.rust-analyzer
+    - serayuzgur.crates
+    - bungcip.better-toml
+
+github:
+  prebuilds:
+    master: true
+    branches: true
+    pullRequests: true
+    pullRequestsFromForks: true
+    addCheck: true
+    addComment: false
+    addBadge: false
