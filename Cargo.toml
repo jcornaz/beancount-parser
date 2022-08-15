@@ -21,5 +21,7 @@ default = ["std"]
 std = []
 
 [dependencies]
+nom = "7.1"
 
 [dev-dependencies]
+rstest = { version = "0.15.0", default-features = false }
