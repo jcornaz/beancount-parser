@@ -8,6 +8,12 @@ rust-version = "1.62"
 description = ""
 repository = "https://github.com/jcornaz/beancount-parser"
 
+[dependencies]
+nom = "7.1"
+
+[dev-dependencies]
+rstest = { version = "0.15.0", default-features = false }
+
 [profile.dev]
 opt-level = 1
 debug = false
@@ -15,13 +21,3 @@ debug = false
 [profile.release]
 lto = true
 codegen-units = 1
-
-[features]
-default = ["std"]
-std = []
-
-[dependencies]
-nom = "7.1"
-
-[dev-dependencies]
-rstest = { version = "0.15.0", default-features = false }
