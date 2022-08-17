@@ -4,14 +4,10 @@
 
 use rust_decimal::Decimal;
 
-mod parser;
+pub use date::Date;
 
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
-pub struct Date {
-    year: u16,
-    month_of_year: u8,
-    day_of_month: u8,
-}
+mod date;
+mod parser;
 
 #[derive(Debug, Clone)]
 pub struct Amount<'a> {

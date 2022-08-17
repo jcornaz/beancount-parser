@@ -5,7 +5,12 @@ use nom::{
     IResult,
 };
 
-use crate::Date;
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+pub struct Date {
+    year: u16,
+    month_of_year: u8,
+    day_of_month: u8,
+}
 
 pub(super) fn date(input: &str) -> IResult<&str, Date> {
     let (input, year) = year(input)?;
