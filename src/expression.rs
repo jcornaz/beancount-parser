@@ -11,16 +11,19 @@ use rust_decimal::Decimal;
 #[non_exhaustive]
 pub enum Expression {
     Value(Value),
-    Operation {
-        operator: Operator,
-        left_operand: Box<Expression>,
-        right_operand: Box<Expression>,
-    },
+    Operation(Operation),
 }
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 #[allow(clippy::derive_partial_eq_without_eq)]
 pub struct Value(Decimal);
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct Operation {
+    operator: Operator,
+    left: Box<Expression>,
+    right: Box<Expression>,
+}
 
 #[derive(Debug, Clone, Copy, Eq, PartialEq)]
 #[non_exhaustive]
@@ -29,6 +32,36 @@ pub enum Operator {
     Multiply,
     Add,
     Minus,
+}
+
+impl Expression {
+    fn value(dec: impl Into<Decimal>) -> Self {
+        Self::Value(Value(dec.into()))
+    }
+
+    fn operation(operator: Operator, left: Self, right: Self) -> Self {
+        Self::Operation(Operation {
+            operator,
+            left: left.into(),
+            right: right.into(),
+        })
+    }
+
+    fn div(left: Self, right: Self) -> Self {
+        Self::operation(Operator::Divide, left, right)
+    }
+
+    fn mul(left: Self, right: Self) -> Self {
+        Self::operation(Operator::Multiply, left, right)
+    }
+
+    fn plus(left: Self, right: Self) -> Self {
+        Self::operation(Operator::Add, left, right)
+    }
+
+    fn minus(left: Self, right: Self) -> Self {
+        Self::operation(Operator::Minus, left, right)
+    }
 }
 
 fn expression(input: &str) -> IResult<&str, Expression> {
@@ -53,11 +86,7 @@ fn operation(input: &str) -> IResult<&str, Expression> {
             space0,
             expression,
         )),
-        |(left, _, operator, _, right)| Expression::Operation {
-            operator,
-            left_operand: left.into(),
-            right_operand: right.into(),
-        },
+        |(left, _, operator, _, right)| Expression::operation(operator, left, right),
     )(input)
 }
 
@@ -89,17 +118,11 @@ mod tests {
     }
 
     #[rstest]
-    #[case('/', Operator::Divide)]
-    #[case('*', Operator::Multiply)]
-    #[case('+', Operator::Add)]
-    #[case('-', Operator::Minus)]
-    fn simple_operation(#[case] op_char: char, #[case] operator: Operator) {
-        let input = format!("3 {op_char} 2");
-        let expected = Expression::Operation {
-            operator,
-            left_operand: Expression::Value(Value(Decimal::new(3, 0))).into(),
-            right_operand: Expression::Value(Value(Decimal::new(2, 0))).into(),
-        };
-        assert_eq!(expression(&input), Ok(("", expected)))
+    #[case("3 / 2", Expression::div(Expression::value(3), Expression::value(2)))]
+    #[case("3 * 2", Expression::mul(Expression::value(3), Expression::value(2)))]
+    #[case("3 + 2", Expression::plus(Expression::value(3), Expression::value(2)))]
+    #[case("3 - 2", Expression::minus(Expression::value(3), Expression::value(2)))]
+    fn simple_operation(#[case] input: &str, #[case] expected: Expression) {
+        assert_eq!(expression(input), Ok(("", expected)))
     }
 }
