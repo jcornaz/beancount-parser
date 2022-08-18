@@ -36,7 +36,7 @@ pub enum Operator {
 }
 
 impl Expression {
-    fn value(dec: impl Into<Decimal>) -> Self {
+    pub(super) fn value(dec: impl Into<Decimal>) -> Self {
         Self::Value(Value(dec.into()))
     }
 
@@ -71,7 +71,7 @@ impl Expression {
     }
 }
 
-fn expression(input: &str) -> IResult<&str, Expression> {
+pub(super) fn parse(input: &str) -> IResult<&str, Expression> {
     exp_p2(input)
 }
 
@@ -135,10 +135,7 @@ mod tests {
     #[case(".1", Decimal::new(1, 1))]
     #[case("-2", -Decimal::new(2, 0))]
     fn parse_value(#[case] input: &str, #[case] expected: Decimal) {
-        assert_eq!(
-            expression(input),
-            Ok(("", Expression::Value(Value(expected))))
-        )
+        assert_eq!(parse(input), Ok(("", Expression::Value(Value(expected)))))
     }
 
     #[rstest]
@@ -195,6 +192,6 @@ mod tests {
         )
     )]
     fn parse_expression(#[case] input: &str, #[case] expected: Expression) {
-        assert_eq!(expression(input), Ok(("", expected)))
+        assert_eq!(parse(input), Ok(("", expected)))
     }
 }
