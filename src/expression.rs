@@ -2,7 +2,8 @@ use nom::{
     branch::alt,
     character::complete::{char, digit0, digit1, space0},
     combinator::{map, map_res, opt, recognize},
-    sequence::{preceded, tuple},
+    multi::many0,
+    sequence::{delimited, preceded, tuple},
     IResult,
 };
 use rust_decimal::Decimal;
@@ -31,12 +32,18 @@ pub enum Operator {
     Divide,
     Multiply,
     Add,
-    Minus,
+    Substract,
 }
 
 impl Expression {
     fn value(dec: impl Into<Decimal>) -> Self {
         Self::Value(Value(dec.into()))
+    }
+
+    fn from_iter(left: Self, right: impl IntoIterator<Item = (Operator, Self)>) -> Self {
+        right.into_iter().fold(left, |left, (operator, right)| {
+            Expression::operation(operator, left, right)
+        })
     }
 
     fn operation(operator: Operator, left: Self, right: Self) -> Self {
@@ -60,33 +67,50 @@ impl Expression {
     }
 
     fn minus(left: Self, right: Self) -> Self {
-        Self::operation(Operator::Minus, left, right)
+        Self::operation(Operator::Substract, left, right)
     }
 }
 
 fn expression(input: &str) -> IResult<&str, Expression> {
-    alt((operation, map(value, Expression::Value)))(input)
+    exp_p2(input)
 }
 
-fn operator(input: &str) -> IResult<&str, Operator> {
+fn exp_p0(input: &str) -> IResult<&str, Expression> {
     alt((
-        map(char('/'), |_| Operator::Divide),
-        map(char('*'), |_| Operator::Multiply),
-        map(char('+'), |_| Operator::Add),
-        map(char('-'), |_| Operator::Minus),
+        delimited(
+            tuple((char('('), space0)),
+            exp_p2,
+            tuple((space0, char(')'))),
+        ),
+        map(value, Expression::Value),
     ))(input)
 }
 
-fn operation(input: &str) -> IResult<&str, Expression> {
+fn exp_p1(input: &str) -> IResult<&str, Expression> {
+    let operator = alt((
+        map(char('*'), |_| Operator::Multiply),
+        map(char('/'), |_| Operator::Divide),
+    ));
     map(
         tuple((
-            map(value, Expression::Value),
-            space0,
-            operator,
-            space0,
-            expression,
+            exp_p0,
+            many0(tuple((delimited(space0, operator, space0), exp_p0))),
         )),
-        |(left, _, operator, _, right)| Expression::operation(operator, left, right),
+        |(left, right)| Expression::from_iter(left, right),
+    )(input)
+}
+
+fn exp_p2(input: &str) -> IResult<&str, Expression> {
+    let operator = alt((
+        map(char('+'), |_| Operator::Add),
+        map(char('-'), |_| Operator::Substract),
+    ));
+    map(
+        tuple((
+            exp_p1,
+            many0(tuple((delimited(space0, operator, space0), exp_p1))),
+        )),
+        |(left, right)| Expression::from_iter(left, right),
     )(input)
 }
 
@@ -110,7 +134,7 @@ mod tests {
     #[case("1.1", Decimal::new(11, 1))]
     #[case(".1", Decimal::new(1, 1))]
     #[case("-2", -Decimal::new(2, 0))]
-    fn direct_value(#[case] input: &str, #[case] expected: Decimal) {
+    fn parse_value(#[case] input: &str, #[case] expected: Decimal) {
         assert_eq!(
             expression(input),
             Ok(("", Expression::Value(Value(expected))))
@@ -122,7 +146,55 @@ mod tests {
     #[case("3 * 2", Expression::mul(Expression::value(3), Expression::value(2)))]
     #[case("3 + 2", Expression::plus(Expression::value(3), Expression::value(2)))]
     #[case("3 - 2", Expression::minus(Expression::value(3), Expression::value(2)))]
-    fn simple_operation(#[case] input: &str, #[case] expected: Expression) {
+    #[case(
+        "3 - 2 - 1",
+        Expression::minus(
+            Expression::minus(Expression::value(3), Expression::value(2)),
+            Expression::value(1)
+        )
+    )]
+    #[case(
+        "3 * 2 * 1",
+        Expression::mul(
+            Expression::mul(Expression::value(3), Expression::value(2)),
+            Expression::value(1)
+        )
+    )]
+    #[case(
+        "3 * 2 + 1",
+        Expression::plus(
+            Expression::mul(Expression::value(3), Expression::value(2)),
+            Expression::value(1)
+        )
+    )]
+    #[case(
+        "3 - 2 / 1",
+        Expression::minus(
+            Expression::value(3),
+            Expression::div(Expression::value(2), Expression::value(1)),
+        )
+    )]
+    #[case(
+        "(3 - 2) / 1",
+        Expression::div(
+            Expression::minus(Expression::value(3), Expression::value(2)),
+            Expression::value(1),
+        )
+    )]
+    #[case(
+        "3+4 *5/( 6* 2 ) --71",
+        Expression::minus(
+            Expression::plus(
+                Expression::value(3),
+                Expression::div(
+                    Expression::mul(Expression::value(4), Expression::value(5)),
+                    Expression::mul(Expression::value(6), Expression::value(2))
+                )
+            ),
+            Expression::value(-71),
+        )
+    )]
+    fn parse_expression(#[case] input: &str, #[case] expected: Expression) {
         assert_eq!(expression(input), Ok(("", expected)))
     }
 }
