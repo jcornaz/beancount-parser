@@ -179,6 +179,20 @@ mod tests {
         )
     )]
     #[case(
+        "(3 - (2 * 1))",
+        Expression::minus(
+            Expression::value(3),
+            Expression::mul(Expression::value(2), Expression::value(1)),
+        )
+    )]
+    #[case(
+        "((2 * 1) - 3)",
+        Expression::minus(
+            Expression::mul(Expression::value(2), Expression::value(1)),
+            Expression::value(3),
+        )
+    )]
+    #[case(
         "3+4 *5/( 6* 2 ) --71",
         Expression::minus(
             Expression::plus(
