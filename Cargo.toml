@@ -10,7 +10,7 @@ repository = "https://github.com/jcornaz/beancount-parser"
 
 [dependencies]
 nom = "7.1"
-rust_decimal = { version = "1.26.1", default-features = false }
+rust_decimal = { version = "1.26", default-features = false }
 
 [dev-dependencies]
 rstest = { version = "0.15.0", default-features = false }
