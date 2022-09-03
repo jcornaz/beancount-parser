@@ -9,7 +9,11 @@ ignore = []
 default = "deny"
 unlicensed = "deny"
 copyleft = "deny"
-allow = ["Unlicense"]
+allow = [
+  "Unlicense",
+  "MIT",
+  "Unicode-DFS-2016",
+]
 
 [sources]
 unknown-registry = "deny"
