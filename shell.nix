@@ -8,7 +8,6 @@ pkgs.mkShell {
     clang
     mold
     niv
-    rust-analyzer
     cargo-all-features
     cargo-deny
   ];
