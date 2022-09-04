@@ -24,7 +24,7 @@ pub enum Type {
 }
 
 impl<'a> Account<'a> {
-    fn new(type_: Type, path: impl IntoIterator<Item = &'a str>) -> Self {
+    pub(crate) fn new(type_: Type, path: impl IntoIterator<Item = &'a str>) -> Self {
         Self {
             type_,
             components: path.into_iter().collect(),
@@ -32,7 +32,7 @@ impl<'a> Account<'a> {
     }
 }
 
-fn account(input: &str) -> IResult<&str, Account<'_>> {
+pub(crate) fn account(input: &str) -> IResult<&str, Account<'_>> {
     map(
         separated_pair(
             type_,
