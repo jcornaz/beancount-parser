@@ -7,7 +7,7 @@ use nom::{
     IResult,
 };
 
-fn string(input: &str) -> IResult<&str, String> {
+pub(crate) fn string(input: &str) -> IResult<&str, String> {
     delimited(
         char('"'),
         alt((
