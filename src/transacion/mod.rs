@@ -4,7 +4,7 @@ use nom::{
     character::complete::{char, one_of, space0, space1},
     combinator::map,
     multi::many1,
-    sequence::{delimited, tuple},
+    sequence::{delimited, separated_pair, tuple},
     IResult,
 };
 
@@ -15,8 +15,9 @@ mod posting;
 use posting::{posting, Posting};
 
 pub struct Transaction<'a> {
-    description: String,
     flag: Option<char>,
+    payee: Option<String>,
+    description: String,
     postings: Vec<Posting<'a>>,
 }
 
@@ -32,16 +33,28 @@ impl<'a> Transaction<'a> {
     pub fn flag(&self) -> Option<char> {
         self.flag
     }
+
+    pub fn payee(&self) -> Option<&str> {
+        self.payee.as_deref()
+    }
 }
 
 fn transaction(input: &str) -> IResult<&str, Transaction<'_>> {
     let flag = alt((map(tag("txn"), |_| None), map(one_of("*!"), Some)));
-    let description = delimited(space1, string, tuple((space0, char('\n'))));
+    let payee_and_desc = alt((
+        separated_pair(map(string, Some), space1, string),
+        map(string, |d| (None, d)),
+    ));
     map(
-        tuple((flag, description, many1(posting))),
-        |(flag, description, postings)| Transaction {
-            description,
+        tuple((
             flag,
+            delimited(space1, payee_and_desc, tuple((space0, char('\n')))),
+            many1(posting),
+        )),
+        |(flag, (payee, description), postings)| Transaction {
+            flag,
+            payee,
+            description,
             postings,
         },
     )(input)
@@ -62,6 +75,18 @@ mod tests {
         assert_eq!(transaction.description(), r#"Hello "world""#);
         assert_eq!(transaction.postings().len(), 2);
         assert_eq!(transaction.flag(), Some('*'));
+        assert!(transaction.payee().is_none());
+    }
+
+    #[test]
+    fn transaction_with_payee() {
+        let input = r#"* "me" "Hello \"world\""
+            Expenses:A    10 CHF
+            Assets:B     -10 CHF
+        "#;
+        let (_, transaction) =
+            transaction(input).expect("should succesfully parse the transaction");
+        assert_eq!(transaction.payee(), Some("me"));
     }
 
     #[test]
