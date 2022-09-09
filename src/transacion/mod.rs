@@ -1,7 +1,7 @@
 use nom::{
     branch::alt,
     bytes::complete::tag,
-    character::complete::{char, one_of, space0, space1},
+    character::complete::{char, space0, space1},
     combinator::map,
     multi::many1,
     sequence::{delimited, separated_pair, tuple},
@@ -15,10 +15,16 @@ mod posting;
 use posting::{posting, Posting};
 
 pub struct Transaction<'a> {
-    flag: Option<char>,
+    flag: Option<Flag>,
     payee: Option<String>,
     description: String,
     postings: Vec<Posting<'a>>,
+}
+
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
+pub enum Flag {
+    Cleared,
+    Pending,
 }
 
 impl<'a> Transaction<'a> {
@@ -30,7 +36,7 @@ impl<'a> Transaction<'a> {
         &self.postings
     }
 
-    pub fn flag(&self) -> Option<char> {
+    pub fn flag(&self) -> Option<Flag> {
         self.flag
     }
 
@@ -40,7 +46,16 @@ impl<'a> Transaction<'a> {
 }
 
 fn transaction(input: &str) -> IResult<&str, Transaction<'_>> {
-    let flag = alt((map(tag("txn"), |_| None), map(one_of("*!"), Some)));
+    let flag = alt((
+        map(tag("txn"), |_| None),
+        map(
+            alt((
+                map(char('*'), |_| Flag::Cleared),
+                map(char('!'), |_| Flag::Pending),
+            )),
+            Some,
+        ),
+    ));
     let payee_and_desc = alt((
         separated_pair(map(string, Some), space1, string),
         map(string, |d| (None, d)),
@@ -74,7 +89,7 @@ mod tests {
             transaction(input).expect("should succesfully parse the transaction");
         assert_eq!(transaction.description(), r#"Hello "world""#);
         assert_eq!(transaction.postings().len(), 2);
-        assert_eq!(transaction.flag(), Some('*'));
+        assert_eq!(transaction.flag(), Some(Flag::Cleared));
         assert!(transaction.payee().is_none());
     }
 
@@ -97,7 +112,7 @@ mod tests {
         "#;
         let (_, transaction) =
             transaction(input).expect("should succesfully parse the transaction");
-        assert_eq!(transaction.flag(), Some('!'));
+        assert_eq!(transaction.flag(), Some(Flag::Pending));
     }
 
     #[test]
