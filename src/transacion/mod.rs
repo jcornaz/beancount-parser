@@ -1,8 +1,8 @@
 use nom::{
     branch::alt,
     bytes::complete::tag,
-    character::complete::{char, space0, space1},
-    combinator::map,
+    character::complete::{char, space0},
+    combinator::{map, opt},
     multi::many1,
     sequence::{delimited, separated_pair, tuple},
     IResult,
@@ -17,7 +17,7 @@ use posting::{posting, Posting};
 pub struct Transaction<'a> {
     flag: Option<Flag>,
     payee: Option<String>,
-    description: String,
+    narration: Option<String>,
     postings: Vec<Posting<'a>>,
 }
 
@@ -28,8 +28,12 @@ pub enum Flag {
 }
 
 impl<'a> Transaction<'a> {
-    pub fn description(&self) -> &str {
-        &self.description
+    pub fn payee(&self) -> Option<&str> {
+        self.payee.as_deref()
+    }
+
+    pub fn narration(&self) -> Option<&str> {
+        self.narration.as_deref()
     }
 
     pub fn postings(&self) -> &Vec<Posting<'a>> {
@@ -39,28 +43,30 @@ impl<'a> Transaction<'a> {
     pub fn flag(&self) -> Option<Flag> {
         self.flag
     }
-
-    pub fn payee(&self) -> Option<&str> {
-        self.payee.as_deref()
-    }
 }
 
 fn transaction(input: &str) -> IResult<&str, Transaction<'_>> {
-    let payee_and_desc = alt((
-        separated_pair(map(string, Some), space1, string),
-        map(string, |d| (None, d)),
-    ));
+    let payee_and_narration = opt(alt((
+        separated_pair(map(string, Some), space0, string),
+        map(string, |n| (None, n)),
+    )));
     map(
         tuple((
             alt((map(tag("txn"), |_| None), map(flag, Some))),
-            delimited(space1, payee_and_desc, tuple((space0, char('\n')))),
+            delimited(space0, payee_and_narration, tuple((space0, char('\n')))),
             many1(posting),
         )),
-        |(flag, (payee, description), postings)| Transaction {
-            flag,
-            payee,
-            description,
-            postings,
+        |(flag, payee_and_narration, postings)| {
+            let (payee, narration) = match payee_and_narration {
+                Some((p, n)) => (p, Some(n)),
+                None => (None, None),
+            };
+            Transaction {
+                flag,
+                payee,
+                narration,
+                postings,
+            }
         },
     )(input)
 }
@@ -84,10 +90,21 @@ mod tests {
         "#;
         let (_, transaction) =
             transaction(input).expect("should succesfully parse the transaction");
-        assert_eq!(transaction.description(), r#"Hello "world""#);
+        assert_eq!(transaction.narration(), Some(r#"Hello "world""#));
         assert_eq!(transaction.postings().len(), 2);
         assert_eq!(transaction.flag(), Some(Flag::Cleared));
         assert!(transaction.payee().is_none());
+    }
+
+    #[test]
+    fn transaction_without_description() {
+        let input = r#"*
+            Expenses:A    10 CHF
+            Assets:B     -10 CHF
+        "#;
+        let (_, transaction) =
+            transaction(input).expect("should succesfully parse the transaction");
+        assert!(transaction.narration().is_none());
     }
 
     #[test]
