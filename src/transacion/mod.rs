@@ -46,23 +46,13 @@ impl<'a> Transaction<'a> {
 }
 
 fn transaction(input: &str) -> IResult<&str, Transaction<'_>> {
-    let flag = alt((
-        map(tag("txn"), |_| None),
-        map(
-            alt((
-                map(char('*'), |_| Flag::Cleared),
-                map(char('!'), |_| Flag::Pending),
-            )),
-            Some,
-        ),
-    ));
     let payee_and_desc = alt((
         separated_pair(map(string, Some), space1, string),
         map(string, |d| (None, d)),
     ));
     map(
         tuple((
-            flag,
+            alt((map(tag("txn"), |_| None), map(flag, Some))),
             delimited(space1, payee_and_desc, tuple((space0, char('\n')))),
             many1(posting),
         )),
@@ -73,6 +63,13 @@ fn transaction(input: &str) -> IResult<&str, Transaction<'_>> {
             postings,
         },
     )(input)
+}
+
+fn flag(input: &str) -> IResult<&str, Flag> {
+    alt((
+        map(char('*'), |_| Flag::Cleared),
+        map(char('!'), |_| Flag::Pending),
+    ))(input)
 }
 
 #[cfg(test)]
