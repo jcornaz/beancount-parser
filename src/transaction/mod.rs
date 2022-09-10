@@ -16,6 +16,7 @@ mod posting;
 
 use posting::{posting, Posting};
 
+#[derive(Debug, Clone)]
 pub struct Transaction<'a> {
     flag: Option<Flag>,
     payee: Option<String>,
@@ -52,7 +53,7 @@ impl<'a> Transaction<'a> {
     }
 }
 
-fn transaction(input: &str) -> IResult<&str, Transaction<'_>> {
+pub(crate) fn transaction(input: &str) -> IResult<&str, Transaction<'_>> {
     let payee_and_narration = alt((
         separated_pair(map(string, Some), space1, string),
         map(string, |n| (None, n)),
