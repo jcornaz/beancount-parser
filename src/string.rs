@@ -1,9 +1,9 @@
 use nom::{
     branch::alt,
     bytes::complete::{escaped_transform, tag, take_till1},
-    character::complete::char,
+    character::complete::{char, not_line_ending, space0},
     combinator::{map, value},
-    sequence::delimited,
+    sequence::{delimited, preceded, tuple},
     IResult,
 };
 
@@ -27,6 +27,13 @@ pub(crate) fn string(input: &str) -> IResult<&str, String> {
     )(input)
 }
 
+pub(crate) fn comment(input: &str) -> IResult<&str, &str> {
+    preceded(
+        tuple((char(';'), space0)),
+        map(not_line_ending, |s: &str| s.trim()),
+    )(input)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -44,5 +51,20 @@ mod tests {
         let (rest, actual) = string(input).expect("should succesfully parse input");
         assert_eq!(&actual, expected);
         assert!(rest.is_empty());
+    }
+
+    #[test]
+    fn simple_comment() {
+        let input = "; This is a comment";
+        let (_, comment) = comment(input).expect("should successfully parse input");
+        assert_eq!(comment, "This is a comment");
+    }
+
+    #[test]
+    fn comment_ends_at_end_of_line() {
+        let input = "; This is a comment \n This is not a comment";
+        let (rest, comment) = comment(input).expect("should successfully parse input");
+        assert_eq!(comment, "This is a comment");
+        assert_eq!(rest, "\n This is not a comment");
     }
 }
