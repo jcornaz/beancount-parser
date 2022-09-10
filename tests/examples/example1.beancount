@@ -1,11 +1,21 @@
-2014-05-05 txn "Cafe Mogador" "Lamb tagine with wine"
-  Liabilities:CreditCard:CapitalOne         -37.45 USD
-  Expenses:Restaurant
+2014-10-05 * "Costco" "Shopping for birthday"
+  Liabilities:CreditCard:CapitalOne         -45.00          USD
+  Assets:AccountsReceivable:John            ((40.00/3) + 5) USD
+  Assets:AccountsReceivable:Michael         40.00/3         USD
+  Expenses:Shopping
+  
+  
+2014-03-19 * "Acme Corp" "Bi-monthly salary payment"
+  Assets:MyBank:Checking             3062.68 USD     ; Direct deposit
+  Income:AcmeCorp:Salary            -4615.38 USD     ; Gross salary
+  Expenses:Taxes:TY2014:Federal       920.53 USD     ; Federal taxes
+  Expenses:Taxes:TY2014:SocSec        286.15 USD     ; Social security
+  Expenses:Taxes:TY2014:Medicare       66.92 USD     ; Medicare
+  Expenses:Taxes:TY2014:StateNY       277.90 USD     ; New York taxes
+  Expenses:Taxes:TY2014:SDI             1.20 USD     ; Disability insurance
 
-2014-05-05 * "Cafe Mogador" "Lamb tagine with wine"
-  Liabilities:CreditCard:CapitalOne         -37.45 USD
-  Expenses:Restaurant
 
 2014-05-05 * "Transfer from Savings account"
   Assets:MyBank:Checking            -400.00 USD
   ! Assets:MyBank:Savings
+
