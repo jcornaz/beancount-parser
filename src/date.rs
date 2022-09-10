@@ -13,6 +13,7 @@ pub struct Date {
 }
 
 impl Date {
+    #[cfg(test)]
     pub(crate) fn new(year: u16, month_of_year: u8, day_of_month: u8) -> Self {
         Self {
             year,
@@ -47,8 +48,6 @@ fn month(input: &str) -> IResult<&str, u8> {
 fn day(input: &str) -> IResult<&str, u8> {
     verify(map_res(digit1, |s: &str| s.parse()), |d| *d > 0 && *d <= 31)(input)
 }
-
-struct InvalidDate {}
 
 #[cfg(test)]
 mod tests {

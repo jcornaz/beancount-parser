@@ -2,9 +2,8 @@ use nom::{
     bytes::complete::take_while1, character::complete::space1, combinator::map,
     sequence::separated_pair, IResult,
 };
-use rust_decimal::Decimal;
 
-use self::expression::Expression;
+pub use self::expression::Expression;
 
 mod expression;
 
@@ -15,7 +14,8 @@ pub struct Amount<'a> {
 }
 
 impl<'a> Amount<'a> {
-    pub(crate) fn new(value: impl Into<Decimal>, currency: &'a str) -> Self {
+    #[cfg(test)]
+    pub(crate) fn new(value: impl Into<rust_decimal::Decimal>, currency: &'a str) -> Self {
         Self {
             expression: Expression::value(value),
             currency,

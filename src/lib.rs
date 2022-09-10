@@ -1,6 +1,5 @@
 #![deny(future_incompatible, unsafe_code)]
 #![warn(nonstandard_style, rust_2018_idioms)]
-#![allow(dead_code)]
 
 mod account;
 mod amount;
@@ -10,13 +9,17 @@ mod error;
 mod string;
 mod transaction;
 
-pub use account::Account;
-pub use date::Date;
+pub use crate::{
+    account::Account,
+    amount::{Amount, Expression},
+    date::Date,
+    directive::Directive,
+    error::Error,
+    transaction::{Posting, Transaction},
+};
+
 use directive::directive;
-pub use directive::Directive;
-pub use error::Error;
 use nom::{bytes::complete::take_while, sequence::preceded, IResult};
-pub use transaction::{Posting, Transaction};
 
 pub struct Parser<'a> {
     rest: &'a str,

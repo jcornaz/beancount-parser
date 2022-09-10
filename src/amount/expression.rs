@@ -36,6 +36,7 @@ pub enum Operator {
 }
 
 impl Expression {
+    #[cfg(test)]
     pub(super) fn value(dec: impl Into<Decimal>) -> Self {
         Self::Value(Value(dec.into()))
     }
@@ -54,18 +55,22 @@ impl Expression {
         })
     }
 
+    #[cfg(test)]
     fn div(left: Self, right: Self) -> Self {
         Self::operation(Operator::Divide, left, right)
     }
 
+    #[cfg(test)]
     fn mul(left: Self, right: Self) -> Self {
         Self::operation(Operator::Multiply, left, right)
     }
 
+    #[cfg(test)]
     fn plus(left: Self, right: Self) -> Self {
         Self::operation(Operator::Add, left, right)
     }
 
+    #[cfg(test)]
     fn minus(left: Self, right: Self) -> Self {
         Self::operation(Operator::Substract, left, right)
     }
