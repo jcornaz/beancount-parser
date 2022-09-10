@@ -3,7 +3,7 @@ use nom::{
     bytes::complete::tag,
     character::complete::{char, one_of, space0},
     combinator::{map, opt},
-    multi::many1,
+    multi::{many0, many1},
     sequence::{preceded, separated_pair, tuple},
     IResult,
 };
@@ -55,7 +55,7 @@ fn transaction(input: &str) -> IResult<&str, Transaction<'_>> {
         tuple((
             alt((map(tag("txn"), |_| None), map(flag, Some))),
             preceded(space0, payee_and_narration),
-            many1(preceded(separator, posting)),
+            many0(preceded(separator, posting)),
         )),
         |(flag, payee_and_narration, postings)| {
             let (payee, narration) = match payee_and_narration {
@@ -101,6 +101,14 @@ mod tests {
         assert_eq!(transaction.postings().len(), 2);
         assert_eq!(transaction.flag(), Some(Flag::Cleared));
         assert!(transaction.payee().is_none());
+    }
+
+    #[test]
+    fn transaction_without_posting() {
+        let input = r#"* "Hello \"world\"""#;
+        let (_, transaction) =
+            transaction(input).expect("should succesfully parse the transaction");
+        assert!(transaction.postings().is_empty());
     }
 
     #[test]
