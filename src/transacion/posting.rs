@@ -1,9 +1,9 @@
 use nom::{
     branch::alt,
     bytes::complete::tag,
-    character::complete::{char, space1},
+    character::complete::{char, space0, space1},
     combinator::{map, opt},
-    sequence::{preceded, separated_pair, terminated, tuple},
+    sequence::{delimited, preceded, separated_pair, terminated, tuple},
     IResult,
 };
 
@@ -20,6 +20,7 @@ pub struct Posting<'a> {
     account: Account<'a>,
     amount: Option<Amount<'a>>,
     price: Option<(PriceType, Amount<'a>)>,
+    cost: Option<Amount<'a>>,
 }
 
 impl<'a> Posting<'a> {
@@ -38,12 +39,16 @@ impl<'a> Posting<'a> {
     pub fn price(&self) -> Option<(PriceType, &Amount<'a>)> {
         self.price.as_ref().map(|(t, p)| (*t, p))
     }
+
+    pub fn cost(&self) -> Option<&Amount<'a>> {
+        self.cost.as_ref()
+    }
 }
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
 pub enum PriceType {
-    UnitPrice,
-    TotalCost,
+    Unit,
+    Total,
 }
 
 pub fn posting(input: &str) -> IResult<&str, Posting<'_>> {
@@ -52,13 +57,22 @@ pub fn posting(input: &str) -> IResult<&str, Posting<'_>> {
             opt(terminated(flag, space1)),
             account,
             opt(preceded(space1, amount)),
+            opt(preceded(
+                space1,
+                delimited(
+                    tuple((char('{'), space0)),
+                    amount,
+                    tuple((space0, char('}'))),
+                ),
+            )),
             opt(preceded(space1, price)),
         )),
-        |(flag, account, amount, price)| Posting {
+        |(flag, account, amount, cost, price)| Posting {
             flag,
             account,
             amount,
             price,
+            cost,
         },
     )(input)
 }
@@ -66,8 +80,8 @@ pub fn posting(input: &str) -> IResult<&str, Posting<'_>> {
 fn price(input: &str) -> IResult<&str, (PriceType, Amount<'_>)> {
     separated_pair(
         alt((
-            map(tag("@@"), |_| PriceType::TotalCost),
-            map(char('@'), |_| PriceType::UnitPrice),
+            map(tag("@@"), |_| PriceType::Total),
+            map(char('@'), |_| PriceType::Unit),
         )),
         space1,
         amount,
@@ -90,6 +104,7 @@ mod tests {
         );
         assert_eq!(posting.amount(), Some(&Amount::new(10, "CHF")));
         assert!(posting.price().is_none());
+        assert!(posting.cost().is_none());
     }
 
     #[test]
@@ -105,8 +120,8 @@ mod tests {
         let (_, posting) = posting(input).expect("should successfully parse the posting");
         assert_eq!(
             posting.price(),
-            Some((PriceType::UnitPrice, &Amount::new(1, "EUR")))
-        )
+            Some((PriceType::Unit, &Amount::new(1, "EUR")))
+        );
     }
 
     #[test]
@@ -115,8 +130,27 @@ mod tests {
         let (_, posting) = posting(input).expect("should successfully parse the posting");
         assert_eq!(
             posting.price(),
-            Some((PriceType::TotalCost, &Amount::new(9, "EUR")))
-        )
+            Some((PriceType::Total, &Amount::new(9, "EUR")))
+        );
+    }
+
+    #[rstest]
+    fn with_cost(
+        #[values("Assets:A:B 10 CHF {1 EUR}", "Assets:A:B 10 CHF { 1 EUR }")] input: &str,
+    ) {
+        let (_, posting) = posting(input).expect("should successfully parse the posting");
+        assert_eq!(posting.cost(), Some(&Amount::new(1, "EUR")));
+    }
+
+    #[test]
+    fn with_cost_and_price() {
+        let input = "Assets:A:B 10 CHF {2 USD} @ 1 EUR";
+        let (_, posting) = posting(input).expect("should successfully parse the posting");
+        assert_eq!(posting.cost(), Some(&Amount::new(2, "USD")));
+        assert_eq!(
+            posting.price(),
+            Some((PriceType::Unit, &Amount::new(1, "EUR")))
+        );
     }
 
     #[test]
