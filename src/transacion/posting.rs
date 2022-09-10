@@ -23,6 +23,14 @@ impl<'a> Posting<'a> {
     pub fn flag(&self) -> Option<Flag> {
         self.flag
     }
+
+    pub fn account(&self) -> &Account<'a> {
+        &self.account
+    }
+
+    pub fn amount(&self) -> Option<&Amount<'a>> {
+        self.amount.as_ref()
+    }
 }
 
 pub fn posting(input: &str) -> IResult<&str, Posting<'_>> {
@@ -51,12 +59,22 @@ mod tests {
         assert!(posting(input).is_err());
     }
 
-    #[rstest]
-    #[case("Assets:A:B 10 CHF", Posting { account: Account::new(AccountType::Assets, ["A", "B"]), amount: Some(Amount::new(10, "CHF")), flag: None })]
-    #[case("Assets:A:B", Posting { account: Account::new(AccountType::Assets, ["A", "B"]), amount: None, flag: None })]
-    fn parse_posting(#[case] input: &str, #[case] expected: Posting<'_>) {
-        let (_, actual) = posting(input).expect("Should succesfully parse the posting");
-        assert_eq!(actual, expected);
+    #[test]
+    fn simple_posting() {
+        let input = "Assets:A:B 10 CHF";
+        let (_, posting) = posting(input).expect("should successfully parse the posting");
+        assert_eq!(
+            posting.account(),
+            &Account::new(AccountType::Assets, ["A", "B"])
+        );
+        assert_eq!(posting.amount(), Some(&Amount::new(10, "CHF")));
+    }
+
+    #[test]
+    fn without_amount() {
+        let input = "Assets:A:B";
+        let (_, posting) = posting(input).expect("should successfully parse the posting");
+        assert!(posting.amount().is_none());
     }
 
     #[test]
