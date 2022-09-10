@@ -2,11 +2,11 @@ use std::str;
 
 use nom::{
     branch::alt,
-    bytes::complete::{tag, take_while1},
-    character::complete::char,
-    combinator::{map, opt},
+    bytes::complete::tag,
+    character::complete::{char, line_ending, space1},
+    combinator::{eof, map, opt},
     multi::many0,
-    sequence::{preceded, separated_pair, tuple},
+    sequence::{preceded, separated_pair, terminated, tuple},
     IResult,
 };
 
@@ -49,15 +49,18 @@ impl<'a> Transaction<'a> {
 
 fn transaction(input: &str) -> IResult<&str, Transaction<'_>> {
     let payee_and_narration = alt((
-        separated_pair(map(string, Some), separator, string),
+        separated_pair(map(string, Some), space1, string),
         map(string, |n| (None, n)),
     ));
     map(
-        tuple((
-            alt((map(tag("txn"), |_| None), map(flag, Some))),
-            opt(preceded(separator, payee_and_narration)),
-            many0(preceded(separator, posting)),
-        )),
+        terminated(
+            tuple((
+                alt((map(tag("txn"), |_| None), map(flag, Some))),
+                opt(preceded(space1, payee_and_narration)),
+                many0(preceded(tuple((line_ending, space1)), posting)),
+            )),
+            alt((line_ending, eof)),
+        ),
         |(flag, payee_and_narration, postings)| {
             let (payee, narration) = match payee_and_narration {
                 Some((p, n)) => (p, Some(n)),
@@ -73,10 +76,6 @@ fn transaction(input: &str) -> IResult<&str, Transaction<'_>> {
     )(input)
 }
 
-fn separator(input: &str) -> IResult<&str, &str> {
-    take_while1(|c: char| c.is_whitespace())(input)
-}
-
 fn flag(input: &str) -> IResult<&str, Flag> {
     alt((
         map(char('*'), |_| Flag::Cleared),
@@ -90,16 +89,11 @@ mod tests {
     use rstest::rstest;
 
     #[rstest]
-    fn simple_transaction(
-        #[values(
-            r#"* "Hello \"world\""
+    fn simple_transaction() {
+        let input = r#"* "Hello \"world\""
             Expenses:A    10 CHF
             Assets:B     -10 CHF
-        "#,
-            r#"* "Hello \"world\"" Expenses:A 10 CHF Assets:B -10 CHF"#
-        )]
-        input: &str,
-    ) {
+        "#;
         let (_, transaction) =
             transaction(input).expect("should succesfully parse the transaction");
         assert_eq!(transaction.narration(), Some(r#"Hello "world""#));
@@ -160,16 +154,15 @@ mod tests {
         assert!(transaction.flag().is_none());
     }
 
-    #[test]
-    fn without_space_after_flag() {
-        let input = r#"*"hello""#;
-        let (rest, _) = transaction(input).unwrap();
-        assert_eq!(rest, r#""hello""#);
-    }
-
-    #[test]
-    fn invalid_transaction() {
-        let input = "open Assets:US:BofA:Checking";
+    #[rstest]
+    fn invalid_transaction(
+        #[values(
+            "open Assets:US:BofA:Checking",
+            r#"*"hello""#,
+            r#"* "hello" Assets:A 10 CHF"#
+        )]
+        input: &str,
+    ) {
         assert!(transaction(input).is_err());
     }
 }
