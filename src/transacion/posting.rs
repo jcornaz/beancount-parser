@@ -1,8 +1,7 @@
 use nom::{
-    branch::alt,
-    character::complete::{line_ending, space0, space1},
-    combinator::{eof, map, opt},
-    sequence::{delimited, preceded, terminated, tuple},
+    character::complete::space1,
+    combinator::{map, opt},
+    sequence::{preceded, terminated, tuple},
     IResult,
 };
 
@@ -28,15 +27,11 @@ impl<'a> Posting<'a> {
 
 pub fn posting(input: &str) -> IResult<&str, Posting<'_>> {
     map(
-        delimited(
-            space1,
-            tuple((
-                opt(terminated(flag, space1)),
-                account,
-                opt(preceded(space1, amount)),
-            )),
-            tuple((space0, alt((line_ending, eof)))),
-        ),
+        tuple((
+            opt(terminated(flag, space1)),
+            account,
+            opt(preceded(space1, amount)),
+        )),
         |(flag, account, amount)| Posting {
             flag,
             account,
@@ -57,9 +52,8 @@ mod tests {
     }
 
     #[rstest]
-    #[case("  Assets:A:B  10 CHF", Posting { account: Account::new(AccountType::Assets, ["A", "B"]), amount: Some(Amount::new(10, "CHF")), flag: None })]
-    #[case("  Assets:A:B  10 CHF \n", Posting { account: Account::new(AccountType::Assets, ["A", "B"]), amount: Some(Amount::new(10, "CHF")), flag: None })]
-    #[case("  Assets:A:B", Posting { account: Account::new(AccountType::Assets, ["A", "B"]), amount: None, flag: None })]
+    #[case("Assets:A:B 10 CHF", Posting { account: Account::new(AccountType::Assets, ["A", "B"]), amount: Some(Amount::new(10, "CHF")), flag: None })]
+    #[case("Assets:A:B", Posting { account: Account::new(AccountType::Assets, ["A", "B"]), amount: None, flag: None })]
     fn parse_posting(#[case] input: &str, #[case] expected: Posting<'_>) {
         let (_, actual) = posting(input).expect("Should succesfully parse the posting");
         assert_eq!(actual, expected);
@@ -68,7 +62,7 @@ mod tests {
     #[test]
     fn with_flag() {
         let (_, posting) =
-            posting(" ! Assets:A 1 EUR").expect("should succesfully parse the posting");
+            posting("! Assets:A 1 EUR").expect("should succesfully parse the posting");
         assert_eq!(posting.flag(), Some(Flag::Pending));
     }
 }

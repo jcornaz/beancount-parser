@@ -1,10 +1,10 @@
 use nom::{
     branch::alt,
     bytes::complete::tag,
-    character::complete::{char, space0},
+    character::complete::{char, one_of, space0},
     combinator::{map, opt},
     multi::many1,
-    sequence::{delimited, separated_pair, tuple},
+    sequence::{preceded, separated_pair, tuple},
     IResult,
 };
 
@@ -50,11 +50,12 @@ fn transaction(input: &str) -> IResult<&str, Transaction<'_>> {
         separated_pair(map(string, Some), space0, string),
         map(string, |n| (None, n)),
     )));
+    let separator = many1(one_of(" \t\n\r"));
     map(
         tuple((
             alt((map(tag("txn"), |_| None), map(flag, Some))),
-            delimited(space0, payee_and_narration, tuple((space0, char('\n')))),
-            many1(posting),
+            preceded(space0, payee_and_narration),
+            many1(preceded(separator, posting)),
         )),
         |(flag, payee_and_narration, postings)| {
             let (payee, narration) = match payee_and_narration {
@@ -81,13 +82,19 @@ fn flag(input: &str) -> IResult<&str, Flag> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use rstest::rstest;
 
-    #[test]
-    fn simple_transaction() {
-        let input = r#"* "Hello \"world\""
+    #[rstest]
+    fn simple_transaction(
+        #[values(
+            r#"* "Hello \"world\""
             Expenses:A    10 CHF
             Assets:B     -10 CHF
-        "#;
+        "#,
+            r#"* "Hello \"world\"" Expenses:A 10 CHF Assets:B -10 CHF"#
+        )]
+        input: &str,
+    ) {
         let (_, transaction) =
             transaction(input).expect("should succesfully parse the transaction");
         assert_eq!(transaction.narration(), Some(r#"Hello "world""#));
