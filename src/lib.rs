@@ -9,6 +9,7 @@ mod error;
 mod string;
 mod transaction;
 
+use crate::directive::directive;
 pub use crate::{
     account::Account,
     amount::{Amount, Expression},
@@ -18,13 +19,12 @@ pub use crate::{
     transaction::{Posting, Transaction},
 };
 
-use directive::directive;
 use nom::{
     branch::alt,
-    character::complete::anychar,
     combinator::{map, value},
     IResult,
 };
+use string::comment_line;
 
 pub struct Parser<'a> {
     rest: &'a str,
@@ -33,9 +33,7 @@ pub struct Parser<'a> {
 impl<'a> Parser<'a> {
     #[must_use]
     pub fn new(content: &'a str) -> Self {
-        Self {
-            rest: content.trim(),
-        }
+        Self { rest: content }
     }
 }
 
@@ -43,10 +41,6 @@ impl<'a> Iterator for Parser<'a> {
     type Item = Result<(Date, Directive<'a>), Error>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        if self.rest.is_empty() {
-            return None;
-        }
-
         while !self.rest.is_empty() {
             if let Ok((rest, directive)) = next(self.rest) {
                 self.rest = rest;
@@ -63,5 +57,5 @@ impl<'a> Iterator for Parser<'a> {
 }
 
 fn next(input: &str) -> IResult<&str, Option<(Date, Directive<'_>)>> {
-    alt((map(directive, Some), value(None, anychar)))(input)
+    alt((map(directive, Some), value(None, comment_line)))(input)
 }

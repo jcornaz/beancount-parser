@@ -24,3 +24,9 @@ fn examples_have_expected_number_of_transaction(
         .count();
     assert_eq!(actual_count, expected_count);
 }
+
+#[rstest]
+fn error(#[values("2022-09-10 txn Oops...")] input: &str) {
+    let items = Parser::new(input).collect::<Vec<Result<_, _>>>();
+    assert!(items[0].is_err());
+}
