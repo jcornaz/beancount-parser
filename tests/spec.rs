@@ -1,13 +1,11 @@
 use beancount_parser::{Directive, Parser};
 use rstest::rstest;
 
-const EXAMPLE1: &str = include_str!("examples/example1.beancount");
+const SIMPLE: &str = include_str!("examples/simple.beancount");
 const COMMENTS: &str = include_str!("examples/comments.beancount");
 
 #[rstest]
-fn valid_examples_should_not_return_an_error(
-    #[values("", " \n ", EXAMPLE1, COMMENTS)] input: &str,
-) {
+fn valid_examples_should_not_return_an_error(#[values("", " \n ", SIMPLE, COMMENTS)] input: &str) {
     for result in Parser::new(input) {
         assert!(result.is_ok());
     }
@@ -15,7 +13,7 @@ fn valid_examples_should_not_return_an_error(
 
 #[rstest]
 #[case("", 0)]
-#[case(EXAMPLE1, 3)]
+#[case(SIMPLE, 3)]
 #[case(COMMENTS, 0)]
 fn examples_have_expected_number_of_transaction(
     #[case] input: &str,
