@@ -33,22 +33,27 @@ pub enum Flag {
 }
 
 impl<'a> Transaction<'a> {
+    #[must_use]
     pub fn payee(&self) -> Option<&str> {
         self.payee.as_deref()
     }
 
+    #[must_use]
     pub fn narration(&self) -> Option<&str> {
         self.narration.as_deref()
     }
 
+    #[must_use]
     pub fn postings(&self) -> &Vec<Posting<'a>> {
         &self.postings
     }
 
+    #[must_use]
     pub fn flag(&self) -> Option<Flag> {
         self.flag
     }
 
+    #[must_use]
     pub fn comment(&self) -> Option<&str> {
         self.comment
     }

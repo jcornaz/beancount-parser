@@ -26,26 +26,32 @@ pub struct Posting<'a> {
 }
 
 impl<'a> Posting<'a> {
+    #[must_use]
     pub fn flag(&self) -> Option<Flag> {
         self.flag
     }
 
+    #[must_use]
     pub fn account(&self) -> &Account<'a> {
         &self.account
     }
 
+    #[must_use]
     pub fn amount(&self) -> Option<&Amount<'a>> {
         self.amount.as_ref()
     }
 
+    #[must_use]
     pub fn price(&self) -> Option<(PriceType, &Amount<'a>)> {
         self.price.as_ref().map(|(t, p)| (*t, p))
     }
 
+    #[must_use]
     pub fn cost(&self) -> Option<&Amount<'a>> {
         self.cost.as_ref()
     }
 
+    #[must_use]
     pub fn comment(&self) -> Option<&str> {
         self.comment
     }

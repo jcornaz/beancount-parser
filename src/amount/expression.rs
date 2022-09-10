@@ -125,7 +125,7 @@ fn value(input: &str) -> IResult<&str, Value> {
         digit0,
         opt(preceded(char('.'), digit1)),
     )));
-    map(map_res(value_string, |s: &str| s.parse()), Value)(input)
+    map(map_res(value_string, str::parse), Value)(input)
 }
 
 #[cfg(test)]
@@ -140,7 +140,7 @@ mod tests {
     #[case(".1", Decimal::new(1, 1))]
     #[case("-2", -Decimal::new(2, 0))]
     fn parse_value(#[case] input: &str, #[case] expected: Decimal) {
-        assert_eq!(parse(input), Ok(("", Expression::Value(Value(expected)))))
+        assert_eq!(parse(input), Ok(("", Expression::Value(Value(expected)))));
     }
 
     #[rstest]
@@ -211,6 +211,6 @@ mod tests {
         )
     )]
     fn parse_expression(#[case] input: &str, #[case] expected: Expression) {
-        assert_eq!(parse(input), Ok(("", expected)))
+        assert_eq!(parse(input), Ok(("", expected)));
     }
 }

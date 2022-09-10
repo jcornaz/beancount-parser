@@ -1,5 +1,5 @@
 #![deny(future_incompatible, unsafe_code)]
-#![warn(nonstandard_style, rust_2018_idioms)]
+#![warn(nonstandard_style, rust_2018_idioms, clippy::pedantic)]
 
 mod account;
 mod amount;
@@ -26,6 +26,7 @@ pub struct Parser<'a> {
 }
 
 impl<'a> Parser<'a> {
+    #[must_use]
     pub fn new(content: &'a str) -> Self {
         Self {
             rest: content.trim(),
@@ -41,19 +42,16 @@ impl<'a> Iterator for Parser<'a> {
             return None;
         }
 
-        Some(match next(self.rest) {
-            Ok((rest, directive)) => {
-                self.rest = rest;
-                Ok(directive)
-            }
-            Err(_) => {
-                self.rest = "";
-                Err(Error)
-            }
+        Some(if let Ok((rest, directive)) = next(self.rest) {
+            self.rest = rest;
+            Ok(directive)
+        } else {
+            self.rest = "";
+            Err(Error)
         })
     }
 }
 
 fn next(input: &str) -> IResult<&str, (Date, Directive<'_>)> {
-    preceded(take_while(|c: char| c.is_whitespace()), directive)(input)
+    preceded(take_while(char::is_whitespace), directive)(input)
 }

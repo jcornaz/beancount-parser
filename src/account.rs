@@ -68,6 +68,6 @@ mod tests {
     #[case("Expenses:3Foo", Account::new(Type::Expenses, ["3Foo"]))]
     #[case("Equity:Foo-Bar", Account::new(Type::Equity, ["Foo-Bar"]))]
     fn valid_account(#[case] input: &str, #[case] expected: Account<'_>) {
-        assert_eq!(account(input), Ok(("", expected)))
+        assert_eq!(account(input), Ok(("", expected)));
     }
 }

@@ -28,10 +28,7 @@ pub(crate) fn string(input: &str) -> IResult<&str, String> {
 }
 
 pub(crate) fn comment(input: &str) -> IResult<&str, &str> {
-    preceded(
-        take_while1(|c| c == ';'),
-        map(not_line_ending, |s: &str| s.trim()),
-    )(input)
+    preceded(take_while1(|c| c == ';'), map(not_line_ending, str::trim))(input)
 }
 
 #[cfg(test)]
