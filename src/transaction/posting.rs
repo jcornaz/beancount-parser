@@ -10,6 +10,7 @@ use nom::{
 use crate::{
     account::{account, Account},
     amount::{amount, Amount},
+    string::comment,
 };
 
 use super::{flag, Flag};
@@ -21,6 +22,7 @@ pub struct Posting<'a> {
     amount: Option<Amount<'a>>,
     price: Option<(PriceType, Amount<'a>)>,
     cost: Option<Amount<'a>>,
+    comment: Option<&'a str>,
 }
 
 impl<'a> Posting<'a> {
@@ -42,6 +44,10 @@ impl<'a> Posting<'a> {
 
     pub fn cost(&self) -> Option<&Amount<'a>> {
         self.cost.as_ref()
+    }
+
+    pub fn comment(&self) -> Option<&str> {
+        self.comment
     }
 }
 
@@ -66,13 +72,15 @@ pub fn posting(input: &str) -> IResult<&str, Posting<'_>> {
                 ),
             )),
             opt(preceded(space1, price)),
+            opt(preceded(space0, comment)),
         )),
-        |(flag, account, amount, cost, price)| Posting {
+        |(flag, account, amount, cost, price, comment)| Posting {
             flag,
             account,
             amount,
             price,
             cost,
+            comment,
         },
     )(input)
 }
@@ -105,6 +113,7 @@ mod tests {
         assert_eq!(posting.amount(), Some(&Amount::new(10, "CHF")));
         assert!(posting.price().is_none());
         assert!(posting.cost().is_none());
+        assert!(posting.comment().is_none());
     }
 
     #[test]
@@ -158,6 +167,13 @@ mod tests {
         let (_, posting) =
             posting("! Assets:A 1 EUR").expect("should succesfully parse the posting");
         assert_eq!(posting.flag(), Some(Flag::Pending));
+    }
+
+    #[test]
+    fn with_comment() {
+        let input = "Assets:A:B 10 CHF ; Cool!";
+        let (_, posting) = posting(input).expect("should successfully parse the posting");
+        assert_eq!(posting.comment(), Some("Cool!"));
     }
 
     #[rstest]
