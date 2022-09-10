@@ -3,14 +3,14 @@ use std::str;
 use nom::{
     branch::alt,
     bytes::complete::tag,
-    character::complete::{char, line_ending, space1},
+    character::complete::{char, line_ending, space0, space1},
     combinator::{eof, map, opt},
     multi::many0,
     sequence::{preceded, separated_pair, terminated, tuple},
     IResult,
 };
 
-use crate::string::string;
+use crate::string::{comment, string};
 
 mod posting;
 
@@ -21,6 +21,7 @@ pub struct Transaction<'a> {
     payee: Option<String>,
     narration: Option<String>,
     postings: Vec<Posting<'a>>,
+    comment: Option<&'a str>,
 }
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
@@ -45,6 +46,10 @@ impl<'a> Transaction<'a> {
     pub fn flag(&self) -> Option<Flag> {
         self.flag
     }
+
+    pub fn comment(&self) -> Option<&str> {
+        self.comment
+    }
 }
 
 fn transaction(input: &str) -> IResult<&str, Transaction<'_>> {
@@ -57,11 +62,12 @@ fn transaction(input: &str) -> IResult<&str, Transaction<'_>> {
             tuple((
                 alt((map(tag("txn"), |_| None), map(flag, Some))),
                 opt(preceded(space1, payee_and_narration)),
+                opt(preceded(space0, comment)),
                 many0(preceded(tuple((line_ending, space1)), posting)),
             )),
             alt((line_ending, eof)),
         ),
-        |(flag, payee_and_narration, postings)| {
+        |(flag, payee_and_narration, comment, postings)| {
             let (payee, narration) = match payee_and_narration {
                 Some((p, n)) => (p, Some(n)),
                 None => (None, None),
@@ -71,6 +77,7 @@ fn transaction(input: &str) -> IResult<&str, Transaction<'_>> {
                 payee,
                 narration,
                 postings,
+                comment,
             }
         },
     )(input)
@@ -100,6 +107,7 @@ mod tests {
         assert_eq!(transaction.postings().len(), 2);
         assert_eq!(transaction.flag(), Some(Flag::Cleared));
         assert!(transaction.payee().is_none());
+        assert!(transaction.comment().is_none());
     }
 
     #[test]
@@ -152,6 +160,14 @@ mod tests {
         let (_, transaction) =
             transaction(input).expect("should succesfully parse the transaction");
         assert!(transaction.flag().is_none());
+    }
+
+    #[test]
+    fn transaction_with_comment() {
+        let input = r#"txn "Hello \"world\"" ; And a comment!"#;
+        let (_, transaction) =
+            transaction(input).expect("should succesfully parse the transaction");
+        assert_eq!(transaction.comment(), Some("And a comment!"));
     }
 
     #[rstest]
