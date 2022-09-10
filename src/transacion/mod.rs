@@ -1,9 +1,11 @@
+use std::str;
+
 use nom::{
     branch::alt,
-    bytes::complete::tag,
-    character::complete::{char, one_of, space0},
+    bytes::complete::{tag, take_while1},
+    character::complete::char,
     combinator::{map, opt},
-    multi::{many0, many1},
+    multi::many0,
     sequence::{preceded, separated_pair, tuple},
     IResult,
 };
@@ -46,15 +48,14 @@ impl<'a> Transaction<'a> {
 }
 
 fn transaction(input: &str) -> IResult<&str, Transaction<'_>> {
-    let payee_and_narration = opt(alt((
-        separated_pair(map(string, Some), space0, string),
+    let payee_and_narration = alt((
+        separated_pair(map(string, Some), separator, string),
         map(string, |n| (None, n)),
-    )));
-    let separator = many1(one_of(" \t\n\r"));
+    ));
     map(
         tuple((
             alt((map(tag("txn"), |_| None), map(flag, Some))),
-            preceded(space0, payee_and_narration),
+            opt(preceded(separator, payee_and_narration)),
             many0(preceded(separator, posting)),
         )),
         |(flag, payee_and_narration, postings)| {
@@ -70,6 +71,10 @@ fn transaction(input: &str) -> IResult<&str, Transaction<'_>> {
             }
         },
     )(input)
+}
+
+fn separator(input: &str) -> IResult<&str, &str> {
+    take_while1(|c: char| c.is_whitespace())(input)
 }
 
 fn flag(input: &str) -> IResult<&str, Flag> {
@@ -153,6 +158,13 @@ mod tests {
         let (_, transaction) =
             transaction(input).expect("should succesfully parse the transaction");
         assert!(transaction.flag().is_none());
+    }
+
+    #[test]
+    fn without_space_after_flag() {
+        let input = r#"*"hello""#;
+        let (rest, _) = transaction(input).unwrap();
+        assert_eq!(rest, r#""hello""#);
     }
 
     #[test]
