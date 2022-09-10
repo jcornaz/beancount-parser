@@ -19,7 +19,12 @@ pub use crate::{
 };
 
 use directive::directive;
-use nom::{bytes::complete::take_while, sequence::preceded, IResult};
+use nom::{
+    branch::alt,
+    character::complete::anychar,
+    combinator::{map, value},
+    IResult,
+};
 
 pub struct Parser<'a> {
     rest: &'a str,
@@ -42,16 +47,21 @@ impl<'a> Iterator for Parser<'a> {
             return None;
         }
 
-        Some(if let Ok((rest, directive)) = next(self.rest) {
-            self.rest = rest;
-            Ok(directive)
-        } else {
-            self.rest = "";
-            Err(Error)
-        })
+        while !self.rest.is_empty() {
+            if let Ok((rest, directive)) = next(self.rest) {
+                self.rest = rest;
+                if let Some(directive) = directive {
+                    return Some(Ok(directive));
+                }
+            } else {
+                self.rest = "";
+                return Some(Err(Error));
+            }
+        }
+        None
     }
 }
 
-fn next(input: &str) -> IResult<&str, (Date, Directive<'_>)> {
-    preceded(take_while(char::is_whitespace), directive)(input)
+fn next(input: &str) -> IResult<&str, Option<(Date, Directive<'_>)>> {
+    alt((map(directive, Some), value(None, anychar)))(input)
 }

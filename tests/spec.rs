@@ -4,8 +4,10 @@ use rstest::rstest;
 const EXAMPLE1: &str = include_str!("examples/example1.beancount");
 const COMMENTS: &str = include_str!("examples/comments.beancount");
 
-#[rstest] // TODO COMMENTS
-fn valid_examples_should_not_return_an_error(#[values("", " \n ", EXAMPLE1)] input: &str) {
+#[rstest]
+fn valid_examples_should_not_return_an_error(
+    #[values("", " \n ", EXAMPLE1, COMMENTS)] input: &str,
+) {
     for result in Parser::new(input) {
         assert!(result.is_ok());
     }
