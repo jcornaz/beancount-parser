@@ -14,7 +14,8 @@ use crate::string::{comment, string};
 
 mod posting;
 
-use posting::{posting, Posting};
+use posting::posting;
+pub use posting::Posting;
 
 #[derive(Debug, Clone)]
 pub struct Transaction<'a> {

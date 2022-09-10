@@ -13,7 +13,7 @@ pub struct Date {
 }
 
 impl Date {
-    pub fn new(year: u16, month_of_year: u8, day_of_month: u8) -> Self {
+    pub(crate) fn new(year: u16, month_of_year: u8, day_of_month: u8) -> Self {
         Self {
             year,
             month_of_year,

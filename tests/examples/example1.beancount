@@ -1,0 +1,11 @@
+2014-05-05 txn "Cafe Mogador" "Lamb tagine with wine"
+  Liabilities:CreditCard:CapitalOne         -37.45 USD
+  Expenses:Restaurant
+
+2014-05-05 * "Cafe Mogador" "Lamb tagine with wine"
+  Liabilities:CreditCard:CapitalOne         -37.45 USD
+  Expenses:Restaurant
+
+2014-05-05 * "Transfer from Savings account"
+  Assets:MyBank:Checking            -400.00 USD
+  ! Assets:MyBank:Savings
