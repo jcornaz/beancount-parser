@@ -26,6 +26,23 @@ fn examples_have_expected_number_of_transaction(
 }
 
 #[rstest]
+#[case("", 0)]
+#[case(SIMPLE, 13)]
+#[case(COMMENTS, 0)]
+fn examples_have_expected_number_of_postings(#[case] input: &str, #[case] expected_count: usize) {
+    let actual_count: usize = Parser::new(input)
+        .map(|d| {
+            if let Ok((_, Directive::Transaction(t))) = d {
+                t.postings().len()
+            } else {
+                0
+            }
+        })
+        .sum();
+    assert_eq!(actual_count, expected_count);
+}
+
+#[rstest]
 fn error(#[values("2022-09-10 txn Oops...")] input: &str) {
     let items = Parser::new(input).collect::<Vec<Result<_, _>>>();
     assert!(items[0].is_err());
