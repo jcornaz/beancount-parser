@@ -31,12 +31,11 @@ fn examples_have_expected_number_of_transaction(
 #[case(COMMENTS, 0)]
 fn examples_have_expected_number_of_postings(#[case] input: &str, #[case] expected_count: usize) {
     let actual_count: usize = Parser::new(input)
-        .map(|d| {
-            if let Ok((_, Directive::Transaction(t))) = d {
-                t.postings().len()
-            } else {
-                0
-            }
+        .filter_map(|d| {
+            d.ok()
+                .as_ref()
+                .and_then(|(_, d)| d.as_transaction())
+                .map(|t| t.postings().len())
         })
         .sum();
     assert_eq!(actual_count, expected_count);

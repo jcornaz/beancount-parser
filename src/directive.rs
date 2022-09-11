@@ -18,6 +18,15 @@ pub enum Directive<'a> {
     Transaction(Transaction<'a>),
 }
 
+impl<'a> Directive<'a> {
+    #[must_use]
+    pub fn as_transaction(&self) -> Option<&Transaction<'a>> {
+        match self {
+            Directive::Transaction(trx) => Some(trx),
+        }
+    }
+}
+
 pub(crate) fn directive(input: &str) -> IResult<&str, (Date, Option<Directive<'_>>)> {
     separated_pair(
         date,
@@ -39,9 +48,12 @@ mod tests {
         let input = r#"2022-09-10 txn "My transaction""#;
         let (_, (date, directive)) = directive(input).expect("should successfully parse directive");
         assert_eq!(date, Date::new(2022, 9, 10));
-        match directive.expect("should recognize the directive") {
-            Directive::Transaction(trx) => assert_eq!(trx.narration(), Some("My transaction")),
-        }
+        let transaction = directive
+            .as_ref()
+            .expect("should recognize the directive")
+            .as_transaction()
+            .expect("the directive should be a transaction");
+        assert_eq!(transaction.narration(), Some("My transaction"));
     }
 
     #[rstest]
