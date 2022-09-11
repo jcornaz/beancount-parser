@@ -4,7 +4,7 @@ use nom::{
     branch::alt,
     bytes::complete::tag,
     character::complete::{char, line_ending, space0, space1},
-    combinator::{eof, map, opt},
+    combinator::{cut, eof, map, opt},
     multi::many0,
     sequence::{preceded, separated_pair, terminated, tuple},
     IResult,
@@ -72,7 +72,7 @@ pub(crate) fn transaction(input: &str) -> IResult<&str, Transaction<'_>> {
                 opt(preceded(space0, comment)),
                 many0(preceded(tuple((line_ending, space1)), posting)),
             )),
-            alt((line_ending, eof)),
+            cut(alt((line_ending, eof))),
         ),
         |(flag, payee_and_narration, comment, postings)| {
             let (payee, narration) = match payee_and_narration {
@@ -178,14 +178,14 @@ mod tests {
     }
 
     #[rstest]
-    fn invalid_transaction(
-        #[values(
-            "open Assets:US:BofA:Checking",
-            r#"*"hello""#,
-            r#"* "hello" Assets:A 10 CHF"#
-        )]
-        input: &str,
-    ) {
-        assert!(transaction(input).is_err());
+    fn errors(#[values("open Assets:US:BofA:Checking")] input: &str) {
+        let result = transaction(input);
+        assert!(matches!(result, Err(nom::Err::Error(_))), "{:?}", result);
+    }
+
+    #[rstest]
+    fn failures(#[values(r#"*"hello""#, r#"* "hello" Assets:A 10 CHF"#, "! test")] input: &str) {
+        let result = transaction(input);
+        assert!(matches!(result, Err(nom::Err::Failure(_))), "{:?}", result);
     }
 }

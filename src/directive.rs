@@ -1,8 +1,7 @@
 use nom::{
     branch::alt,
-    bytes::complete::tag,
-    character::complete::{line_ending, not_line_ending, one_of, space1},
-    combinator::{map, not, opt, value},
+    character::complete::{line_ending, not_line_ending, space1},
+    combinator::{map, opt, value},
     sequence::{separated_pair, tuple},
     IResult,
 };
@@ -25,15 +24,7 @@ pub(crate) fn directive(input: &str) -> IResult<&str, (Date, Option<Directive<'_
         space1,
         alt((
             map(map(transaction, Directive::Transaction), Some),
-            value(
-                None,
-                tuple((
-                    not(tag("txn")),
-                    not(one_of("*!")),
-                    not_line_ending,
-                    opt(line_ending),
-                )),
-            ),
+            value(None, tuple((not_line_ending, opt(line_ending)))),
         )),
     )(input)
 }
