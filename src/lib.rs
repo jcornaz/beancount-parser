@@ -57,5 +57,8 @@ impl<'a> Iterator for Parser<'a> {
 }
 
 fn next(input: &str) -> IResult<&str, Option<(Date, Directive<'_>)>> {
-    alt((map(directive, Some), value(None, comment_line)))(input)
+    alt((
+        map(directive, |(date, directive)| directive.map(|d| (date, d))),
+        value(None, comment_line),
+    ))(input)
 }

@@ -1,8 +1,13 @@
 * Banking
 ** Bank of America
 
+2003-01-05 open Assets:US:BofA:Checking
+2003-01-05 open Assets:US:BofA:Savings
+
 ;; Transactions follow …
 
 ** TD Bank
+
+2006-03-15 open Assets:US:TD:Cash
 
 ;; More transactions follow …
