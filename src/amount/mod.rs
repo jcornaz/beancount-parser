@@ -21,6 +21,16 @@ impl<'a> Amount<'a> {
             currency,
         }
     }
+
+    #[must_use]
+    pub fn expression(&self) -> &Expression {
+        &self.expression
+    }
+
+    #[must_use]
+    pub fn currency(&self) -> &str {
+        self.currency
+    }
 }
 
 pub(crate) fn amount(input: &str) -> IResult<&str, Amount<'_>> {

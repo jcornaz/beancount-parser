@@ -1,6 +1,30 @@
 #![deny(future_incompatible, unsafe_code)]
 #![warn(nonstandard_style, rust_2018_idioms, clippy::pedantic)]
 
+//! A rust parsing library for [beancount](https://beancount.github.io/docs/) files
+//!
+//! At its core, this library provides is a [`Parser`] type that
+//! is an iterator over the directives.
+//!
+//! ## Example
+//! ```
+//! use beancount_parser::{Date, Directive, Parser, Error};
+//!
+//! # fn main() -> Result<(), Error> {
+//! let beancount = r#"
+//! 2022-09-11 * "Coffee beans"
+//!   Expenses:Groceries   10 CHF
+//!   Assets:Bank
+//! "#;
+//!
+//! let directives: Vec<(Date, Directive<'_>)> = Parser::new(beancount).collect::<Result<_, _>>()?;
+//! assert_eq!(directives[0].1.as_transaction().unwrap().narration(), Some("Coffee beans"));
+//!
+//! let postings = directives[0].1.as_transaction().unwrap().postings();
+//! assert_eq!(postings[0].amount().unwrap().currency(), "CHF");
+//! # Ok(()) }
+//! ```
+
 mod account;
 mod amount;
 mod date;
