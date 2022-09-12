@@ -62,7 +62,7 @@ Do not break public API. (See https://github.com/rust-lang/rfcs/blob/master/text
 
 Instead create a new API. Eventually we may deprecate the old one and hide it from the doc.
 
-Benimator's API may eventually be broken (in a new major version). But I want to avoid that for as long as possible (forever would be perfect).
+The API may eventually be broken (in a new major version). But I want to avoid that for as long as possible (forever would be perfect).
 I see a breaking change as good only if it makes future breaking changes less likely. 
 For example, to make struct field privates is a good breaking change.
 
