@@ -1,5 +1,6 @@
 #![deny(future_incompatible, unsafe_code)]
 #![warn(nonstandard_style, rust_2018_idioms, clippy::pedantic)]
+#![cfg_attr(test, allow(clippy::needless_pass_by_value))]
 
 //! A rust parsing library for [beancount](https://beancount.github.io/docs/) files
 //!
@@ -34,6 +35,7 @@ mod string;
 mod transaction;
 
 use crate::directive::directive;
+
 pub use crate::{
     account::Account,
     amount::{Amount, Expression},

@@ -74,6 +74,30 @@ impl Expression {
     fn minus(left: Self, right: Self) -> Self {
         Self::operation(Operator::Substract, left, right)
     }
+
+    /// Evaluate the expression
+    #[must_use]
+    pub fn evaluate(&self) -> Value {
+        match self {
+            Expression::Value(value) => *value,
+            Expression::Operation(Operation {
+                operator,
+                left,
+                right,
+            }) => operator.evaluate(left.evaluate(), right.evaluate()),
+        }
+    }
+}
+
+impl Operator {
+    fn evaluate(self, Value(left): Value, Value(right): Value) -> Value {
+        Value(match self {
+            Operator::Divide => left / right,
+            Operator::Multiply => left * right,
+            Operator::Add => left + right,
+            Operator::Substract => left - right,
+        })
+    }
 }
 
 pub(super) fn parse(input: &str) -> IResult<&str, Expression> {
@@ -212,5 +236,15 @@ mod tests {
     )]
     fn parse_expression(#[case] input: &str, #[case] expected: Expression) {
         assert_eq!(parse(input), Ok(("", expected)));
+    }
+
+    #[rstest]
+    #[case(Expression::value(1), 1)]
+    #[case(Expression::plus(Expression::value(1), Expression::value(1)), 2)]
+    #[case(Expression::minus(Expression::value(5), Expression::value(2)), 3)]
+    #[case(Expression::div(Expression::value(12), Expression::value(3)), 4)]
+    #[case(Expression::mul(Expression::value(2), Expression::value(3)), 6)]
+    fn evaluate(#[case] expression: Expression, #[case] expected_result: impl Into<Decimal>) {
+        assert_eq!(expression.evaluate(), Value(expected_result.into()));
     }
 }

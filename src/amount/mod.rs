@@ -3,7 +3,7 @@ use nom::{
     sequence::separated_pair, IResult,
 };
 
-pub use self::expression::Expression;
+pub use self::expression::{Expression, Value};
 
 mod expression;
 
@@ -25,6 +25,11 @@ impl<'a> Amount<'a> {
     #[must_use]
     pub fn expression(&self) -> &Expression {
         &self.expression
+    }
+
+    #[must_use]
+    pub fn value(&self) -> Value {
+        self.expression.evaluate()
     }
 
     #[must_use]
