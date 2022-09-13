@@ -2,9 +2,7 @@ name: build
 
 on:
   push:
-    branches:
-      - main
-
+    branches: [main, rc, beta, alpha]
   pull_request:
   workflow_dispatch:
 
@@ -51,3 +49,32 @@ jobs:
           profile: minimal
       - uses: Swatinem/rust-cache@v1
       - run: cargo doc --workspace --all-features --no-deps
+  release:
+    if: ${{ github.event_name != 'pull_request' }}
+    needs: [test, documentation]
+    environment: release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+          profile: minimal
+      - name: install cargo-edit
+        uses: baptiste0928/cargo-install@v1
+        with:
+          crate: cargo-edit
+          version: 0.10
+      - name: install cargo-all-features
+        uses: baptiste0928/cargo-install@v1
+        with:
+          crate: cargo-all-features
+          version: 1
+      - run: npm install --no-save conventional-changelog-conventionalcommits @semantic-release/exec
+      - run: npx semantic-release --dry-run
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}

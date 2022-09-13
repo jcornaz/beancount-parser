@@ -10,6 +10,8 @@ pkgs.mkShell {
     niv
     cargo-all-features
     cargo-deny
+    cargo-edit
+    nodejs
   ];
 }
 
