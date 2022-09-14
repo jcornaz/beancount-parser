@@ -1,10 +1,11 @@
 # beancount-parser
 
-A beancount file parser for rust
+[![License](https://img.shields.io/badge/license-Unlicense%20OR%20MIT-green)](#License)
+[![Crates.io](https://img.shields.io/crates/v/beancount-parser)](https://crates.io/crates/beancount-parser)
+[![Docs](https://docs.rs/beancount-parser/badge.svg)](https://docs.rs/beancount-parser)
+[![Build](https://img.shields.io/github/workflow/status/jcornaz/beancount-parser/build)](https://github.com/jcornaz/beancount-parser/actions/workflows/build.yml)
 
-### TODO
-
-* [ ] Add `keywords` and `categories` to `Cargo.toml`
+A beancount file parser library for rust
 
 ## Goal
 
@@ -14,7 +15,7 @@ Parse a beancount file into a rust data structure
 
 Do not verify beancount rules, such as "transaction must balance to zero", "account must be open", balance assertions, etc. (it only verify the syntax)
 
-Do not provide any "business" logic to analyze or manipulate the ledger. No balance, no sum, no currency translation, etc.
+Do not provide any "business" logic to analyze or manipulate the ledger. No balance, no currency translation, etc.
 
 ## MSRV
 
