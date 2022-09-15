@@ -13,7 +13,7 @@ Parse a beancount file into a rust data structure
 
 ## Non goals
 
-Do not verify beancount rules, such as "transaction must balance to zero", "account must be open", balance assertions, etc. (it only verify the syntax)
+Do not verify beancount rules, such as "transaction must balance to zero", "account must be open", balance assertions, etc.
 
 Do not provide any "business" logic to analyze or manipulate the ledger. No balance, no currency translation, etc.
 
