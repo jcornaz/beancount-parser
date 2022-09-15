@@ -34,7 +34,6 @@ mod amount;
 mod date;
 #[allow(missing_docs)]
 mod directive;
-#[allow(missing_docs)]
 mod error;
 #[allow(missing_docs)]
 mod string;
