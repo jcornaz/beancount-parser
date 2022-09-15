@@ -110,6 +110,15 @@ impl Value {
     pub fn try_into_f64(self) -> Result<f64, ConversionError> {
         self.try_into()
     }
+
+    /// Try to convert this value into a `f32`
+    ///
+    /// # Errors
+    ///
+    /// Returns an error in case of overfow
+    pub fn try_into_f32(self) -> Result<f32, ConversionError> {
+        self.try_into()
+    }
 }
 
 impl TryFrom<Value> for f64 {
@@ -117,6 +126,14 @@ impl TryFrom<Value> for f64 {
 
     fn try_from(Value(v): Value) -> Result<Self, Self::Error> {
         v.to_f64().ok_or(ConversionError(v))
+    }
+}
+
+impl TryFrom<Value> for f32 {
+    type Error = ConversionError;
+
+    fn try_from(Value(v): Value) -> Result<Self, Self::Error> {
+        v.to_f32().ok_or(ConversionError(v))
     }
 }
 
@@ -279,5 +296,11 @@ mod tests {
     fn into_f64() {
         let value = Value(Decimal::new(2, 0));
         assert_eq!(value.try_into_f64(), Ok(2.0));
+    }
+
+    #[test]
+    fn into_f32() {
+        let value = Value(Decimal::new(2, 0));
+        assert_eq!(value.try_into_f32(), Ok(2.0));
     }
 }
