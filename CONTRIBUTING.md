@@ -45,14 +45,14 @@ If you need help to test your feature or fix, you can ask in a draft PR, and I'l
 
 When writting new code make sure you don't expose any unecessary technical detail:
 * Never expose struct fields!
-* Use `#[non_exhastive]` for unit enums and unit structs
+* Use `#[non_exhaustive]` for enums and unit structs
 * Be very carefull with public enums. In doubt keep them private.
 * Don't expose types and functions that do no need to be public
 * Don't eagerly implement traits that are not yet needed or related to the use-case
   * except for `Debug`, `Clone`, `Eq`, `PartialEq` and `Default` that may be implemented eagerly when it makes sense
   * note that if a `new()` constuctor does not make sense, `Default` should **not** be implemented
-  * in case of doubt, don't implement what you don't need, don't worry we can add them later
-* Avoid promissing too much in return types. (e.g. `&[T]` is better that `&Vec<T>`)
+  * in case of doubt, don't implement what you don't need, don't worry we can add it later
+* Avoid promissing too much in return types. (e.g. `&[T]` are better that `&Vec<T>`)
 
 New API may be gated behind a `unstable-` cargo flag until it is stabilized.
 
@@ -63,18 +63,16 @@ Do not break public API. (See https://github.com/rust-lang/rfcs/blob/master/text
 Instead create a new API. Eventually we may deprecate the old one and hide it from the doc.
 
 The API may eventually be broken (in a new major version). But I want to avoid that for as long as possible (forever would be perfect).
-I see a breaking change as good only if it makes future breaking changes less likely. 
-For example, to make struct field privates is a good breaking change.
+I see a breaking change as good only if it makes future breaking changes less likely to be needed. 
+For example, to make struct field privates is a an acceptable breaking change.
 
 If you don't see how to improve an API without breaking it, you can start a discussion in the issues.
 
 ## Open a pull request
 
-Don't be afraid of small steps. I'd rather review 5 tiny pull-request for a single issue than 1 massive.
+Don't be afraid of small steps. I'd rather review 5 tiny pull-requests than 1 big.
 
 But to be merged a pull-request needs to be in state ready for release:
 * New features and Bug fixes must comes with automated tests
 * The build must pass
 * The documentation must be up-to-date
-
-**In case you are not sure about something, it is better to open a pull request early (as a draft) and discuss it ;-)**
