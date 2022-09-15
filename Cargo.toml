@@ -13,6 +13,7 @@ keywords = ["parsing", "beancount", "accounting"]
 [dependencies]
 nom = "7.1"
 rust_decimal = { version = "1.26", default-features = false }
+thiserror = "1.0.35"
 
 [dev-dependencies]
 rstest = { version = "0.15.0", default-features = false }

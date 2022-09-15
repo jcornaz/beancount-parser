@@ -23,6 +23,7 @@
 //!
 //! let postings = directives[0].1.as_transaction().unwrap().postings();
 //! assert_eq!(postings[0].amount().unwrap().currency(), "CHF");
+//! assert_eq!(postings[0].amount().unwrap().value().try_into_f64()?, 10.0);
 //! # Ok(()) }
 //! ```
 
@@ -38,7 +39,7 @@ use crate::directive::directive;
 
 pub use crate::{
     account::Account,
-    amount::{Amount, Expression},
+    amount::{Amount, ConversionError, Expression, Value},
     date::Date,
     directive::Directive,
     error::Error,

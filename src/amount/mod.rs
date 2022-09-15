@@ -3,7 +3,7 @@ use nom::{
     sequence::separated_pair, IResult,
 };
 
-pub use self::expression::{Expression, Value};
+pub use self::expression::{ConversionError, Expression, Value};
 
 mod expression;
 
