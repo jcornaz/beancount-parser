@@ -29,7 +29,6 @@
 
 #[allow(missing_docs)]
 mod account;
-#[allow(missing_docs)]
 mod amount;
 #[allow(missing_docs)]
 mod date;

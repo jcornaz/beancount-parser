@@ -9,22 +9,56 @@ use nom::{
 use rust_decimal::{prelude::ToPrimitive, Decimal};
 use thiserror::Error;
 
+/// An expression
+///
+/// Expple of expressions:
+///
+/// * `42`
+/// * `2 + 2`
+/// * `5 / (6 + (8 / 2))`
+///
+/// The expression can be evaluated with [`Expression::evaluate`]
 #[derive(Debug, Clone, PartialEq)]
 #[non_exhaustive]
 pub enum Expression {
+    /// A direct value, the leaf of the expression tree
     Value(Value),
+
+    /// An operation, made of two expression operands
     Operation(Operation),
 }
 
+/// A direct value, the leaf of the expression tree
 #[derive(Debug, Clone, Copy, PartialEq)]
 #[allow(clippy::derive_partial_eq_without_eq)]
 pub struct Value(Decimal);
 
+/// An operation, made of two expression operands
 #[derive(Debug, Clone, PartialEq)]
 pub struct Operation {
     operator: Operator,
     left: Box<Expression>,
     right: Box<Expression>,
+}
+
+impl Operation {
+    /// Returns the operator
+    #[must_use]
+    pub fn operator(&self) -> Operator {
+        self.operator
+    }
+
+    /// Returns the left operand
+    #[must_use]
+    pub fn left(&self) -> &Expression {
+        &self.left
+    }
+
+    /// Returns the right operand
+    #[must_use]
+    pub fn right(&self) -> &Expression {
+        &self.right
+    }
 }
 
 #[derive(Debug, Clone, Copy, Eq, PartialEq)]

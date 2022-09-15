@@ -7,6 +7,9 @@ pub use self::expression::{ConversionError, Expression, Value};
 
 mod expression;
 
+/// A beancount amount
+///
+/// The amount is the combination of an [`Expression`] and the currency.
 #[derive(Debug, Clone, PartialEq)]
 pub struct Amount<'a> {
     expression: Expression,
@@ -22,16 +25,19 @@ impl<'a> Amount<'a> {
         }
     }
 
+    /// Returns the [`Expression`] which may be inspeced or evaluated
     #[must_use]
     pub fn expression(&self) -> &Expression {
         &self.expression
     }
 
+    /// Evalueate the expression and returns the value
     #[must_use]
     pub fn value(&self) -> Value {
         self.expression.evaluate()
     }
 
+    /// Returns the currency
     #[must_use]
     pub fn currency(&self) -> &str {
         self.currency
