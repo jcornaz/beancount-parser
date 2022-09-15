@@ -22,7 +22,12 @@ jobs:
           override: true
           profile: minimal
       - uses: Swatinem/rust-cache@v1
-      - run: cargo test --workspace --all-features
+      - name: install cargo-all-features
+        uses: baptiste0928/cargo-install@v1
+        with:
+          crate: cargo-all-features
+          version: 1
+      - run: cargo test-all-features
 
   code-style:
     runs-on: ubuntu-latest
@@ -67,11 +72,6 @@ jobs:
         with:
           crate: cargo-edit
           version: 0.10
-      - name: install cargo-all-features
-        uses: baptiste0928/cargo-install@v1
-        with:
-          crate: cargo-all-features
-          version: 1
       - run: npm install --no-save conventional-changelog-conventionalcommits @semantic-release/exec
       - run: npx semantic-release
         env:
