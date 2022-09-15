@@ -1,5 +1,5 @@
 #![deny(future_incompatible, unsafe_code)]
-#![warn(nonstandard_style, rust_2018_idioms, clippy::pedantic)]
+#![warn(nonstandard_style, rust_2018_idioms, missing_docs, clippy::pedantic)]
 #![cfg_attr(test, allow(clippy::needless_pass_by_value))]
 
 //! A rust parsing library for [beancount](https://beancount.github.io/docs/) files
@@ -27,12 +27,19 @@
 //! # Ok(()) }
 //! ```
 
+#[allow(missing_docs)]
 mod account;
+#[allow(missing_docs)]
 mod amount;
+#[allow(missing_docs)]
 mod date;
+#[allow(missing_docs)]
 mod directive;
+#[allow(missing_docs)]
 mod error;
+#[allow(missing_docs)]
 mod string;
+#[allow(missing_docs)]
 mod transaction;
 
 use crate::directive::directive;
@@ -53,11 +60,17 @@ use nom::{
 };
 use string::comment_line;
 
+/// Parser of a beancount document
+///
+/// It is an iterator over the beancount directives.
+///
+/// See the crate documentation for usage example.
 pub struct Parser<'a> {
     rest: &'a str,
 }
 
 impl<'a> Parser<'a> {
+    /// Create a new parser from the beancount string to parse
     #[must_use]
     pub fn new(content: &'a str) -> Self {
         Self { rest: content }
