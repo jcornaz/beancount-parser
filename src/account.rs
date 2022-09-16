@@ -8,18 +8,33 @@ use nom::{
     IResult,
 };
 
+/// Account
+///
+/// An account has a type (`Assets`, `Liabilities`, `Equity`, `Income` or `Expenses`)
+/// and components.
+///
+/// # Examples
+///
+/// * `Assets:Liquidity:Cash` (type: `Assets`, components: ["Liquidity", "Cash"]
+/// * `Expenses:Groceries` (type: `Assets`, components: ["Groceries"]
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct Account<'a> {
     type_: Type,
     components: Vec<&'a str>,
 }
 
+/// Type of account
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub enum Type {
+    /// The assets
     Assets,
+    /// The liabilities
     Liabilities,
+    /// The equity
     Equity,
+    /// Income
     Income,
+    /// Expenses
     Expenses,
 }
 
@@ -29,6 +44,18 @@ impl<'a> Account<'a> {
             type_,
             components: path.into_iter().collect(),
         }
+    }
+
+    /// Returns the type of account
+    #[must_use]
+    pub fn type_(&self) -> Type {
+        self.type_
+    }
+
+    /// Returns the components
+    #[must_use]
+    pub fn components(&self) -> &[&str] {
+        self.components.as_ref()
     }
 }
 

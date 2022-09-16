@@ -27,7 +27,6 @@
 //! # Ok(()) }
 //! ```
 
-#[allow(missing_docs)]
 mod account;
 mod amount;
 mod date;
@@ -40,7 +39,7 @@ mod transaction;
 use crate::directive::directive;
 
 pub use crate::{
-    account::Account,
+    account::{Account, Type},
     amount::{Amount, ConversionError, Expression, Value},
     date::Date,
     directive::Directive,
