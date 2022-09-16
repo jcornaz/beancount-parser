@@ -18,10 +18,11 @@
 //!   Assets:Bank
 //! "#;
 //!
-//! let directives: Vec<(Date, Directive<'_>)> = Parser::new(beancount).collect::<Result<_, _>>()?;
-//! assert_eq!(directives[0].1.as_transaction().unwrap().narration(), Some("Coffee beans"));
+//! let directives: Vec<Directive<'_>> = Parser::new(beancount).collect::<Result<_, _>>()?;
+//! let transaction = directives[0].as_transaction().unwrap();
+//! assert_eq!(transaction.narration(), Some("Coffee beans"));
 //!
-//! let postings = directives[0].1.as_transaction().unwrap().postings();
+//! let postings = directives[0].as_transaction().unwrap().postings();
 //! assert_eq!(postings[0].amount().unwrap().currency(), "CHF");
 //! assert_eq!(postings[0].amount().unwrap().value().try_into_f64()?, 10.0);
 //! # Ok(()) }
@@ -47,11 +48,7 @@ pub use crate::{
     transaction::{Flag, Posting, PriceType, Transaction},
 };
 
-use nom::{
-    branch::alt,
-    combinator::{map, value},
-    IResult,
-};
+use nom::{branch::alt, combinator::value, IResult};
 use string::comment_line;
 
 /// Parser of a beancount document
@@ -72,7 +69,7 @@ impl<'a> Parser<'a> {
 }
 
 impl<'a> Iterator for Parser<'a> {
-    type Item = Result<(Date, Directive<'a>), Error>;
+    type Item = Result<Directive<'a>, Error>;
 
     fn next(&mut self) -> Option<Self::Item> {
         while !self.rest.is_empty() {
@@ -90,9 +87,6 @@ impl<'a> Iterator for Parser<'a> {
     }
 }
 
-fn next(input: &str) -> IResult<&str, Option<(Date, Directive<'_>)>> {
-    alt((
-        map(directive, |(date, directive)| directive.map(|d| (date, d))),
-        value(None, comment_line),
-    ))(input)
+fn next(input: &str) -> IResult<&str, Option<Directive<'_>>> {
+    alt((directive, value(None, comment_line)))(input)
 }

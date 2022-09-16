@@ -1,16 +1,12 @@
 use nom::{
     branch::alt,
-    character::complete::{line_ending, not_line_ending, space1},
+    character::complete::{line_ending, not_line_ending},
     combinator::{map, opt, value},
-    sequence::{separated_pair, tuple},
+    sequence::tuple,
     IResult,
 };
 
-use crate::{
-    date::date,
-    transaction::{transaction, Transaction},
-    Date,
-};
+use crate::transaction::{transaction, Transaction};
 
 #[derive(Debug, Clone)]
 #[non_exhaustive]
@@ -27,16 +23,10 @@ impl<'a> Directive<'a> {
     }
 }
 
-pub(crate) fn directive(input: &str) -> IResult<&str, (Date, Option<Directive<'_>>)> {
+pub(crate) fn directive(input: &str) -> IResult<&str, Option<Directive<'_>>> {
     alt((
-        map(transaction, |trx| {
-            (trx.date(), Some(Directive::Transaction(trx)))
-        }),
-        separated_pair(
-            date,
-            space1,
-            value(None, tuple((not_line_ending, opt(line_ending)))),
-        ),
+        map(map(transaction, Directive::Transaction), Some),
+        value(None, tuple((not_line_ending, opt(line_ending)))),
     ))(input)
 }
 
@@ -48,8 +38,7 @@ mod tests {
     #[test]
     fn transaction() {
         let input = r#"2022-09-10 txn "My transaction""#;
-        let (_, (date, directive)) = directive(input).expect("should successfully parse directive");
-        assert_eq!(date, Date::new(2022, 9, 10));
+        let (_, directive) = directive(input).expect("should successfully parse directive");
         let transaction = directive
             .as_ref()
             .expect("should recognize the directive")

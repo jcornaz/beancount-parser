@@ -1,4 +1,4 @@
-use beancount_parser::{Directive, Parser};
+use beancount_parser::Parser;
 use rstest::rstest;
 
 const SIMPLE: &str = include_str!("examples/simple.beancount");
@@ -20,7 +20,8 @@ fn examples_have_expected_number_of_transaction(
     #[case] expected_count: usize,
 ) {
     let actual_count = Parser::new(input)
-        .filter(|d| matches!(d, Ok((_, Directive::Transaction(_)))))
+        .filter_map(|d| d.ok())
+        .filter(|d| d.as_transaction().is_some())
         .count();
     assert_eq!(actual_count, expected_count);
 }
@@ -31,12 +32,8 @@ fn examples_have_expected_number_of_transaction(
 #[case(COMMENTS, 0)]
 fn examples_have_expected_number_of_postings(#[case] input: &str, #[case] expected_count: usize) {
     let actual_count: usize = Parser::new(input)
-        .filter_map(|d| {
-            d.ok()
-                .as_ref()
-                .and_then(|(_, d)| d.as_transaction())
-                .map(|t| t.postings().len())
-        })
+        .filter_map(|d| d.ok())
+        .filter_map(|d| d.as_transaction().map(|t| t.postings().len()))
         .sum();
     assert_eq!(actual_count, expected_count);
 }
