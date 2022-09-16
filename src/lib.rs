@@ -30,7 +30,6 @@
 #[allow(missing_docs)]
 mod account;
 mod amount;
-#[allow(missing_docs)]
 mod date;
 #[allow(missing_docs)]
 mod directive;

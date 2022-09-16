@@ -5,6 +5,12 @@ use nom::{
     IResult,
 };
 
+/// A date
+///
+/// The parser has some sanity check to make sure the date remotly makes sense
+/// but it doesn't verify it is an actual real date valid date.
+///
+/// If that is important, you should use a date-time library to verify the validity.
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub struct Date {
     year: u16,
@@ -20,6 +26,28 @@ impl Date {
             month_of_year,
             day_of_month,
         }
+    }
+
+    /// Returns the year
+    #[must_use]
+    pub fn year(&self) -> u16 {
+        self.year
+    }
+
+    /// Returns the number of the month in the year
+    ///
+    /// The result is between `1` (january) and `12` (december) inclusive.
+    #[must_use]
+    pub fn month_of_year(&self) -> u8 {
+        self.month_of_year
+    }
+
+    /// Returns the number of the day in the month
+    ///
+    /// The result is between `1` and `31` inclusive
+    #[must_use]
+    pub fn day_of_month(&self) -> u8 {
+        self.day_of_month
     }
 }
 
