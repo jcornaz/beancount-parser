@@ -19,8 +19,18 @@ use crate::{
 mod posting;
 
 use posting::posting;
-pub use posting::Posting;
+pub use posting::{Posting, PriceType};
 
+/// A transaction
+///
+/// Contains, a potential narration as well as the [`Posting`]s.
+///
+/// # Example
+/// ```beancount
+/// 2022-09-11 * "Coffee beans"
+///   Expenses:Groceries   10 CHF
+///   Assets:Bank
+/// ```
 #[derive(Debug, Clone)]
 pub struct Transaction<'a> {
     date: Date,
@@ -31,33 +41,43 @@ pub struct Transaction<'a> {
     comment: Option<&'a str>,
 }
 
+/// The transaction flag
+///
+/// It is eithe cleared (`*`) of pending (`!`)
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
 pub enum Flag {
+    /// Cleared flag (the `*` charadter)
     Cleared,
+    /// Pending flag (the `!` charadter)
     Pending,
 }
 
 impl<'a> Transaction<'a> {
+    /// Returns the "payee" if one was defined
     #[must_use]
     pub fn payee(&self) -> Option<&str> {
         self.payee.as_deref()
     }
 
+    /// Returns the "narration" if one was defined
     #[must_use]
     pub fn narration(&self) -> Option<&str> {
         self.narration.as_deref()
     }
 
+    /// Returns the postings
     #[must_use]
     pub fn postings(&self) -> &Vec<Posting<'a>> {
         &self.postings
     }
 
+    /// Returns the flag of the transaction (if present)
     #[must_use]
     pub fn flag(&self) -> Option<Flag> {
         self.flag
     }
 
+    /// Returns the comment (if present)
     #[must_use]
     pub fn comment(&self) -> Option<&str> {
         self.comment

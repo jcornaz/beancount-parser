@@ -15,6 +15,20 @@ use crate::{
 
 use super::{flag, Flag};
 
+/// A posting
+///
+/// It is the association of an [`Account`] and an [`Amount`].
+/// (though the amount is optional)
+///
+/// A posting may also have, price and cost defined after the amount.
+///
+/// # Examples of postings
+///
+/// * `Assets:A:B 10 CHF` (most common form)
+/// * `! Assets:A:B 10 CHF` (with pending flag)
+/// * `Assets:A:B 10 CHF @ 1 EUR` (with price)
+/// * `Assets:A:B 10 CHF {2 USD}` (with cost)
+/// * `Assets:A:B` (without amount)
 #[derive(Debug, Clone, PartialEq)]
 pub struct Posting<'a> {
     flag: Option<Flag>,
@@ -26,40 +40,51 @@ pub struct Posting<'a> {
 }
 
 impl<'a> Posting<'a> {
+    /// Returns the flag on this posting (if present)
     #[must_use]
     pub fn flag(&self) -> Option<Flag> {
         self.flag
     }
 
+    /// Returns the account referenced by this posting
     #[must_use]
     pub fn account(&self) -> &Account<'a> {
         &self.account
     }
 
+    /// Returns the amount of the posting (if present)
     #[must_use]
     pub fn amount(&self) -> Option<&Amount<'a>> {
         self.amount.as_ref()
     }
 
+    /// Returns a tuple of price-type and the price (if a price was defined)
     #[must_use]
     pub fn price(&self) -> Option<(PriceType, &Amount<'a>)> {
         self.price.as_ref().map(|(t, p)| (*t, p))
     }
 
+    /// Returns the cost (if present)
     #[must_use]
     pub fn cost(&self) -> Option<&Amount<'a>> {
         self.cost.as_ref()
     }
 
+    /// Returns the comment (if present)
     #[must_use]
     pub fn comment(&self) -> Option<&str> {
         self.comment
     }
 }
 
+/// A price type
+///
+/// A price associated to an amount is either per-unit (`@`) or a total price (`@@`)
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
 pub enum PriceType {
+    /// Per-unit price
     Unit,
+    /// Total price
     Total,
 }
 

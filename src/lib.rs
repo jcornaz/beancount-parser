@@ -35,7 +35,6 @@ mod date;
 mod directive;
 mod error;
 mod string;
-#[allow(missing_docs)]
 mod transaction;
 
 use crate::directive::directive;
@@ -46,7 +45,7 @@ pub use crate::{
     date::Date,
     directive::Directive,
     error::Error,
-    transaction::{Posting, Transaction},
+    transaction::{Flag, Posting, PriceType, Transaction},
 };
 
 use nom::{
