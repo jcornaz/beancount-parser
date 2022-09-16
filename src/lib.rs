@@ -31,7 +31,6 @@
 mod account;
 mod amount;
 mod date;
-#[allow(missing_docs)]
 mod directive;
 mod error;
 mod string;

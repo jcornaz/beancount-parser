@@ -8,13 +8,20 @@ use nom::{
 
 use crate::transaction::{transaction, Transaction};
 
+/// A directive
+///
+/// A beancount file is made of directives.
+///
+/// By far the the most common directive is the [`Transaction`].
 #[derive(Debug, Clone)]
 #[non_exhaustive]
 pub enum Directive<'a> {
+    /// The transaction directive
     Transaction(Transaction<'a>),
 }
 
 impl<'a> Directive<'a> {
+    /// Reterns the [`Transaction`] if this directive is a transaction
     #[must_use]
     pub fn as_transaction(&self) -> Option<&Transaction<'a>> {
         match self {
