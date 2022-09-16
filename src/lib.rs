@@ -22,7 +22,7 @@
 //! let transaction = directives[0].as_transaction().unwrap();
 //! assert_eq!(transaction.narration(), Some("Coffee beans"));
 //!
-//! let postings = directives[0].as_transaction().unwrap().postings();
+//! let postings = transaction.postings();
 //! assert_eq!(postings[0].amount().unwrap().currency(), "CHF");
 //! assert_eq!(postings[0].amount().unwrap().value().try_into_f64()?, 10.0);
 //! # Ok(()) }
@@ -47,8 +47,13 @@ pub use crate::{
     transaction::{Flag, Posting, PriceType, Transaction},
 };
 
-use nom::{branch::alt, combinator::value, IResult};
-use string::comment_line;
+use nom::{
+    branch::alt,
+    character::complete::{line_ending, not_line_ending},
+    combinator::{map, opt, value},
+    sequence::tuple,
+    IResult,
+};
 
 /// Parser of a beancount document
 ///
@@ -87,5 +92,8 @@ impl<'a> Iterator for Parser<'a> {
 }
 
 fn next(input: &str) -> IResult<&str, Option<Directive<'_>>> {
-    alt((directive, value(None, comment_line)))(input)
+    alt((
+        map(directive, Some),
+        value(None, tuple((not_line_ending, opt(line_ending)))),
+    ))(input)
 }
