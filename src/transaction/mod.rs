@@ -10,7 +10,11 @@ use nom::{
     IResult,
 };
 
-use crate::string::{comment, string};
+use crate::{
+    date::date,
+    string::{comment, string},
+    Date,
+};
 
 mod posting;
 
@@ -19,6 +23,7 @@ pub use posting::Posting;
 
 #[derive(Debug, Clone)]
 pub struct Transaction<'a> {
+    date: Date,
     flag: Option<Flag>,
     payee: Option<String>,
     narration: Option<String>,
@@ -57,6 +62,12 @@ impl<'a> Transaction<'a> {
     pub fn comment(&self) -> Option<&str> {
         self.comment
     }
+
+    /// The date of the transaction
+    #[must_use]
+    pub fn date(&self) -> Date {
+        self.date
+    }
 }
 
 pub(crate) fn transaction(input: &str) -> IResult<&str, Transaction<'_>> {
@@ -67,6 +78,7 @@ pub(crate) fn transaction(input: &str) -> IResult<&str, Transaction<'_>> {
     map(
         terminated(
             tuple((
+                terminated(date, space1),
                 alt((map(tag("txn"), |_| None), map(flag, Some))),
                 opt(preceded(space1, payee_and_narration)),
                 opt(preceded(space0, comment)),
@@ -74,12 +86,13 @@ pub(crate) fn transaction(input: &str) -> IResult<&str, Transaction<'_>> {
             )),
             cut(alt((line_ending, eof))),
         ),
-        |(flag, payee_and_narration, comment, postings)| {
+        |(date, flag, payee_and_narration, comment, postings)| {
             let (payee, narration) = match payee_and_narration {
                 Some((p, n)) => (p, Some(n)),
                 None => (None, None),
             };
             Transaction {
+                date,
                 flag,
                 payee,
                 narration,
@@ -104,12 +117,13 @@ mod tests {
 
     #[rstest]
     fn simple_transaction() {
-        let input = r#"* "Hello \"world\""
+        let input = r#"2022-09-16 * "Hello \"world\""
             Expenses:A    10 CHF
             Assets:B     -10 CHF
         "#;
         let (_, transaction) =
             transaction(input).expect("should succesfully parse the transaction");
+        assert_eq!(transaction.date(), Date::new(2022, 9, 16));
         assert_eq!(transaction.narration(), Some(r#"Hello "world""#));
         assert_eq!(transaction.postings().len(), 2);
         assert_eq!(transaction.flag(), Some(Flag::Cleared));
@@ -119,7 +133,7 @@ mod tests {
 
     #[test]
     fn transaction_without_posting() {
-        let input = r#"* "Hello \"world\"""#;
+        let input = r#"2022-01-01 * "Hello \"world\"""#;
         let (_, transaction) =
             transaction(input).expect("should succesfully parse the transaction");
         assert!(transaction.postings().is_empty());
@@ -127,7 +141,7 @@ mod tests {
 
     #[test]
     fn transaction_without_description() {
-        let input = r#"*
+        let input = r#"2022-01-01 *
             Expenses:A    10 CHF
             Assets:B     -10 CHF
         "#;
@@ -138,7 +152,7 @@ mod tests {
 
     #[test]
     fn transaction_with_payee() {
-        let input = r#"* "me" "Hello \"world\""
+        let input = r#"2022-01-01 * "me" "Hello \"world\""
             Expenses:A    10 CHF
             Assets:B     -10 CHF
         "#;
@@ -149,7 +163,7 @@ mod tests {
 
     #[test]
     fn transaction_with_exclamation_mark() {
-        let input = r#"! "Hello \"world\""
+        let input = r#"2022-01-01 ! "Hello \"world\""
             Expenses:A    10 CHF
             Assets:B     -10 CHF
         "#;
@@ -160,7 +174,7 @@ mod tests {
 
     #[test]
     fn transaction_without_flag() {
-        let input = r#"txn "Hello \"world\""
+        let input = r#"2022-01-01 txn "Hello \"world\""
             Expenses:A    10 CHF
             Assets:B     -10 CHF
         "#;
@@ -171,20 +185,27 @@ mod tests {
 
     #[test]
     fn transaction_with_comment() {
-        let input = r#"txn "Hello \"world\"" ; And a comment!"#;
+        let input = r#"2022-01-01 txn "Hello \"world\"" ; And a comment!"#;
         let (_, transaction) =
             transaction(input).expect("should succesfully parse the transaction");
         assert_eq!(transaction.comment(), Some("And a comment!"));
     }
 
     #[rstest]
-    fn errors(#[values("open Assets:US:BofA:Checking")] input: &str) {
+    fn errors(#[values("2022-01-01 open Assets:US:BofA:Checking")] input: &str) {
         let result = transaction(input);
         assert!(matches!(result, Err(nom::Err::Error(_))), "{:?}", result);
     }
 
     #[rstest]
-    fn failures(#[values(r#"*"hello""#, r#"* "hello" Assets:A 10 CHF"#, "! test")] input: &str) {
+    fn failures(
+        #[values(
+            r#"2022-01-01 *"hello""#,
+            r#"2022-01-01 * "hello" Assets:A 10 CHF"#,
+            "2022-01-01 ! test"
+        )]
+        input: &str,
+    ) {
         let result = transaction(input);
         assert!(matches!(result, Err(nom::Err::Failure(_))), "{:?}", result);
     }

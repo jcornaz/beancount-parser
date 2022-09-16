@@ -28,14 +28,16 @@ impl<'a> Directive<'a> {
 }
 
 pub(crate) fn directive(input: &str) -> IResult<&str, (Date, Option<Directive<'_>>)> {
-    separated_pair(
-        date,
-        space1,
-        alt((
-            map(map(transaction, Directive::Transaction), Some),
+    alt((
+        map(transaction, |trx| {
+            (trx.date(), Some(Directive::Transaction(trx)))
+        }),
+        separated_pair(
+            date,
+            space1,
             value(None, tuple((not_line_ending, opt(line_ending)))),
-        )),
-    )(input)
+        ),
+    ))(input)
 }
 
 #[cfg(test)]
