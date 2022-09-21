@@ -67,7 +67,7 @@ impl<'a> Transaction<'a> {
 
     /// Returns the postings
     #[must_use]
-    pub fn postings(&self) -> &Vec<Posting<'a>> {
+    pub fn postings(&self) -> &[Posting<'a>] {
         &self.postings
     }
 
