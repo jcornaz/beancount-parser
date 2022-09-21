@@ -22,9 +22,9 @@
 //! let transaction = directives[0].as_transaction().unwrap();
 //! assert_eq!(transaction.narration(), Some("Coffee beans"));
 //!
-//! let postings = transaction.postings();
-//! assert_eq!(postings[0].amount().unwrap().currency(), "CHF");
-//! assert_eq!(postings[0].amount().unwrap().value().try_into_f64()?, 10.0);
+//! let first_posting_amount = transaction.postings()[0].amount().unwrap();
+//! assert_eq!(first_posting_amount.currency(), "CHF");
+//! assert_eq!(first_posting_amount.value().try_into_f64()?, 10.0);
 //! # Ok(()) }
 //! ```
 
