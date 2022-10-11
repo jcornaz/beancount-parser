@@ -15,9 +15,21 @@ pub enum Directive<'a> {
 }
 
 impl<'a> Directive<'a> {
-    /// Reterns the [`Transaction`] if this directive is a transaction
+    /// Returns the [`Transaction`] reference if this directive is a transaction
+    ///
+    /// See also [`Directive::into_transaction`]
     #[must_use]
     pub fn as_transaction(&self) -> Option<&Transaction<'a>> {
+        match self {
+            Directive::Transaction(trx) => Some(trx),
+        }
+    }
+
+    /// Convert into a [`Transaction`] if this directive is a transaction
+    ///
+    /// See also [`Directive::as_transaction`]
+    #[must_use]
+    pub fn into_transaction(self) -> Option<Transaction<'a>> {
         match self {
             Directive::Transaction(trx) => Some(trx),
         }
