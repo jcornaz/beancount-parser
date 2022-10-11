@@ -1,4 +1,4 @@
-//! Types that make a [`Transaction`]
+//! Types for representing an [`Transaction`]
 
 use std::str;
 
