@@ -153,6 +153,14 @@ impl Value {
     pub fn try_into_f32(self) -> Result<f32, ConversionError> {
         self.try_into()
     }
+    /// Retrieve the internal `Decimal` value.
+    /// This cannot error, since this type is based off of `Decimal`.
+    /// This is mostly useful for higher-level libraries to continue doing math with the values
+    /// created here.
+    pub fn get_decimal(&self) -> Decimal {
+        let Self(v) = self;
+        *v
+    }
 }
 
 impl TryFrom<Value> for f64 {
