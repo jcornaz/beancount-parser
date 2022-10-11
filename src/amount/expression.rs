@@ -178,6 +178,12 @@ impl TryFrom<Value> for f32 {
 #[allow(clippy::derive_partial_eq_without_eq)]
 pub struct ConversionError(Decimal);
 
+impl From<ConversionError> for crate::Error {
+    fn from(_: ConversionError) -> Self {
+        Self
+    }
+}
+
 pub(super) fn parse(input: &str) -> IResult<&str, Expression> {
     exp_p2(input)
 }

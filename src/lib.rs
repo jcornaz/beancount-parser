@@ -9,7 +9,7 @@
 //!
 //! ## Example
 //! ```
-//! use beancount_parser::{Date, Directive, Parser, Error};
+//! use beancount_parser::{Directive, Parser, Error};
 //!
 //! # fn main() -> Result<(), Error> {
 //! let beancount = r#"
@@ -29,7 +29,7 @@
 //! ```
 
 mod account;
-mod amount;
+pub mod amount;
 mod date;
 mod directive;
 mod error;
@@ -40,7 +40,7 @@ use crate::directive::directive;
 
 pub use crate::{
     account::{Account, Type},
-    amount::{Amount, ConversionError, Expression, Value},
+    amount::Amount,
     date::Date,
     directive::Directive,
     error::Error,

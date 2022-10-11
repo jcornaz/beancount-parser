@@ -1,3 +1,5 @@
+//! Types for representing an [`Amount`]
+
 use nom::{
     bytes::complete::take_while1, character::complete::space1, combinator::map,
     sequence::separated_pair, IResult,
