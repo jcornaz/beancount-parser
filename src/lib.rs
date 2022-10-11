@@ -28,7 +28,7 @@
 //! # Ok(()) }
 //! ```
 
-mod account;
+pub mod account;
 pub mod amount;
 mod date;
 mod directive;
@@ -39,11 +39,7 @@ pub mod transaction;
 use crate::directive::directive;
 
 pub use crate::{
-    account::{Account, Type},
-    amount::Amount,
-    date::Date,
-    directive::Directive,
-    error::Error,
+    account::Account, amount::Amount, date::Date, directive::Directive, error::Error,
     transaction::Transaction,
 };
 

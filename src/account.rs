@@ -1,3 +1,5 @@
+//! Types for representing an [`Account`]
+
 use nom::{
     branch::alt,
     bytes::complete::{tag, take_while1},
