@@ -34,7 +34,7 @@ mod date;
 mod directive;
 mod error;
 mod string;
-mod transaction;
+pub mod transaction;
 
 use crate::directive::directive;
 
@@ -44,7 +44,7 @@ pub use crate::{
     date::Date,
     directive::Directive,
     error::Error,
-    transaction::{Flag, Posting, PriceType, Transaction},
+    transaction::Transaction,
 };
 
 use nom::{

@@ -1,3 +1,5 @@
+//! Types that make a [`Transaction`]
+
 use std::str;
 
 use nom::{
