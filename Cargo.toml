@@ -9,6 +9,10 @@ repository = "https://github.com/jcornaz/beancount-parser"
 categories = ["parser-implementations"]
 keywords = ["parsing", "beancount", "accounting"]
 
+[features]
+default = []
+rust_decimal = []
+
 [dependencies]
 nom = "7.1"
 rust_decimal = { version = "1.26", default-features = false }

@@ -17,6 +17,14 @@ Do not verify beancount rules, such as "transaction must balance to zero", "acco
 
 Do not provide any "business" logic to analyze or manipulate the ledger. No balance, no currency translation, etc.
 
+## Cargo features
+
+| Feature        | Description                                |
+|----------------|--------------------------------------------|
+| `rust_decimal` | Add conversion from `Value` into `Decimal` |
+
+*Feature flags not mentioned here are **NOT** part of the public API and are subject to breaking changes!*
+
 ## MSRV
 
 The minimum supported rust version is, at all times, the latest stable.

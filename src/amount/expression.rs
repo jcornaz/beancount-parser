@@ -171,6 +171,13 @@ impl TryFrom<Value> for f32 {
     }
 }
 
+#[cfg(feature = "rust_decimal")]
+impl From<Value> for rust_decimal::Decimal {
+    fn from(Value(v): Value) -> Self {
+        v
+    }
+}
+
 /// Error returned when a [`Value`] cannot be converted to the desired type
 #[derive(Debug, Clone, PartialEq, Error)]
 #[non_exhaustive]
