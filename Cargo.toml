@@ -4,7 +4,6 @@ version = "0.0.0-dev"
 license = "Unlicense"
 authors = ["Jonathan Cornaz"]
 edition = "2021"
-rust-version = "1.62"
 description = "A beancount file parser library for rust"
 repository = "https://github.com/jcornaz/beancount-parser"
 categories = ["parser-implementations"]
