@@ -1,5 +1,6 @@
 use crate::amount::{amount, currency};
 use crate::date::date;
+use crate::string::comment;
 use crate::{Amount, Date};
 use nom::bytes::complete::tag;
 use nom::character::complete::space0;
@@ -7,7 +8,6 @@ use nom::character::streaming::space1;
 use nom::combinator::{map, opt};
 use nom::sequence::{preceded, terminated, tuple};
 use nom::IResult;
-use crate::string::comment;
 
 /// A price directive
 ///
