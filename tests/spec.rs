@@ -44,3 +44,19 @@ fn error(#[values("2022-09-10 txn Oops...")] input: &str) {
     let items = Parser::new(input).collect::<Vec<Result<_, _>>>();
     assert!(items[0].is_err());
 }
+
+#[test]
+fn parse_price_directive() {
+    let beancount = "2014-07-09 price CHF  5 PLN";
+    let directives: Vec<Directive> = Parser::new(beancount)
+        .collect::<Result<_, _>>()
+        .expect("should successfully parse the input");
+    assert_eq!(directives.len(), 1);
+    let directive = match &directives[0] {
+        Directive::Price(price) => price,
+        d => panic!("Was not a price directive: {d:?}"),
+    };
+    assert_eq!(directive.commodity(), "CHF");
+    assert_eq!(directive.price().value().try_into_f64().unwrap(), 5.0);
+    assert_eq!(directive.price().currency(), "PLN");
+}

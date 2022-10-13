@@ -56,7 +56,7 @@ pub(crate) fn amount(input: &str) -> IResult<&str, Amount<'_>> {
     )(input)
 }
 
-fn currency(input: &str) -> IResult<&str, &str> {
+pub(crate) fn currency(input: &str) -> IResult<&str, &str> {
     take_while1(|c: char| c.is_ascii_uppercase() && c.is_ascii_alphabetic())(input)
 }
 

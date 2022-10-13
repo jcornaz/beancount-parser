@@ -1,3 +1,5 @@
+use crate::price::{price, Price};
+use nom::branch::alt;
 use nom::{combinator::map, IResult};
 
 use crate::transaction::{transaction, Transaction};
@@ -12,6 +14,8 @@ use crate::transaction::{transaction, Transaction};
 pub enum Directive<'a> {
     /// The transaction directive
     Transaction(Transaction<'a>),
+    /// The price directive
+    Price(Price<'a>),
 }
 
 impl<'a> Directive<'a> {
@@ -22,6 +26,7 @@ impl<'a> Directive<'a> {
     pub fn as_transaction(&self) -> Option<&Transaction<'a>> {
         match self {
             Directive::Transaction(trx) => Some(trx),
+            _ => None,
         }
     }
 
@@ -32,12 +37,16 @@ impl<'a> Directive<'a> {
     pub fn into_transaction(self) -> Option<Transaction<'a>> {
         match self {
             Directive::Transaction(trx) => Some(trx),
+            _ => None,
         }
     }
 }
 
 pub(crate) fn directive(input: &str) -> IResult<&str, Directive<'_>> {
-    map(transaction, Directive::Transaction)(input)
+    alt((
+        map(transaction, Directive::Transaction),
+        map(price, Directive::Price),
+    ))(input)
 }
 
 #[cfg(test)]

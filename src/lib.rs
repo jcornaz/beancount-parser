@@ -33,6 +33,7 @@ pub mod amount;
 mod date;
 mod directive;
 mod error;
+mod price;
 mod string;
 pub mod transaction;
 
