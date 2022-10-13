@@ -196,7 +196,7 @@ mod tests {
     #[test]
     fn with_flag() {
         let (_, posting) =
-            posting("! Assets:A 1 EUR").expect("should succesfully parse the posting");
+            posting("! Assets:A 1 EUR").expect("should successfully parse the posting");
         assert_eq!(posting.flag(), Some(Flag::Pending));
     }
 

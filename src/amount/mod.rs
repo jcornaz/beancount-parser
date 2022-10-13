@@ -27,13 +27,13 @@ impl<'a> Amount<'a> {
         }
     }
 
-    /// Returns the [`Expression`] which may be inspeced or evaluated
+    /// Returns the [`Expression`] which may be inspected or evaluated
     #[must_use]
     pub fn expression(&self) -> &Expression {
         &self.expression
     }
 
-    /// Evalueate the expression and returns the value
+    /// Evaluate the expression and returns the value
     #[must_use]
     pub fn value(&self) -> Value {
         self.expression.evaluate()

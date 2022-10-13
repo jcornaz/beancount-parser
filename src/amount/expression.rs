@@ -11,7 +11,7 @@ use thiserror::Error;
 
 /// An expression
 ///
-/// Expple of expressions:
+/// Examples of expressions:
 ///
 /// * `42`
 /// * `2 + 2`
@@ -140,7 +140,7 @@ impl Value {
     ///
     /// # Errors
     ///
-    /// Returns an error in case of overfow
+    /// Returns an error in case of overflow
     pub fn try_into_f64(self) -> Result<f64, ConversionError> {
         self.try_into()
     }
@@ -149,7 +149,7 @@ impl Value {
     ///
     /// # Errors
     ///
-    /// Returns an error in case of overfow
+    /// Returns an error in case of overflow
     pub fn try_into_f32(self) -> Result<f32, ConversionError> {
         self.try_into()
     }

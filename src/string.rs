@@ -45,7 +45,7 @@ mod tests {
     #[case(r#""hello\\world""#, "hello\\world")]
     #[case(r#""""#, "")]
     fn parse_string(#[case] input: &str, #[case] expected: &str) {
-        let (rest, actual) = string(input).expect("should succesfully parse input");
+        let (rest, actual) = string(input).expect("should successfully parse input");
         assert_eq!(&actual, expected);
         assert!(rest.is_empty());
     }

@@ -7,7 +7,7 @@ use nom::{
 
 /// A date
 ///
-/// The parser has some sanity check to make sure the date remotly makes sense
+/// The parser has some sanity check to make sure the date remotely makes sense
 /// but it doesn't verify it is an actual real date valid date.
 ///
 /// If that is important, you should use a date-time library to verify the validity.
