@@ -223,7 +223,15 @@ mod tests {
     }
 
     #[test]
-    fn transaction_with_tags() {
+    fn transaction_with_one_tag() {
+        let input = r#"2022-01-01 txn "Hello \"world\"" #hello-world"#;
+        let (_, transaction) =
+            transaction(input).expect("should successfully parse the transaction");
+        assert_eq!(transaction.tags(), ["hello-world"]);
+    }
+
+    #[test]
+    fn transaction_with_multiple_tags() {
         let input = r#"2022-01-01 txn "Hello \"world\"" #that #is #cool"#;
         let (_, transaction) =
             transaction(input).expect("should successfully parse the transaction");
