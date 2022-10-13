@@ -4,6 +4,7 @@ use nom::{
     sequence::preceded,
     IResult,
 };
+use std::cmp::Ordering;
 
 /// A date
 ///
@@ -48,6 +49,26 @@ impl Date {
     #[must_use]
     pub fn day_of_month(&self) -> u8 {
         self.day_of_month
+    }
+}
+impl PartialOrd for Date {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+impl Ord for Date {
+    fn cmp(&self, other: &Self) -> Ordering {
+        match self.year().cmp(&other.year()) {
+            Ordering::Less => Ordering::Less,
+            Ordering::Greater => Ordering::Greater,
+            Ordering::Equal => {
+                match self.month_of_year().cmp(&other.month_of_year()) {
+                    Ordering::Less => Ordering::Less,
+                    Ordering::Greater => Ordering::Greater,
+                    Ordering::Equal => self.day_of_month().cmp(&other.day_of_month())
+                }
+            }
+        }
     }
 }
 
