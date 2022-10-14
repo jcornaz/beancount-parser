@@ -12,6 +12,7 @@ pkgs.mkShell {
     cargo-deny
     cargo-edit
     nodejs
+    rust-analyzer
   ];
 }
 
