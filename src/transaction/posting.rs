@@ -1,6 +1,6 @@
 use nom::{
     branch::alt,
-    bytes::complete::tag,
+    bytes::complete::{tag, take_till},
     character::complete::{char, space0, space1},
     combinator::{map, opt},
     sequence::{delimited, preceded, separated_pair, terminated, tuple},
@@ -99,7 +99,11 @@ pub fn posting(input: &str) -> IResult<&str, Posting<'_>> {
                 delimited(
                     tuple((char('{'), space0)),
                     amount,
-                    tuple((space0, char('}'))),
+                    tuple((
+                        space0,
+                        opt(tuple((char(','), take_till(|c| c == '}')))),
+                        char('}'),
+                    )),
                 ),
             )),
             opt(preceded(space1, price)),
@@ -178,6 +182,13 @@ mod tests {
     fn with_cost(
         #[values("Assets:A:B 10 CHF {1 EUR}", "Assets:A:B 10 CHF { 1 EUR }")] input: &str,
     ) {
+        let (_, posting) = posting(input).expect("should successfully parse the posting");
+        assert_eq!(posting.cost(), Some(&Amount::new(1, "EUR")));
+    }
+
+    #[test]
+    fn with_cost_and_date() {
+        let input = "Assets:A:B 10 CHF {1 EUR, 2022-10-14}";
         let (_, posting) = posting(input).expect("should successfully parse the posting");
         assert_eq!(posting.cost(), Some(&Amount::new(1, "EUR")));
     }

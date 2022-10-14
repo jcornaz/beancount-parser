@@ -11,9 +11,16 @@ const COMMENTS: &str = include_str!("examples/comments.beancount");
 const OFFICIAL: &str = include_str!("examples/official.beancount");
 
 #[rstest]
-fn valid_examples_should_not_return_an_error(#[values("", " \n ", SIMPLE, COMMENTS)] input: &str) {
+fn valid_examples_should_not_return_an_error(
+    #[values("", " \n ", SIMPLE, COMMENTS, OFFICIAL)] input: &str,
+) {
+    let mut count = 0;
     for result in Parser::new(input) {
-        assert!(result.is_ok());
+        count += 1;
+        assert!(
+            result.is_ok(),
+            "The {count} directive is an error: {result:?}"
+        );
     }
 }
 
@@ -49,6 +56,23 @@ fn examples_have_expected_number_of_postings(#[case] input: &str, #[case] expect
 fn invalid_examples_return_an_error(#[values("2022-09-10 txn Oops...")] input: &str) {
     let items = Parser::new(input).collect::<Vec<Result<_, _>>>();
     assert!(items[0].is_err());
+}
+
+#[test]
+fn transaction_with_lot_date() {
+    let beancount = r#"
+2020-10-08 * "Buy shares of VEA"
+  Assets:US:ETrade:VEA                                 34 VEA {100 USD, 2020-10-08}
+"#;
+    let transaction = Parser::new(beancount)
+        .assert_single_directive()
+        .into_transaction()
+        .expect("should be a transaction");
+    let cost = transaction.postings()[0]
+        .cost()
+        .expect("should have a cost");
+    assert_eq!(cost.value().try_into_f64().unwrap(), 100.0);
+    assert_eq!(cost.currency(), "USD");
 }
 
 #[test]
