@@ -3,7 +3,7 @@ mod utils;
 use beancount_parser::{Directive, Parser};
 use rstest::rstest;
 
-use crate::utils::DirectiveList;
+use crate::utils::{assert_date_eq, DirectiveList};
 
 const SIMPLE: &str = include_str!("examples/simple.beancount");
 const COMMENTS: &str = include_str!("examples/comments.beancount");
@@ -56,6 +56,7 @@ fn parse_price_directive() {
         Directive::Price(price) => price,
         d => panic!("Was not a price directive: {d:?}"),
     };
+    assert_date_eq(directive.date(), 2014, 7, 9);
     assert_eq!(directive.commodity(), "CHF");
     assert_eq!(directive.price().value().try_into_f64().unwrap(), 5.0);
     assert_eq!(directive.price().currency(), "PLN");
