@@ -7,6 +7,8 @@ use crate::utils::{assert_date_eq, DirectiveList};
 
 const SIMPLE: &str = include_str!("examples/simple.beancount");
 const COMMENTS: &str = include_str!("examples/comments.beancount");
+#[allow(unused)]
+const OFFICIAL: &str = include_str!("examples/official.beancount");
 
 #[rstest]
 fn valid_examples_should_not_return_an_error(#[values("", " \n ", SIMPLE, COMMENTS)] input: &str) {
