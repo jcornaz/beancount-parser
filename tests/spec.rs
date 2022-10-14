@@ -1,5 +1,9 @@
+mod utils;
+
 use beancount_parser::{Directive, Parser};
 use rstest::rstest;
+
+use crate::utils::DirectiveList;
 
 const SIMPLE: &str = include_str!("examples/simple.beancount");
 const COMMENTS: &str = include_str!("examples/comments.beancount");
@@ -40,7 +44,7 @@ fn examples_have_expected_number_of_postings(#[case] input: &str, #[case] expect
 }
 
 #[rstest]
-fn error(#[values("2022-09-10 txn Oops...")] input: &str) {
+fn invalid_examples_return_an_error(#[values("2022-09-10 txn Oops...")] input: &str) {
     let items = Parser::new(input).collect::<Vec<Result<_, _>>>();
     assert!(items[0].is_err());
 }
@@ -48,11 +52,7 @@ fn error(#[values("2022-09-10 txn Oops...")] input: &str) {
 #[test]
 fn parse_price_directive() {
     let beancount = "2014-07-09 price CHF  5 PLN";
-    let directives: Vec<Directive> = Parser::new(beancount)
-        .collect::<Result<_, _>>()
-        .expect("should successfully parse the input");
-    assert_eq!(directives.len(), 1);
-    let directive = match &directives[0] {
+    let directive = match Parser::new(beancount).assert_single_directive() {
         Directive::Price(price) => price,
         d => panic!("Was not a price directive: {d:?}"),
     };
