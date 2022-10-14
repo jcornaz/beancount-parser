@@ -1,6 +1,6 @@
 mod utils;
 
-use beancount_parser::{Directive, Parser};
+use beancount_parser::{account, Directive, Parser};
 use rstest::rstest;
 
 use crate::utils::{assert_date_eq, DirectiveList};
@@ -60,4 +60,19 @@ fn parse_price_directive() {
     assert_eq!(directive.commodity(), "CHF");
     assert_eq!(directive.price().value().try_into_f64().unwrap(), 5.0);
     assert_eq!(directive.price().currency(), "PLN");
+}
+
+#[test]
+fn simple_open_directive() {
+    let input = "2014-05-01 open Liabilities:CreditCard:CapitalOne";
+    let directive = match Parser::new(input).assert_single_directive() {
+        Directive::Open(d) => d,
+        d => panic!("unexpectied directive type: {d:?}"),
+    };
+    assert_date_eq(directive.date(), 2014, 5, 1);
+    assert_eq!(directive.account().type_(), account::Type::Liabilities);
+    assert_eq!(
+        directive.account().components(),
+        &["CreditCard", "CapitalOne"]
+    );
 }

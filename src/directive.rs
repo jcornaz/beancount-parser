@@ -1,4 +1,6 @@
+use crate::open::open;
 use crate::price::{price, Price};
+use crate::Open;
 use nom::branch::alt;
 use nom::{combinator::map, IResult};
 
@@ -12,10 +14,12 @@ use crate::transaction::{transaction, Transaction};
 #[derive(Debug, Clone)]
 #[non_exhaustive]
 pub enum Directive<'a> {
-    /// The transaction directive
+    /// The [`Transaction`](crate::Transaction) directive
     Transaction(Transaction<'a>),
     /// The price directive
     Price(Price<'a>),
+    /// The [`Open`](crate::Open) account directive
+    Open(Open<'a>),
 }
 
 impl<'a> Directive<'a> {
@@ -46,6 +50,7 @@ pub(crate) fn directive(input: &str) -> IResult<&str, Directive<'_>> {
     alt((
         map(transaction, Directive::Transaction),
         map(price, Directive::Price),
+        map(open, Directive::Open),
     ))(input)
 }
 

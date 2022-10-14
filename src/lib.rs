@@ -33,6 +33,7 @@ pub mod amount;
 mod date;
 mod directive;
 mod error;
+mod open;
 mod price;
 mod string;
 pub mod transaction;
@@ -40,7 +41,7 @@ pub mod transaction;
 use crate::directive::directive;
 
 pub use crate::{
-    account::Account, amount::Amount, date::Date, directive::Directive, error::Error,
+    account::Account, amount::Amount, date::Date, directive::Directive, error::Error, open::Open,
     transaction::Transaction,
 };
 
