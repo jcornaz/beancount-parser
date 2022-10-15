@@ -42,7 +42,7 @@ use crate::directive::directive;
 
 pub use crate::{
     account::Account, amount::Amount, date::Date, directive::Directive, error::Error, open::Open,
-    transaction::Transaction,
+    price::Price, transaction::Transaction,
 };
 
 use nom::{

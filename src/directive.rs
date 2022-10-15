@@ -16,7 +16,7 @@ use crate::transaction::{transaction, Transaction};
 pub enum Directive<'a> {
     /// The [`Transaction`](crate::Transaction) directive
     Transaction(Transaction<'a>),
-    /// The price directive
+    /// The [`Price`](crate::Price) directive
     Price(Price<'a>),
     /// The [`Open`](crate::Open) account directive
     Open(Open<'a>),

@@ -24,20 +24,26 @@ pub struct Price<'a> {
 }
 
 impl<'a> Price<'a> {
+    /// The date
+    #[must_use]
     pub fn date(&self) -> Date {
         self.date
     }
 
     /// The commodity for which thi price applies
+    #[must_use]
     pub fn commodity(&self) -> &'a str {
         self.commodity
     }
 
     /// The price of the commodity
+    #[must_use]
     pub fn price(&self) -> &Amount<'a> {
         &self.price
     }
 
+    /// The comment, if any
+    #[must_use]
     pub fn comment(&self) -> Option<&'a str> {
         self.comment
     }
