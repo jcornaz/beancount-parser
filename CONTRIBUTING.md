@@ -45,8 +45,11 @@ cargo doc --no-deps --all-features --open
 
 ### Tests
 
-This is a test-driven project. Every new feature and bug fixes must come with tests.
+**This is a test-driven project**. Every new feature and bug fixes must come with tests.
 If you need help to write a test, ask me.
+
+When contributing, you should see the tests you write as the most important and valuable part of your contribution.
+When I review, most of my attention is for the tests. If the tests are good and exhaustive, then it doesn't matter much how clean is the implementation, because it already has the two most important poroperties: 1) It works, 2) It can safely be refactored later.
 
 ### API stability
 
