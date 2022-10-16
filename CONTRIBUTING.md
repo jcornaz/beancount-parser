@@ -16,19 +16,28 @@ You may (but don't have to) write a message in the issue to say you are working 
 
 ## Build from source
 
-Run the tests
+There is a `shell.nix` available for nix users, which will give you everything you need to compile and test the project.
+
+For the others, make sure you have a rust toolchain installed and up-to date.
+I also recomend using `cargo-all-features`
 ```sh
-cargo test --all-features
+rustup update
+cargo install cargo-all-features
 ```
 
-Check code style
+Run the tests
+```sh
+cargo test-all-features
 ```
+
+Format, and check code style
+```sh
 cargo fmt
 cargo clippy --all-targets --all-features
 ```
 
 Build (and open) documentation
-```
+```sh
 cargo doc --no-deps --all-features --open
 ```
 
@@ -37,13 +46,13 @@ cargo doc --no-deps --all-features --open
 ### Tests
 
 This is a test-driven project. Every new feature and bug fixes must come with tests.
-If you need help to test your feature or fix, you can ask in a draft PR, and I'll do my best to help you.
+If you need help to write a test, ask me.
 
 ### API stability
 
 #### Add stable API
 
-When writting new code make sure you don't expose any unecessary technical detail:
+When writting new code make sure you don't expose any unecessary technical details:
 * Never expose struct fields!
 * Use `#[non_exhaustive]` for enums and unit structs
 * Be very carefull with public enums. In doubt keep them private.
@@ -51,22 +60,24 @@ When writting new code make sure you don't expose any unecessary technical detai
 * Don't eagerly implement traits that are not yet needed or related to the use-case
   * except for `Debug`, `Clone`, `Eq`, `PartialEq` and `Default` that may be implemented eagerly when it makes sense
   * note that if a `new()` constuctor does not make sense, `Default` should **not** be implemented
-  * in case of doubt, don't implement what you don't need, don't worry we can add it later
+  * in case of doubt, don't implement what you don't need. Don't worry, we can add it later.
 * Avoid promissing too much in return types. (e.g. `&[T]` are better that `&Vec<T>`)
+* Don't leek private dependencies in the API.
+* Integration with other crates must be optional.
 
-New API may be gated behind a `unstable-` cargo flag until it is stabilized.
+New, unstable or incomplete features may be gated behind a `unstable-` cargo flag until stabilized.
 
 #### Do not break existing API
 
-Do not break public API. (See https://github.com/rust-lang/rfcs/blob/master/text/1105-api-evolution.md to understand what constitute a breaking change)
+Do not break public API. (See https://github.com/rust-lang/rfcs/blob/master/text/1105-api-evolution.md to understand what constitutes a breaking change)
 
-Instead create a new API. Eventually we may deprecate the old one and hide it from the doc.
+Instead, create a new API. Eventually we may deprecate the old one and hide it from the doc.
 
-The API may eventually be broken (in a new major version). But I want to avoid that for as long as possible (forever would be perfect).
+The API *may* eventually be broken. But I want to avoid that for as long as possible (forever would be perfect).
 I see a breaking change as good only if it makes future breaking changes less likely to be needed. 
 For example, to make struct field privates is a an acceptable breaking change.
 
-If you don't see how to improve an API without breaking it, you can start a discussion in the issues.
+If you don't see how to improve an API without breaking it, ask me.
 
 ## Open a pull request
 
@@ -76,3 +87,6 @@ But to be merged a pull-request needs to be in state ready for release:
 * New features and Bug fixes must comes with automated tests
 * The build must pass
 * The documentation must be up-to-date
+
+It is fine to have a PR that only partilally implement a feature.
+But the implemented part must be tested, and the feature can be either hidden or gated behind an `unstable-*` feature flag.
