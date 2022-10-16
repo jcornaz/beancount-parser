@@ -21,7 +21,7 @@ jobs:
           toolchain: stable
           override: true
           profile: minimal
-      - uses: Swatinem/rust-cache@v1
+      - uses: Swatinem/rust-cache@v2
       - name: install cargo-all-features
         uses: baptiste0928/cargo-install@v1
         with:
@@ -38,7 +38,7 @@ jobs:
           toolchain: stable
           override: true
           components: clippy, rustfmt
-      - uses: Swatinem/rust-cache@v1
+      - uses: Swatinem/rust-cache@v2
       - run: cargo fmt --all -- --check
       - run: cargo clippy --workspace --all-features --all-targets
 
@@ -52,7 +52,7 @@ jobs:
           toolchain: nightly
           override: true
           profile: minimal
-      - uses: Swatinem/rust-cache@v1
+      - uses: Swatinem/rust-cache@v2
       - run: cargo doc --workspace --all-features --no-deps
   release:
     if: ${{ github.event_name != 'pull_request' }}
