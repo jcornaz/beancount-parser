@@ -55,6 +55,7 @@ jobs:
       - uses: Swatinem/rust-cache@v1
       - run: cargo doc --workspace --all-features --no-deps
   release:
+    if: ${{ github.event_name != 'pull_request' }}
     needs: [test, documentation]
     runs-on: ubuntu-latest
     environment: release
