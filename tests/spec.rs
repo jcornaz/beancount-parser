@@ -59,6 +59,26 @@ fn invalid_examples_return_an_error(#[values("2022-09-10 txn Oops...")] input: &
 }
 
 #[test]
+fn pushtags_adds_tag_to_next_transaction() {
+    let input = "pushtag #hello\n2022-10-20 txn";
+    let transaction = Parser::new(input)
+        .assert_single_directive()
+        .into_transaction()
+        .expect("should be a transaction");
+    assert_eq!(transaction.tags(), &["hello"]);
+}
+
+#[test]
+fn multiple_pushtags_add_tags_to_next_transaction() {
+    let input = "pushtag #hello\npushtag #world\n2022-10-20 txn";
+    let transaction = Parser::new(input)
+        .assert_single_directive()
+        .into_transaction()
+        .expect("should be a transaction");
+    assert_eq!(transaction.tags(), &["hello", "world"]);
+}
+
+#[test]
 fn transaction_with_lot_date() {
     let beancount = r#"
 2020-10-08 * "Buy shares of VEA"

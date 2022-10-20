@@ -39,7 +39,7 @@ pub struct Transaction<'a> {
     flag: Option<Flag>,
     payee: Option<String>,
     narration: Option<String>,
-    tags: Vec<&'a str>,
+    pub(crate) tags: Vec<&'a str>,
     postings: Vec<Posting<'a>>,
     comment: Option<&'a str>,
 }
@@ -134,7 +134,7 @@ pub(crate) fn transaction(input: &str) -> IResult<&str, Transaction<'_>> {
     )(input)
 }
 
-fn tag(input: &str) -> IResult<&str, &str> {
+pub(crate) fn tag(input: &str) -> IResult<&str, &str> {
     preceded(
         char('#'),
         take_till(|c: char| c.is_whitespace() || c == '#'),

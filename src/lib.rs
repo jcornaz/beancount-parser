@@ -47,9 +47,13 @@ pub use crate::{
 
 use nom::{
     branch::alt,
-    character::complete::{line_ending, not_line_ending},
+    bytes::complete::tag,
+    character::{
+        complete::{line_ending, not_line_ending},
+        streaming::space1,
+    },
     combinator::{map, opt, value},
-    sequence::tuple,
+    sequence::{preceded, tuple},
     IResult,
 };
 
@@ -60,13 +64,17 @@ use nom::{
 /// See the crate documentation for usage example.
 pub struct Parser<'a> {
     rest: &'a str,
+    tags: Vec<&'a str>,
 }
 
 impl<'a> Parser<'a> {
     /// Create a new parser from the beancount string to parse
     #[must_use]
     pub fn new(content: &'a str) -> Self {
-        Self { rest: content }
+        Self {
+            rest: content,
+            tags: Vec::new(),
+        }
     }
 }
 
@@ -75,10 +83,17 @@ impl<'a> Iterator for Parser<'a> {
 
     fn next(&mut self) -> Option<Self::Item> {
         while !self.rest.is_empty() {
-            if let Ok((rest, directive)) = next(self.rest) {
+            if let Ok((rest, chunk)) = chunk(self.rest) {
                 self.rest = rest;
-                if let Some(directive) = directive {
-                    return Some(Ok(directive));
+                match chunk {
+                    Chunk::Directive(mut directive) => {
+                        if let Directive::Transaction(trx) = &mut directive {
+                            trx.tags.extend(&self.tags);
+                        }
+                        return Some(Ok(directive));
+                    }
+                    Chunk::PushTag(tag) => self.tags.push(tag),
+                    Chunk::Comment => (),
                 }
             } else {
                 self.rest = "";
@@ -89,9 +104,33 @@ impl<'a> Iterator for Parser<'a> {
     }
 }
 
-fn next(input: &str) -> IResult<&str, Option<Directive<'_>>> {
+fn chunk(input: &str) -> IResult<&str, Chunk<'_>> {
     alt((
-        map(directive, Some),
-        value(None, tuple((not_line_ending, opt(line_ending)))),
+        map(directive, Chunk::Directive),
+        map(pushtag, Chunk::PushTag),
+        value(Chunk::Comment, tuple((not_line_ending, opt(line_ending)))),
     ))(input)
+}
+
+fn pushtag(input: &str) -> IResult<&str, &str> {
+    preceded(tuple((tag("pushtag"), space1)), transaction::tag)(input)
+}
+
+#[derive(Debug, Clone)]
+enum Chunk<'a> {
+    Directive(Directive<'a>),
+    Comment,
+    PushTag(&'a str),
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn next_pushtag() {
+        let input = "pushtag #test";
+        let (_, chunk) = chunk(input).expect("should successfully parse the input");
+        assert!(matches!(chunk, Chunk::PushTag("test")));
+    }
 }
