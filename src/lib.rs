@@ -93,6 +93,7 @@ impl<'a> Iterator for Parser<'a> {
                         return Some(Ok(directive));
                     }
                     Chunk::PushTag(tag) => self.tags.push(tag),
+                    Chunk::PopTag(tag) => self.tags.retain(|&t| t != tag),
                     Chunk::Comment => (),
                 }
             } else {
@@ -108,6 +109,7 @@ fn chunk(input: &str) -> IResult<&str, Chunk<'_>> {
     alt((
         map(directive, Chunk::Directive),
         map(pushtag, Chunk::PushTag),
+        map(poptag, Chunk::PopTag),
         value(Chunk::Comment, tuple((not_line_ending, opt(line_ending)))),
     ))(input)
 }
@@ -116,11 +118,16 @@ fn pushtag(input: &str) -> IResult<&str, &str> {
     preceded(tuple((tag("pushtag"), space1)), transaction::tag)(input)
 }
 
+fn poptag(input: &str) -> IResult<&str, &str> {
+    preceded(tuple((tag("poptag"), space1)), transaction::tag)(input)
+}
+
 #[derive(Debug, Clone)]
 enum Chunk<'a> {
     Directive(Directive<'a>),
     Comment,
     PushTag(&'a str),
+    PopTag(&'a str),
 }
 
 #[cfg(test)]
@@ -128,9 +135,16 @@ mod tests {
     use super::*;
 
     #[test]
-    fn next_pushtag() {
+    fn pushtag() {
         let input = "pushtag #test";
         let (_, chunk) = chunk(input).expect("should successfully parse the input");
         assert!(matches!(chunk, Chunk::PushTag("test")));
+    }
+
+    #[test]
+    fn poptag() {
+        let input = "poptag #test";
+        let (_, chunk) = chunk(input).expect("should successfully parse the input");
+        assert!(matches!(chunk, Chunk::PopTag("test")));
     }
 }

@@ -79,6 +79,26 @@ fn multiple_pushtags_add_tags_to_next_transaction() {
 }
 
 #[test]
+fn poptag_removes_tag_from_stack() {
+    let input = "pushtag #hello\npoptag #hello\n2022-10-20 txn";
+    let transaction = Parser::new(input)
+        .assert_single_directive()
+        .into_transaction()
+        .expect("should be a transaction");
+    assert!(transaction.tags().is_empty());
+}
+
+#[test]
+fn poptag_removes_only_concerned_tag_from_stack() {
+    let input = "pushtag #hello\npushtag #world\npoptag #hello\n2022-10-20 txn";
+    let transaction = Parser::new(input)
+        .assert_single_directive()
+        .into_transaction()
+        .expect("should be a transaction");
+    assert_eq!(transaction.tags(), &["world"]);
+}
+
+#[test]
 fn transaction_with_lot_date() {
     let beancount = r#"
 2020-10-08 * "Buy shares of VEA"
