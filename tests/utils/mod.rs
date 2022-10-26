@@ -1,3 +1,5 @@
+#![allow(unused)] // not all tests use everything
+
 use beancount_parser::{Date, Directive, Parser};
 
 pub trait DirectiveList<'a> {
