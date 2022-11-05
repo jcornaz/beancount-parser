@@ -1,7 +1,7 @@
 use nom::{
     bytes::complete::tag,
     character::complete::space1,
-    combinator::{map, opt},
+    combinator::map,
     sequence::{preceded, separated_pair, tuple},
     IResult,
 };
@@ -9,6 +9,8 @@ use nom::{
 #[cfg(feature = "unstable")]
 use crate::amount;
 use crate::{account, date::date, Account, Date};
+#[cfg(feature = "unstable")]
+use nom::combinator::opt;
 
 /// Open account directive
 #[derive(Debug, Clone)]
