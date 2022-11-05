@@ -18,3 +18,14 @@ fn simple_open_directive() {
         &["CreditCard", "CapitalOne"]
     );
 }
+
+#[test]
+#[cfg(feature = "unstable")]
+fn open_with_single_currency_constraint() {
+    let input = "2014-05-01 open Liabilities:CreditCard:CapitalOne CHF";
+    let directive = match Parser::new(input).assert_single_directive() {
+        Directive::Open(d) => d,
+        d => panic!("unexpectied directive type: {d:?}"),
+    };
+    assert_eq!(directive.currencies(), &["CHF"]);
+}

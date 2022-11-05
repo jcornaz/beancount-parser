@@ -1,11 +1,13 @@
 use nom::{
     bytes::complete::tag,
     character::complete::space1,
-    combinator::map,
+    combinator::{map, opt},
     sequence::{preceded, separated_pair, tuple},
     IResult,
 };
 
+#[cfg(feature = "unstable")]
+use crate::amount;
 use crate::{account, date::date, Account, Date};
 
 /// Open account directive
@@ -13,6 +15,8 @@ use crate::{account, date::date, Account, Date};
 pub struct Open<'a> {
     date: Date,
     account: Account<'a>,
+    #[cfg(feature = "unstable")]
+    currencies: Vec<&'a str>,
 }
 
 impl<'a> Open<'a> {
@@ -27,8 +31,16 @@ impl<'a> Open<'a> {
     pub fn account(&self) -> &Account<'a> {
         &self.account
     }
+
+    /// Returns the currency constraints
+    #[cfg(feature = "unstable")]
+    #[must_use]
+    pub fn currencies(&self) -> &[&'a str] {
+        &self.currencies
+    }
 }
 
+#[cfg(not(feature = "unstable"))]
 pub(crate) fn open(input: &str) -> IResult<&str, Open<'_>> {
     map(
         separated_pair(
@@ -37,6 +49,25 @@ pub(crate) fn open(input: &str) -> IResult<&str, Open<'_>> {
             preceded(tuple((tag("open"), space1)), account::account),
         ),
         |(date, account)| Open { date, account },
+    )(input)
+}
+
+#[cfg(feature = "unstable")]
+pub(crate) fn open(input: &str) -> IResult<&str, Open<'_>> {
+    map(
+        separated_pair(
+            date,
+            space1,
+            tuple((
+                preceded(tuple((tag("open"), space1)), account::account),
+                opt(preceded(space1, amount::currency)),
+            )),
+        ),
+        |(date, (account, currency))| Open {
+            date,
+            account,
+            currencies: currency.into_iter().collect(),
+        },
     )(input)
 }
 
