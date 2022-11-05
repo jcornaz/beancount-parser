@@ -19,11 +19,10 @@ Do not provide any "business" logic to analyze or manipulate the ledger. No bala
 
 ## Cargo features
 
-| Feature        | Description                                |
-|----------------|--------------------------------------------|
-| `rust_decimal` | Add conversion from `Value` into `Decimal` |
-
-*Feature flags not mentioned here are **NOT** part of the public API and are subject to breaking changes!*
+| Feature        | Description                                                                          |
+|----------------|--------------------------------------------------------------------------------------|
+| `rust_decimal` | Add conversion from `Value` into `Decimal`                                           |
+| `unstable`     | New, bleeding edge, unfinished and unstable API. <br /> **Unstable API is not considered as part os the public API. It may be broken, or even removed in a minor or path release!** |
 
 ## MSRV
 

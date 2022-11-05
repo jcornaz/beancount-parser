@@ -11,6 +11,7 @@ keywords = ["parsing", "beancount", "accounting"]
 
 [features]
 default = []
+unstable = []
 rust_decimal = []
 
 [dependencies]

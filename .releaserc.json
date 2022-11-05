@@ -18,7 +18,18 @@
         "releaseRules": [
           {
             "type": "docs",
+            "scope": "readme",
             "release": "patch"
+          },
+          {
+            "type": "docs",
+            "scope": "api",
+            "release": "patch"
+          },
+          {
+            "type": "*",
+            "scope": "unstable",
+            "release": false
           }
         ]
       }
