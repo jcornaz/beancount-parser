@@ -20,6 +20,9 @@ pub enum Directive<'a> {
     Price(Price<'a>),
     /// The [`Open`](crate::Open) account directive
     Open(Open<'a>),
+    /// The [`Close`](crate::Close) account directive
+    #[cfg(feature = "unstable")]
+    Close(crate::Close<'a>),
 }
 
 impl<'a> Directive<'a> {
