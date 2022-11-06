@@ -40,15 +40,13 @@ fn open_with_multipl_currency_constraints() {
 }
 
 #[test]
-#[cfg(feature = "unstable")]
-#[ignore]
 fn close_directive() {
     let input = "2016-11-28 close Liabilities:CreditCard:CapitalOne";
     let directive = match Parser::new(input).assert_single_directive() {
         Directive::Close(d) => d,
         d => panic!("unexpected directive type: {d:?}"),
     };
-    assert_date_eq(directive.date(), 2014, 11, 28);
+    assert_date_eq(directive.date(), 2016, 11, 28);
     assert_eq!(
         directive.account().components(),
         &["CreditCard", "CapitalOne"]

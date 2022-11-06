@@ -1,4 +1,12 @@
-use crate::{Account, Date};
+use nom::{
+    bytes::complete::tag,
+    character::complete::space1,
+    combinator::map,
+    sequence::{separated_pair, tuple},
+    IResult,
+};
+
+use crate::{account::account, date::date, Account, Date};
 
 /// The close account directive
 #[derive(Debug, Clone)]
@@ -19,4 +27,11 @@ impl<'a> Close<'a> {
     pub fn account(&self) -> &Account<'a> {
         &self.account
     }
+}
+
+pub(crate) fn close(input: &str) -> IResult<&str, Close<'_>> {
+    map(
+        separated_pair(date, tuple((space1, tag("close"), space1)), account),
+        |(date, account)| Close { date, account },
+    )(input)
 }

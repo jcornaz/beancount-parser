@@ -1,6 +1,7 @@
+use crate::close::close;
 use crate::open::open;
 use crate::price::{price, Price};
-use crate::Open;
+use crate::{Close, Open};
 use nom::branch::alt;
 use nom::{combinator::map, IResult};
 
@@ -21,8 +22,7 @@ pub enum Directive<'a> {
     /// The [`Open`](crate::Open) account directive
     Open(Open<'a>),
     /// The [`Close`](crate::Close) account directive
-    #[cfg(feature = "unstable")]
-    Close(crate::Close<'a>),
+    Close(Close<'a>),
 }
 
 impl<'a> Directive<'a> {
@@ -54,6 +54,7 @@ pub(crate) fn directive(input: &str) -> IResult<&str, Directive<'_>> {
         map(transaction, Directive::Transaction),
         map(price, Directive::Price),
         map(open, Directive::Open),
+        map(close, Directive::Close),
     ))(input)
 }
 

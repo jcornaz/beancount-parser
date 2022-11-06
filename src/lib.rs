@@ -30,7 +30,6 @@
 
 pub mod account;
 pub mod amount;
-#[cfg(feature = "unstable")]
 mod close;
 mod date;
 mod directive;
@@ -43,12 +42,9 @@ pub mod transaction;
 use crate::directive::directive;
 
 pub use crate::{
-    account::Account, amount::Amount, date::Date, directive::Directive, error::Error, open::Open,
-    price::Price, transaction::Transaction,
+    account::Account, amount::Amount, close::Close, date::Date, directive::Directive, error::Error,
+    open::Open, price::Price, transaction::Transaction,
 };
-
-#[cfg(feature = "unstable")]
-pub use crate::close::Close;
 
 use nom::{
     branch::alt,
