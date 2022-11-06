@@ -30,7 +30,7 @@ fn open_with_single_currency_constraint() {
 }
 
 #[test]
-fn open_with_multipl_currency_constraints() {
+fn open_with_multiple_currency_constraints() {
     let input = "2014-05-01 open Liabilities:CreditCard:CapitalOne CHF, USD,EUR";
     let directive = match Parser::new(input).assert_single_directive() {
         Directive::Open(d) => d,
