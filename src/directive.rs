@@ -1,7 +1,7 @@
 use crate::close::close;
 use crate::open::open;
 use crate::price::{price, Price};
-use crate::{Close, Open};
+use crate::{Close, Date, Open};
 use nom::branch::alt;
 use nom::{combinator::map, IResult};
 
@@ -46,6 +46,17 @@ impl<'a> Directive<'a> {
             Directive::Transaction(trx) => Some(trx),
             _ => None,
         }
+    }
+
+    /// Returns the date of the directive (if there is one)
+    #[must_use]
+    pub fn date(&self) -> Option<Date> {
+        Some(match self {
+            Directive::Transaction(t) => t.date(),
+            Directive::Open(o) => o.date(),
+            Directive::Close(c) => c.date(),
+            Directive::Price(p) => p.date(),
+        })
     }
 }
 
