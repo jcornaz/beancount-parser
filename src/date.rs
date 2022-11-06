@@ -51,6 +51,21 @@ impl Date {
     }
 }
 
+impl PartialOrd for Date {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl Ord for Date {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        self.year
+            .cmp(&other.year)
+            .then_with(|| self.month_of_year.cmp(&other.month_of_year))
+            .then_with(|| self.day_of_month.cmp(&other.day_of_month))
+    }
+}
+
 pub(super) fn date(input: &str) -> IResult<&str, Date> {
     let (input, year) = year(input)?;
     let (input, month_of_year) = preceded(char('-'), month)(input)?;
