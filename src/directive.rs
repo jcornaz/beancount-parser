@@ -100,4 +100,15 @@ mod tests {
     fn not_matching(#[values(" ")] input: &str) {
         assert!(matches!(directive(input), Err(nom::Err::Error(_))));
     }
+
+    #[rstest]
+    #[case("2022-11-06 txn", Date::new(2022, 11, 6))]
+    #[case("2021-02-26 open Liabilities:Debt", Date::new(2021, 2, 26))]
+    #[case("2021-02-26 close Liabilities:Debt", Date::new(2021, 2, 26))]
+    #[case("2014-07-09 price HOOL  600 USD", Date::new(2014, 7, 9))]
+    fn date(#[case] input: &str, #[case] expected_date: Date) {
+        let (_, directive) = directive(input).expect("should successfully parse directive");
+        let date = directive.date().expect("directive should have a date");
+        assert_eq!(date, expected_date);
+    }
 }

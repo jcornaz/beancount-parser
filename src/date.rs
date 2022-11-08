@@ -128,4 +128,13 @@ mod tests {
     ) {
         assert!(date(input).is_err());
     }
+
+    #[rstest]
+    #[case(Date::new(2018, 11, 7), Date::new(2018, 11, 8))]
+    #[case(Date::new(2018, 11, 8), Date::new(2018, 12, 7))]
+    #[case(Date::new(2017, 11, 8), Date::new(2018, 11, 7))]
+    fn date_comparison(#[case] before: Date, #[case] after: Date) {
+        assert!(before < after);
+        assert!(after > before);
+    }
 }
