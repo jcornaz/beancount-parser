@@ -1,0 +1,38 @@
+name: release
+
+on:
+  schedule:
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+
+env:
+  CARGO_INCREMENTAL: 0
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    environment: release
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+          components: clippy, rustfmt
+      - uses: extractions/setup-just@v1
+      - name: install cargo-all-features
+        uses: baptiste0928/cargo-install@v1
+        with:
+          crate: cargo-all-features
+          version: 1
+      - name: install cargo-edit
+        uses: baptiste0928/cargo-install@v1
+        with:
+          crate: cargo-edit
+          version: 0.11
+      - run: just release
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          CARGO_REGISTRY_TOKEN: ${{ secrets.CARGO_REGISTRY_TOKEN }}

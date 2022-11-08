@@ -1,0 +1,31 @@
+name: verify
+
+on:
+  push:
+    branches: [main, rc, beta, alpha]
+  pull_request:
+  workflow_dispatch:
+
+env:
+  RUST_VERSION: "1.65"
+  CARGO_INCREMENTAL: 0
+  RUSTFLAGS: "-D warnings"
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: ${{ env.RUST_VERSION }}
+          override: true
+          components: clippy, rustfmt
+      - uses: Swatinem/rust-cache@v2
+      - name: install cargo-all-features
+        uses: baptiste0928/cargo-install@v1
+        with:
+          crate: cargo-all-features
+      - uses: extractions/setup-just@v1
+      - run: just verify

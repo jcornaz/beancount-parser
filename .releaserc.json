@@ -2,6 +2,10 @@
   "branches": [
     "main",
     {
+      "name": "rc",
+      "prerelease": true
+    },
+    {
       "name": "beta",
       "prerelease": true
     },
@@ -18,18 +22,7 @@
         "releaseRules": [
           {
             "type": "docs",
-            "scope": "readme",
             "release": "patch"
-          },
-          {
-            "type": "docs",
-            "scope": "api",
-            "release": "patch"
-          },
-          {
-            "type": "*",
-            "scope": "unstable",
-            "release": false
           }
         ]
       }
@@ -63,7 +56,7 @@
     [
       "@semantic-release/exec",
       {
-        "verifyConditionsCmd": "cargo publish --dry-run",
+        "verifyReleaseCmd": "just verify && cargo publish --dry-run",
         "prepareCmd": "cargo set-version ${nextRelease.version}",
         "publishCmd": "cargo publish --allow-dirty --no-verify"
       }

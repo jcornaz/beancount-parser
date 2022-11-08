@@ -16,30 +16,10 @@ You may (but don't have to) write a message in the issue to say you are working 
 
 ## Build from source
 
-There is a `shell.nix` available for nix users, which will give you everything you need to compile and test the project.
-
-For the others, make sure you have a rust toolchain installed and up-to date.
-I also recomend using `cargo-all-features`
-```sh
-rustup update
-cargo install cargo-all-features
-```
-
-Run the tests
-```sh
-cargo test-all-features
-```
-
-Format, and check code style
-```sh
-cargo fmt
-cargo clippy --all-targets --all-features
-```
-
-Build (and open) documentation
-```sh
-cargo doc --no-deps --all-features --open
-```
+1. Make sure you have latest stable rust toolchain installed (https://rustup.rs)
+2. Make sure you have [just](https://just.systems/man/en/chapter_4.html) installed
+3. Run `just install-dev-deps`
+4. Look at the list of `just` recipes `just -l`
 
 ## Coding standards
 
@@ -49,7 +29,7 @@ cargo doc --no-deps --all-features --open
 If you need help to write a test, ask me.
 
 When contributing, you should see the tests you write as the most important and valuable part of your contribution.
-When I review, most of my attention is for the tests. If the tests are good and exhaustive, then it doesn't matter much how clean is the implementation, because it already has the two most important poroperties: 1) It works, 2) It can safely be refactored later.
+When I review, most of my attention is for the tests. If the tests are good and exhaustive, then it doesn't matter much how clean the implementation is, because it already has the two most important poroperties: 1) It works, 2) It can safely be refactored later.
 
 ### API stability
 
