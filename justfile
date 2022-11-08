@@ -26,8 +26,7 @@ install-git-hooks:
 
 # Run all tests
 test:
-	cargo test-all-features --tests
-	cargo test-all-features --doc
+	cargo test-all-features
 
 # Static code analysis
 lint:
@@ -35,8 +34,8 @@ lint:
 	cargo clippy --all-features --all-targets
 
 # Build the documentation
-doc:
-	cargo doc --all-features --no-deps
+doc *args:
+	cargo doc --all-features --no-deps {{args}}
 
 # Clean up compilation output
 clean:
