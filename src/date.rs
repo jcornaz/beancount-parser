@@ -19,8 +19,9 @@ pub struct Date {
 }
 
 impl Date {
-    #[cfg(test)]
-    pub(crate) fn new(year: u16, month_of_year: u8, day_of_month: u8) -> Self {
+    /// Create a new date
+    #[must_use]
+    pub fn new(year: u16, month_of_year: u8, day_of_month: u8) -> Self {
         Self {
             year,
             month_of_year,
