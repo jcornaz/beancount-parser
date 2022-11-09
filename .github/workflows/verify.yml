@@ -23,9 +23,6 @@ jobs:
           override: true
           components: clippy, rustfmt
       - uses: Swatinem/rust-cache@v2
-      - name: install cargo-all-features
-        uses: baptiste0928/cargo-install@v1
-        with:
-          crate: cargo-all-features
+      - uses: taiki-e/install-action@cargo-hack
       - uses: extractions/setup-just@v1
       - run: just verify

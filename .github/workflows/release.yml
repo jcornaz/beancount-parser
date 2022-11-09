@@ -21,17 +21,11 @@ jobs:
           toolchain: stable
           override: true
           components: clippy, rustfmt
+      - uses: Swatinem/rust-cache@v2
+      - uses: taiki-e/install-action@cargo-binstall
+      - uses: taiki-e/install-action@cargo-hack
       - uses: extractions/setup-just@v1
-      - name: install cargo-all-features
-        uses: baptiste0928/cargo-install@v1
-        with:
-          crate: cargo-all-features
-          version: 1
-      - name: install cargo-edit
-        uses: baptiste0928/cargo-install@v1
-        with:
-          crate: cargo-edit
-          version: 0.11
+      - run: cargo binstall cargo-edit
       - run: just release
         env:
           GITHUB_TOKEN: ${{ github.token }}

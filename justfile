@@ -5,11 +5,11 @@ export RUSTDOCFLAGS := "-D warnings"
 	just --choose --unsorted
 
 # Prepare the repository for development (requires rustup to be installed)
-bootsrap: && install-git-hooks
+setup: && install-git-hooks
 	rustup install stable
 	rustup update stable
 	rustup override set stable
-	cargo install cargo-all-features cargo-watch
+	cargo install cargo-hack cargo-watch
 
 # Perform all verifications (compile, test, lint, etc.)
 verify: doc lint test
@@ -26,7 +26,7 @@ install-git-hooks:
 
 # Run all tests
 test:
-	cargo test-all-features
+	cargo hack test --feature-powerset
 
 # Static code analysis
 lint:
@@ -34,8 +34,8 @@ lint:
 	cargo clippy --all-features --all-targets
 
 # Build the documentation
-doc *args:
-	cargo doc --all-features --no-deps {{args}}
+doc:
+	cargo doc --all-features --no-deps
 
 # Clean up compilation output
 clean:
