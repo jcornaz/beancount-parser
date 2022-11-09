@@ -3,7 +3,7 @@
 [![License](https://img.shields.io/badge/license-Unlicense%20OR%20MIT-green)](#License)
 [![Crates.io](https://img.shields.io/crates/v/beancount-parser)](https://crates.io/crates/beancount-parser)
 [![Docs](https://docs.rs/beancount-parser/badge.svg)](https://docs.rs/beancount-parser)
-[![Build](https://img.shields.io/github/workflow/status/jcornaz/beancount-parser/build)](https://github.com/jcornaz/beancount-parser/actions/workflows/build.yml)
+[![Build](https://img.shields.io/github/workflow/status/jcornaz/beancount-parser/verify)](https://github.com/jcornaz/beancount-parser/actions/workflows/verify.yml)
 
 A beancount file parser library for rust
 
