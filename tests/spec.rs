@@ -2,12 +2,25 @@ mod utils;
 
 use beancount_parser::{Directive, Parser};
 use rstest::rstest;
-
-use crate::utils::DirectiveList;
+use utils::DirectiveList;
 
 const SIMPLE: &str = include_str!("examples/simple.beancount");
 const COMMENTS: &str = include_str!("examples/comments.beancount");
+const OFFICIAL: &str = include_str!("examples/official.beancount");
 
+#[rstest]
+fn valid_examples_do_not_return_an_error(
+    #[values("", " \n ", SIMPLE, COMMENTS, OFFICIAL)] input: &str,
+) {
+    let mut count = 0;
+    for result in Parser::new(input) {
+        count += 1;
+        assert!(
+            result.is_ok(),
+            "The {count} directive is an error: {result:?}"
+        );
+    }
+}
 #[rstest]
 #[case("", 0)]
 #[case(SIMPLE, 3)]
@@ -80,21 +93,4 @@ fn poptag_removes_only_concerned_tag_from_stack() {
         .into_transaction()
         .expect("should be a transaction");
     assert_eq!(transaction.tags(), &["world"]);
-}
-
-#[test]
-fn transaction_with_lot_date() {
-    let beancount = r#"
-2020-10-08 * "Buy shares of VEA"
-  Assets:US:ETrade:VEA                                 34 VEA {100 USD, 2020-10-08}
-"#;
-    let transaction = Parser::new(beancount)
-        .assert_single_directive()
-        .into_transaction()
-        .expect("should be a transaction");
-    let cost = transaction.postings()[0]
-        .cost()
-        .expect("should have a cost");
-    assert_eq!(cost.value().try_into_f64().unwrap(), 100.0);
-    assert_eq!(cost.currency(), "USD");
 }
