@@ -4,19 +4,18 @@ export RUSTDOCFLAGS := "-D warnings"
 @_choose:
 	just --choose --unsorted
 
-# Prepare the repository for development (requires rustup to be installed)
-setup: && install-git-hooks
-	rustup install stable
-	rustup update stable
-	rustup override set stable
-	cargo install cargo-hack cargo-watch
-
 # Perform all verifications (compile, test, lint, etc.)
 verify: doc lint test
 
 # Watch changes, and run `just verify` when source changes
 watch:
 	cargo watch -s 'just verify'
+
+# Install cargo dev-tools used by other recipes (requires rustup to be already installed)
+install-dev-tools:
+	rustup install stable
+	rustup override set stable
+	cargo install cargo-hack cargo-watch
 
 # Install a git hook to run tests before every commits
 install-git-hooks:
