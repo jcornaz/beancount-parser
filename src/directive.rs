@@ -80,18 +80,16 @@ mod tests {
     #[test]
     fn transaction() {
         let input = r#"2022-09-10 txn "My transaction""#;
-        let (_, directive) = directive(input).expect("should successfully parse directive");
-        let transaction = directive
-            .as_transaction()
-            .expect("the directive should be a transaction");
+        let transaction = directive(input).unwrap().1.into_transaction().unwrap();
         assert_eq!(transaction.narration(), Some("My transaction"));
     }
 
     #[test]
     fn price() {
-        let input = "2014-07-09 price CHF  5 PLN";
-        let (_, directive) = directive(input).expect("should successfully parse directive");
-        let Directive::Price(price) = directive else { panic!("Unexpected directive type: {directive:?}") };
+        let result = directive("2014-07-09 price CHF  5 PLN");
+        let Ok((_, Directive::Price(price))) = result else {
+            panic!("Expected a price directive but was: {result:?}")
+        };
         assert_eq!(price.commodity(), "CHF");
         assert_eq!(price.price().currency(), "PLN");
     }
@@ -100,9 +98,22 @@ mod tests {
     fn simple_open_directive() {
         let result = directive("2014-05-01 open Liabilities:CreditCard:CapitalOne");
         let Ok((_, Directive::Open(directive))) = result else {
-            panic!("Expected an open directive but was: {result:?}");
+          panic!("Expected an open directive but was: {result:?}")
         };
         assert_eq!(directive.account().type_(), account::Type::Liabilities);
+    }
+
+    #[test]
+    fn close_directive() {
+        let result = directive("2016-11-28 close Liabilities:CreditCard:CapitalOne");
+        let Ok((_, Directive::Close(directive))) = result else {
+            panic!("Expected a close directive but was: {result:?}")
+        };
+        assert_eq!(directive.date(), Date::new(2016, 11, 28));
+        assert_eq!(
+            directive.account().components(),
+            &["CreditCard", "CapitalOne"]
+        );
     }
 
     #[rstest]
