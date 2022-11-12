@@ -62,9 +62,22 @@ mod tests {
 
     #[test]
     fn simple_open_directive() {
-        let input = "2022-10-14 open Assets:A";
-        let (_, open) = open(input).expect("should successfuly parse the input");
+        let (_, open) = open("2022-10-14 open Assets:A").unwrap();
         assert_eq!(open.date(), Date::new(2022, 10, 14));
         assert_eq!(open.account(), &Account::new(account::Type::Assets, ["A"]));
+        assert_eq!(open.currencies().len(), 0);
+    }
+
+    #[test]
+    fn open_with_single_currency_constraint() {
+        let (_, open) = open("2014-05-01 open Liabilities:CreditCard:CapitalOne CHF").unwrap();
+        assert_eq!(open.currencies(), &["CHF"]);
+    }
+
+    #[test]
+    fn open_with_multiple_currency_constraints() {
+        let (_, open) =
+            open("2014-05-01 open Liabilities:CreditCard:CapitalOne CHF, USD,EUR").unwrap();
+        assert_eq!(open.currencies(), &["CHF", "USD", "EUR"]);
     }
 }

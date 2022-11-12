@@ -72,8 +72,9 @@ pub(crate) fn directive(input: &str) -> IResult<&str, Directive<'_>> {
 #[cfg(test)]
 mod tests {
 
+    use crate::account;
+
     use super::*;
-    use approx::assert_ulps_eq;
     use rstest::rstest;
 
     #[test]
@@ -91,10 +92,17 @@ mod tests {
         let input = "2014-07-09 price CHF  5 PLN";
         let (_, directive) = directive(input).expect("should successfully parse directive");
         let Directive::Price(price) = directive else { panic!("Unexpected directive type: {directive:?}") };
-        assert_eq!(price.date(), Date::new(2014, 7, 9));
         assert_eq!(price.commodity(), "CHF");
-        assert_ulps_eq!(price.price().value().try_into_f64().unwrap(), 5.0);
         assert_eq!(price.price().currency(), "PLN");
+    }
+
+    #[test]
+    fn simple_open_directive() {
+        let result = directive("2014-05-01 open Liabilities:CreditCard:CapitalOne");
+        let Ok((_, Directive::Open(directive))) = result else {
+            panic!("Expected an open directive but was: {result:?}");
+        };
+        assert_eq!(directive.account().type_(), account::Type::Liabilities);
     }
 
     #[rstest]
