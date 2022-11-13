@@ -1,8 +1,5 @@
-mod utils;
-
 use beancount_parser::{Directive, Parser};
 use rstest::rstest;
-use utils::DirectiveList;
 
 const SIMPLE: &str = include_str!("examples/simple.beancount");
 const COMMENTS: &str = include_str!("examples/comments.beancount");
@@ -93,4 +90,25 @@ fn poptag_removes_only_concerned_tag_from_stack() {
         .into_transaction()
         .expect("should be a transaction");
     assert_eq!(transaction.tags(), &["world"]);
+}
+
+trait DirectiveList<'a> {
+    fn assert_single_directive(self) -> Directive<'a>;
+}
+
+impl<'a> DirectiveList<'a> for Parser<'a> {
+    fn assert_single_directive(mut self) -> Directive<'a> {
+        let directive = self
+            .next()
+            .expect("Exactly one element is expected, but none was found")
+            .expect("should successfully parse the input");
+        let rest = self.count();
+        assert_eq!(
+            rest,
+            0,
+            "Exactly one element is expected, but {} than one was found",
+            rest + 1
+        );
+        directive
+    }
 }
