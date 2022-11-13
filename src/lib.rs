@@ -100,7 +100,7 @@ impl<'a> Iterator for Parser<'a> {
                 }
             } else {
                 self.rest = "";
-                return Some(Err(Error));
+                return Some(Err(Error::from_parsing()));
             }
         }
         None

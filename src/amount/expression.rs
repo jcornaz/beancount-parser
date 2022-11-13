@@ -186,8 +186,8 @@ impl From<Value> for rust_decimal::Decimal {
 pub struct ConversionError(Decimal);
 
 impl From<ConversionError> for crate::Error {
-    fn from(_: ConversionError) -> Self {
-        Self
+    fn from(err: ConversionError) -> Self {
+        Self::from_conversion(err)
     }
 }
 
