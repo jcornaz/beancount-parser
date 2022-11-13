@@ -1,6 +1,7 @@
 #![deny(future_incompatible, unsafe_code)]
 #![warn(nonstandard_style, rust_2018_idioms, missing_docs, clippy::pedantic)]
 #![cfg_attr(test, allow(clippy::needless_pass_by_value))]
+#![cfg_attr(nightly, feature(doc_auto_cfg))]
 
 //! A rust parsing library for [beancount](https://beancount.github.io/docs/) files
 //!

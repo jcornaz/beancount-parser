@@ -1,5 +1,8 @@
-export RUSTFLAGS := "-D warnings"
-export RUSTDOCFLAGS := "-D warnings"
+toolchain := ""
+_toolchain_arg := if toolchain == "" { "" } else { "+" + toolchain }
+deny-warnings := "true"
+export RUSTFLAGS := if deny-warnings == "true" { "-D warnings" } else { "" }
+export RUSTDOCFLAGS := RUSTFLAGS
 
 @_choose:
 	just --choose --unsorted
@@ -25,16 +28,19 @@ install-git-hooks:
 
 # Run all tests
 test:
-	cargo hack test --feature-powerset
+	cargo {{_toolchain_arg}} hack test --feature-powerset
 
 # Static code analysis
 lint:
-	cargo fmt -- --check
-	cargo clippy --all-features --all-targets
+	cargo {{_toolchain_arg}} fmt -- --check
+	cargo {{_toolchain_arg}} clippy --all-features --all-targets
 
 # Build the documentation
-doc:
-	cargo doc --all-features --no-deps
+doc *args:
+	cargo {{_toolchain_arg}} doc --all-features --no-deps {{args}}
+
+# Open the documentation page
+doc-open: (doc "--open")
 
 # Clean up compilation output
 clean:
