@@ -33,7 +33,7 @@ test:
 # Static code analysis
 lint:
 	cargo {{_toolchain_arg}} fmt -- --check
-	cargo {{_toolchain_arg}} clippy --all-features --all-targets
+	cargo {{_toolchain_arg}} hack clippy --feature-powerset --all-targets
 
 # Build the documentation
 doc *args:
