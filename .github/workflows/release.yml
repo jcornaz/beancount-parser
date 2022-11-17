@@ -16,15 +16,13 @@ jobs:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
-      - uses: actions-rs/toolchain@v1
+      - uses: dtolnay/rust-toolchain@stable
         with:
-          toolchain: stable
-          override: true
           components: clippy, rustfmt
       - uses: taiki-e/install-action@cargo-binstall
       - uses: taiki-e/install-action@cargo-hack
+      - run: cargo binstall --no-confirm cargo-edit cargo-msrv
       - uses: extractions/setup-just@v1
-      - run: cargo binstall --no-confirm cargo-edit
       - run: just release
         env:
           GITHUB_TOKEN: ${{ github.token }}

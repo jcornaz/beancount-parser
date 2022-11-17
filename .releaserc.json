@@ -57,7 +57,7 @@
     [
       "@semantic-release/exec",
       {
-        "verifyReleaseCmd": "just RUSTFLAGS='' RUSTDOCFLAGS='' verify && cargo publish --dry-run",
+        "verifyReleaseCmd": "just deny-warnings=false verify && cargo publish --dry-run",
         "prepareCmd": "cargo set-version ${nextRelease.version}",
         "publishCmd": "cargo publish --allow-dirty --no-verify"
       }

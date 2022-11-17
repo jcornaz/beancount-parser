@@ -7,7 +7,6 @@ on:
   workflow_dispatch:
 
 env:
-  RUST_VERSION: "1.65"
   CARGO_INCREMENTAL: 0
   RUSTFLAGS: "-D warnings"
 
@@ -17,12 +16,12 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v3
-      - uses: actions-rs/toolchain@v1
+      - uses: dtolnay/rust-toolchain@stable
         with:
-          toolchain: ${{ env.RUST_VERSION }}
-          override: true
           components: clippy, rustfmt
       - uses: Swatinem/rust-cache@v2
+      - uses: taiki-e/install-action@cargo-binstall
       - uses: taiki-e/install-action@cargo-hack
+      - run: cargo binstall --no-confirm cargo-msrv
       - uses: extractions/setup-just@v1
       - run: just verify

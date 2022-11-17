@@ -1,5 +1,3 @@
-toolchain := ""
-_toolchain_arg := if toolchain == "" { "" } else { "+" + toolchain }
 deny-warnings := "true"
 export RUSTFLAGS := if deny-warnings == "true" { "-D warnings" } else { "" }
 export RUSTDOCFLAGS := RUSTFLAGS
@@ -8,27 +6,31 @@ export RUSTDOCFLAGS := RUSTFLAGS
 	just --choose --unsorted
 
 # Perform all verifications (compile, test, lint, etc.)
-verify: doc lint test
+verify: doc lint test check-msrv
 
-# Watch changes, and run `just verify` when source changes
+# Watch the source files and run `just verify` when source changes
 watch:
 	cargo watch -s 'just verify'
 
-# Run all tests
+# Run the tests
 test:
-	cargo {{_toolchain_arg}} hack test --feature-powerset
+	cargo hack test --feature-powerset
 
-# Static code analysis
+# Run the static code analysis
 lint:
-	cargo {{_toolchain_arg}} fmt -- --check
-	cargo {{_toolchain_arg}} hack clippy --feature-powerset --all-targets
+	cargo fmt -- --check
+	cargo hack clippy --feature-powerset --all-targets
 
 # Build the documentation
 doc *args:
-	cargo {{_toolchain_arg}} doc --all-features --no-deps {{args}}
+	cargo doc --all-features --no-deps {{args}}
 
 # Open the documentation page
 doc-open: (doc "--open")
+
+# Make sure the MSRV is satisfiable
+check-msrv:
+	cargo msrv verify
 
 # Clean up compilation output
 clean:
@@ -36,11 +38,11 @@ clean:
 	rm -f Cargo.lock
 	rm -rf node_modules
 
-# Install cargo dev-tools used by other recipes (requires rustup to be already installed)
+# Install cargo dev-tools used by the `verify` recipe (requires rustup to be already installed)
 install-dev-tools:
 	rustup install stable
 	rustup override set stable
-	cargo install cargo-hack cargo-watch
+	cargo install cargo-hack cargo-watch cargo-msrv
 
 # Install a git hook to run tests before every commits
 install-git-hooks:
