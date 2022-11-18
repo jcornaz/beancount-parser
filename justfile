@@ -1,7 +1,3 @@
-deny-warnings := "true"
-export RUSTFLAGS := if deny-warnings == "true" { "-D warnings" } else { "" }
-export RUSTDOCFLAGS := RUSTFLAGS
-
 @_choose:
 	just --choose --unsorted
 
@@ -10,7 +6,7 @@ verify: doc lint test check-msrv
 
 # Watch the source files and run `just verify` when source changes
 watch:
-	cargo watch -s 'just verify'
+	cargo watch -s 'just test lint doc'
 
 # Run the tests
 test:
@@ -46,8 +42,10 @@ install-dev-tools:
 
 # Install a git hook to run tests before every commits
 install-git-hooks:
-	echo "#!/usr/bin/env sh" > .git/hooks/pre-commit
-	echo "just verify" >> .git/hooks/pre-commit
+	echo '#!/usr/bin/env sh' > .git/hooks/pre-commit
+	echo 'export RUSTFLAGS="-D warnings"' >> .git/hooks/pre-commit
+	echo 'export RUSTDOCFLAGS="-D warnings"' >> .git/hooks/pre-commit
+	echo 'just verify' >> .git/hooks/pre-commit
 	chmod +x .git/hooks/pre-commit
 
 # run the release process in dry run mode (requires npm and a `GITHUB_TOKEN`)
