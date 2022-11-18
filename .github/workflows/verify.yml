@@ -22,6 +22,6 @@ jobs:
       - uses: Swatinem/rust-cache@v2
       - uses: taiki-e/install-action@cargo-binstall
       - uses: taiki-e/install-action@cargo-hack
-      - run: cargo binstall --no-confirm cargo-msrv
+      - run: cargo binstall --no-confirm --force cargo-msrv
       - uses: extractions/setup-just@v1
       - run: just verify

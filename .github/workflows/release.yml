@@ -21,7 +21,7 @@ jobs:
           components: clippy, rustfmt
       - uses: taiki-e/install-action@cargo-binstall
       - uses: taiki-e/install-action@cargo-hack
-      - run: cargo binstall --no-confirm cargo-edit cargo-msrv
+      - run: cargo binstall --no-confirm --force cargo-edit cargo-msrv
       - uses: extractions/setup-just@v1
       - run: just release
         env:
