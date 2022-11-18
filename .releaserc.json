@@ -24,6 +24,10 @@
           {
             "type": "docs",
             "release": "patch"
+          },
+          {
+            "scope": "unstable",
+            "release": "patch"
           }
         ]
       }
