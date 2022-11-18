@@ -67,6 +67,7 @@ use nom::{
 pub struct Parser<'a> {
     rest: &'a str,
     tags: Vec<&'a str>,
+    line: u64,
 }
 
 impl<'a> Parser<'a> {
@@ -76,6 +77,7 @@ impl<'a> Parser<'a> {
         Self {
             rest: content,
             tags: Vec::new(),
+            line: 1,
         }
     }
 }
@@ -86,6 +88,7 @@ impl<'a> Iterator for Parser<'a> {
     fn next(&mut self) -> Option<Self::Item> {
         while !self.rest.is_empty() {
             if let Ok((rest, chunk)) = chunk(self.rest) {
+                self.line += 1;
                 self.rest = rest;
                 match chunk {
                     Chunk::Directive(mut directive) => {
@@ -100,7 +103,7 @@ impl<'a> Iterator for Parser<'a> {
                 }
             } else {
                 self.rest = "";
-                return Some(Err(Error::from_parsing()));
+                return Some(Err(Error::from_parsing(self.line)));
             }
         }
         None

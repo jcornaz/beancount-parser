@@ -14,13 +14,40 @@ impl Error {
         Self(Content::ConversionError(err))
     }
 
-    pub(crate) fn from_parsing() -> Self {
-        Self(Content::ParseError)
+    #[cfg(feature = "unstable")]
+    pub(crate) fn from_parsing(line: u64) -> Self {
+        Self(Content::ParseError { line })
+    }
+
+    #[cfg(not(feature = "unstable"))]
+    pub(crate) fn from_parsing(_: u64) -> Self {
+        Self(Content::ParseError {})
+    }
+
+    /// Returns the line number at which the error was found in the source text
+    ///
+    /// The number is 1-based. (The first line number is 1)
+    ///
+    /// # Panics
+    ///
+    /// Panic if the error was not a parsing error (i.e. a conversion error)
+    #[cfg(feature = "unstable")]
+    #[must_use]
+    pub fn line_number(&self) -> u64 {
+        match self.0 {
+            Content::ParseError { line } => line,
+            Content::ConversionError(_) => {
+                panic!("Cannot get the line number from a conversion error")
+            }
+        }
     }
 }
 
 #[derive(Debug, Clone)]
 enum Content {
-    ParseError,
+    ParseError {
+        #[cfg(feature = "unstable")]
+        line: u64,
+    },
     ConversionError(ConversionError),
 }
