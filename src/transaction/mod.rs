@@ -249,7 +249,7 @@ mod tests {
     #[rstest]
     fn errors(#[values("2022-01-01 open Assets:US:BofA:Checking")] input: &str) {
         let result = transaction(input);
-        assert!(matches!(result, Err(nom::Err::Error(_))), "{:?}", result);
+        assert!(matches!(result, Err(nom::Err::Error(_))), "{result:?}");
     }
 
     #[rstest]
@@ -262,7 +262,7 @@ mod tests {
         input: &str,
     ) {
         let result = transaction(input);
-        assert!(matches!(result, Err(nom::Err::Failure(_))), "{:?}", result);
+        assert!(matches!(result, Err(nom::Err::Failure(_))), "{result:?}");
     }
 
     #[rstest]

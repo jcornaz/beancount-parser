@@ -4,7 +4,7 @@ set dotenv-load
 	just --choose --unsorted
 
 # Perform all verifications (compile, test, lint, etc.)
-verify: lint test doc check-msrv
+verify: test lint doc check-msrv
 
 # Watch the source files and run `just verify` when source changes
 watch:
