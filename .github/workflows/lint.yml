@@ -19,7 +19,7 @@ jobs:
     timeout-minutes: 10
     strategy:
       matrix:
-      rust-version: [stable, beta]
+        rust-version: [stable, beta]
     steps:
       - uses: actions/checkout@v3
       - uses: dtolnay/rust-toolchain@master
