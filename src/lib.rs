@@ -93,6 +93,7 @@ impl<'a> Iterator for Parser<'a> {
                 match chunk {
                     Chunk::Directive(mut directive) => {
                         if let Directive::Transaction(trx) = &mut directive {
+                            self.line += trx.postings().len() as u64;
                             trx.tags.extend(&self.tags);
                         }
                         return Some(Ok(directive));
