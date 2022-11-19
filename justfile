@@ -1,12 +1,14 @@
+set dotenv-load
+
 @_choose:
 	just --choose --unsorted
 
 # Perform all verifications (compile, test, lint, etc.)
-verify: doc lint test check-msrv
+verify: lint test doc check-msrv
 
 # Watch the source files and run `just verify` when source changes
 watch:
-	cargo watch -s 'just test lint doc'
+	cargo watch --why -- just verify
 
 # Run the tests
 test:
@@ -15,7 +17,7 @@ test:
 # Run the static code analysis
 lint:
 	cargo fmt -- --check
-	cargo hack clippy --feature-powerset --all-targets
+	cargo hack clippy --feature-powerset --all-targets 
 
 # Build the documentation
 doc *args:
@@ -43,8 +45,6 @@ install-dev-tools:
 # Install a git hook to run tests before every commits
 install-git-hooks:
 	echo '#!/usr/bin/env sh' > .git/hooks/pre-commit
-	echo 'export RUSTFLAGS="-D warnings"' >> .git/hooks/pre-commit
-	echo 'export RUSTDOCFLAGS="-D warnings"' >> .git/hooks/pre-commit
 	echo 'just verify' >> .git/hooks/pre-commit
 	chmod +x .git/hooks/pre-commit
 

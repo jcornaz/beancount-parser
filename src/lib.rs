@@ -1,6 +1,23 @@
-#![deny(future_incompatible, unsafe_code)]
-#![warn(nonstandard_style, rust_2018_idioms, missing_docs, clippy::pedantic)]
+#![deny(
+    future_incompatible,
+    nonstandard_style,
+    unsafe_code,
+    private_in_public,
+    missing_docs,
+    unused_results,
+    missing_docs
+)]
+#![warn(rust_2018_idioms, clippy::pedantic)]
 #![cfg_attr(test, allow(clippy::needless_pass_by_value))]
+#![cfg_attr(
+    not(test),
+    warn(
+        missing_debug_implementations,
+        clippy::get_unwrap,
+        clippy::unwrap_in_result,
+        clippy::unwrap_used
+    )
+)]
 #![cfg_attr(nightly, feature(doc_auto_cfg))]
 
 //! A rust parsing library for [beancount](https://beancount.github.io/docs/) files
@@ -64,6 +81,7 @@ use nom::{
 /// It is an iterator over the beancount directives.
 ///
 /// See the crate documentation for usage example.
+#[allow(missing_debug_implementations)]
 pub struct Parser<'a> {
     rest: &'a str,
     tags: Vec<&'a str>,
