@@ -8,7 +8,7 @@ verify: test lint doc check-msrv
 
 # Watch the source files and run `just verify` when source changes
 watch:
-	cargo watch --why -- just verify
+	cargo watch -- just verify
 
 # Run the tests
 test:

@@ -112,7 +112,7 @@ impl<'a> Iterator for Parser<'a> {
                     Chunk::Directive(mut directive) => {
                         if let Directive::Transaction(trx) = &mut directive {
                             self.line += trx.postings().len() as u64;
-                            trx.tags.extend(&self.tags);
+                            trx.append_tags(&self.tags);
                         }
                         return Some(Ok(directive));
                     }
