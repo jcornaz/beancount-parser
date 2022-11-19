@@ -1,3 +1,16 @@
+## [1.8.3](https://github.com/jcornaz/beancount-parser/compare/v1.8.2...v1.8.3) (2022-11-19)
+
+
+### Features
+
+* **unstable:** line number on error type ([b2edd5c](https://github.com/jcornaz/beancount-parser/commit/b2edd5c0f33e6c414e55b23ff91f532e56f01272))
+
+
+### Documentation
+
+* **changelog:** add changelog file ([83b2800](https://github.com/jcornaz/beancount-parser/commit/83b28004bd10df2ad4b44d3a94e8f2b9f21e9807))
+* **readme:** update MSRV ([257a6f2](https://github.com/jcornaz/beancount-parser/commit/257a6f2a048179a29c9c5cc5ec7faec81e99f60f))
+
 # Changelog
 
 ## v1.8.2 (2022-11-13)
