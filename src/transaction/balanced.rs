@@ -31,12 +31,7 @@ impl<'a> Transaction<'a> {
             });
         }
         Some(BalancedTransaction {
-            date: self.date,
-            flag: self.flag,
-            payee: self.payee,
-            narration: self.narration,
-            tags: self.tags,
-            comment: self.comment,
+            info: self.info,
             postings,
         })
     }
@@ -44,7 +39,7 @@ impl<'a> Transaction<'a> {
 
 #[cfg(test)]
 mod tests {
-    use crate::Date;
+    use crate::{transaction::Info, Date};
     use rstest::{fixture, rstest};
 
     use super::*;
@@ -56,15 +51,22 @@ mod tests {
     }
 
     #[fixture]
-    fn trx() -> Transaction<'static> {
+    fn trx(trx_info: Info<'static>) -> Transaction<'static> {
         Transaction {
+            info: trx_info,
+            postings: Vec::new(),
+        }
+    }
+
+    #[fixture]
+    fn trx_info() -> Info<'static> {
+        Info {
             date: Date::new(2022, 11, 20),
             flag: None,
             payee: None,
             narration: None,
             comment: None,
             tags: Vec::new(),
-            postings: Vec::new(),
         }
     }
 }

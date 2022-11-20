@@ -37,13 +37,8 @@ pub use posting::{Posting, PriceType};
 #[cfg(not(feature = "unstable"))]
 #[derive(Debug, Clone)]
 pub struct Transaction<'a> {
-    date: Date,
-    flag: Option<Flag>,
-    payee: Option<String>,
-    narration: Option<String>,
-    tags: Vec<&'a str>,
+    info: Info<'a>,
     postings: Vec<Posting<'a>>,
-    comment: Option<&'a str>,
 }
 
 /// A transaction
@@ -59,12 +54,17 @@ pub struct Transaction<'a> {
 #[cfg(feature = "unstable")]
 #[derive(Debug, Clone)]
 pub struct Transaction<'a, A = Option<crate::Amount<'a>>> {
+    info: Info<'a>,
+    postings: Vec<Posting<'a, A>>,
+}
+
+#[derive(Debug, Clone)]
+struct Info<'a> {
     date: Date,
     flag: Option<Flag>,
     payee: Option<String>,
     narration: Option<String>,
     tags: Vec<&'a str>,
-    postings: Vec<Posting<'a, A>>,
     comment: Option<&'a str>,
 }
 
@@ -83,13 +83,13 @@ impl<'a> Transaction<'a> {
     /// Returns the "payee" if one was defined
     #[must_use]
     pub fn payee(&self) -> Option<&str> {
-        self.payee.as_deref()
+        self.info.payee.as_deref()
     }
 
     /// Returns the "narration" if one was defined
     #[must_use]
     pub fn narration(&self) -> Option<&str> {
-        self.narration.as_deref()
+        self.info.narration.as_deref()
     }
 
     /// Returns the postings
@@ -101,61 +101,66 @@ impl<'a> Transaction<'a> {
     /// Returns the flag of the transaction (if present)
     #[must_use]
     pub fn flag(&self) -> Option<Flag> {
-        self.flag
+        self.info.flag
     }
 
     /// Returns the tags attached to this transaction
     #[must_use]
     pub fn tags(&self) -> &[&'a str] {
-        &self.tags
+        &self.info.tags
     }
 
     /// Returns the comment (if present)
     #[must_use]
     pub fn comment(&self) -> Option<&str> {
-        self.comment
+        self.info.comment
     }
 
     /// The date of the transaction
     #[must_use]
     pub fn date(&self) -> Date {
-        self.date
+        self.info.date
     }
 
     pub(crate) fn append_tags(&mut self, tags: &[&'a str]) {
-        self.tags.extend(tags);
+        self.info.tags.extend(tags);
     }
 }
 
 pub(crate) fn transaction(input: &str) -> IResult<&str, Transaction<'_>> {
+    map(
+        terminated(
+            tuple((info, many0(preceded(tuple((line_ending, space1)), posting)))),
+            cut(alt((line_ending, eof))),
+        ),
+        |(info, postings)| Transaction { info, postings },
+    )(input)
+}
+
+fn info(input: &str) -> IResult<&str, Info<'_>> {
     let payee_and_narration = alt((
         separated_pair(map(string, Some), space1, string),
         map(string, |n| (None, n)),
     ));
     map(
-        terminated(
-            tuple((
-                terminated(date, space1),
-                alt((map(complete::tag("txn"), |_| None), map(flag, Some))),
-                opt(preceded(space1, payee_and_narration)),
-                many0(preceded(space0, tag)),
-                opt(preceded(space0, comment)),
-                many0(preceded(tuple((line_ending, space1)), posting)),
-            )),
-            cut(alt((line_ending, eof))),
-        ),
-        |(date, flag, payee_and_narration, tags, comment, postings)| {
+        tuple((
+            terminated(date, space1),
+            alt((map(complete::tag("txn"), |_| None), map(flag, Some))),
+            opt(preceded(space1, payee_and_narration)),
+            many0(preceded(space0, tag)),
+            opt(preceded(space0, comment)),
+        )),
+        |(date, flag, payee_and_narration, tags, comment)| {
             let (payee, narration) = match payee_and_narration {
                 Some((p, n)) => (p, Some(n)),
                 None => (None, None),
             };
-            Transaction {
+            Info {
                 date,
                 flag,
                 payee,
                 narration,
                 tags,
-                postings,
                 comment,
             }
         },
