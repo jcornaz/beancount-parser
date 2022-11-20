@@ -35,34 +35,60 @@ impl<'a> Transaction<'a> {
 
 #[cfg(test)]
 mod tests {
-    use crate::{transaction::Info, Date};
-    use rstest::{fixture, rstest};
+    use crate::{
+        account, transaction::posting::Info as PostingInfo, transaction::Info as TrxInfo, Account,
+        Date,
+    };
 
     use super::*;
 
-    #[rstest]
-    fn balance_an_emtpy_transaction(trx: Transaction<'_>) {
-        let balanced: BalancedTransaction<'_> = trx.balanced().unwrap();
+    #[test]
+    fn balance_an_emtpy_transaction() {
+        let balanced: BalancedTransaction<'_> = transaction([]).balanced().unwrap();
         assert_eq!(balanced.postings.len(), 0);
     }
 
-    #[fixture]
-    fn trx(trx_info: Info<'static>) -> Transaction<'static> {
+    #[test]
+    #[ignore = "not implemeted"]
+    fn simple_balance() {
+        let balanced = transaction([
+            posting(
+                Account::new(account::Type::Assets, []),
+                Some(Amount::new(1, "CHF")),
+            ),
+            posting(Account::new(account::Type::Income, []), None),
+        ])
+        .balanced()
+        .unwrap();
+        assert_eq!(balanced.postings.len(), 2);
+        assert_eq!(balanced.postings[0].amount, Amount::new(-1, "CHF"));
+        assert_eq!(balanced.postings[1].amount, Amount::new(-1, "CHF"));
+    }
+
+    fn transaction<'a>(postings: impl IntoIterator<Item = Posting<'a>>) -> Transaction<'a> {
         Transaction {
-            info: trx_info,
-            postings: Vec::new(),
+            info: TrxInfo {
+                date: Date::new(2022, 11, 20),
+                flag: None,
+                payee: None,
+                narration: None,
+                comment: None,
+                tags: Vec::new(),
+            },
+            postings: postings.into_iter().collect(),
         }
     }
 
-    #[fixture]
-    fn trx_info() -> Info<'static> {
-        Info {
-            date: Date::new(2022, 11, 20),
-            flag: None,
-            payee: None,
-            narration: None,
-            comment: None,
-            tags: Vec::new(),
+    fn posting<'a>(account: Account<'a>, amount: Option<Amount<'a>>) -> Posting<'a> {
+        Posting {
+            info: PostingInfo {
+                flag: None,
+                account: Account::new(account::Type::Assets, []),
+                price: None,
+                cost: None,
+                comment: None,
+            },
+            amount,
         }
     }
 }

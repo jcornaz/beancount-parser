@@ -59,11 +59,11 @@ pub struct Posting<'a, A = Option<Amount<'a>>> {
 
 #[derive(Debug, Clone, PartialEq)]
 pub(super) struct Info<'a> {
-    flag: Option<Flag>,
-    account: Account<'a>,
-    price: Option<(PriceType, Amount<'a>)>,
-    cost: Option<Amount<'a>>,
-    comment: Option<&'a str>,
+    pub(super) flag: Option<Flag>,
+    pub(super) account: Account<'a>,
+    pub(super) price: Option<(PriceType, Amount<'a>)>,
+    pub(super) cost: Option<Amount<'a>>,
+    pub(super) comment: Option<&'a str>,
 }
 
 impl<'a> Posting<'a> {
