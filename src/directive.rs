@@ -71,11 +71,9 @@ pub(crate) fn directive(input: &str) -> IResult<&str, Directive<'_>> {
 
 #[cfg(test)]
 mod tests {
-
     use crate::account;
 
     use super::*;
-    use rstest::rstest;
 
     #[test]
     fn transaction() {

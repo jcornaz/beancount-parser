@@ -88,7 +88,6 @@ fn type_(input: &str) -> IResult<&str, Type> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use rstest::rstest;
 
     #[rstest]
     #[case("Assets:MyAccount", Account::new(Type::Assets, ["MyAccount"]))]

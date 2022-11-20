@@ -184,7 +184,6 @@ fn flag(input: &str) -> IResult<&str, Flag> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use rstest::rstest;
 
     #[rstest]
     fn simple_transaction() {

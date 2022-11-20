@@ -34,7 +34,6 @@ pub(crate) fn comment(input: &str) -> IResult<&str, &str> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use rstest::rstest;
 
     #[rstest]
     #[case(r#""hello world""#, "hello world")]

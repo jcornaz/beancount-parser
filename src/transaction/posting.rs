@@ -164,7 +164,6 @@ fn price(input: &str) -> IResult<&str, (PriceType, Amount<'_>)> {
 mod tests {
     use super::*;
     use crate::account::Type as AccountType;
-    use rstest::rstest;
 
     #[test]
     fn simple_posting() {

@@ -246,7 +246,6 @@ fn value(input: &str) -> IResult<&str, Value> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use rstest::rstest;
 
     #[rstest]
     #[case("0", Decimal::ZERO)]

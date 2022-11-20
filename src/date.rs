@@ -95,9 +95,7 @@ fn day(input: &str) -> IResult<&str, u8> {
 
 #[cfg(test)]
 mod tests {
-
     use super::*;
-    use rstest::rstest;
 
     #[test]
     fn valid_date() {

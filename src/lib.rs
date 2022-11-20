@@ -46,6 +46,10 @@
 //! # Ok(()) }
 //! ```
 
+#[cfg(test)]
+#[macro_use]
+extern crate rstest;
+
 pub mod account;
 pub mod amount;
 mod close;
