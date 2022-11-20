@@ -1,3 +1,10 @@
+## [1.8.4](https://github.com/jcornaz/beancount-parser/compare/v1.8.3...v1.8.4) (2022-11-20)
+
+
+### Bug Fixes
+
+* **unstable:** fix error line-number after a multiline transaction ([93625ba](https://github.com/jcornaz/beancount-parser/commit/93625ba615b56512d9e906788774d83fb388ec6d))
+
 ## [1.8.3](https://github.com/jcornaz/beancount-parser/compare/v1.8.2...v1.8.3) (2022-11-19)
 
 
