@@ -22,12 +22,8 @@ impl<'a> Transaction<'a> {
         for posting in self.postings {
             let Some(amount) = posting.amount else { return None };
             postings.push(BalancedPosting {
-                flag: posting.flag,
-                account: posting.account,
+                info: posting.info,
                 amount,
-                price: posting.price,
-                cost: posting.cost,
-                comment: posting.comment,
             });
         }
         Some(BalancedTransaction {

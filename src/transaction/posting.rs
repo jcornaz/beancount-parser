@@ -32,12 +32,8 @@ use super::{flag, Flag};
 #[cfg(not(feature = "unstable"))]
 #[derive(Debug, Clone, PartialEq)]
 pub struct Posting<'a> {
-    flag: Option<Flag>,
-    account: Account<'a>,
+    info: Info<'a>,
     amount: Option<Amount<'a>>,
-    price: Option<(PriceType, Amount<'a>)>,
-    cost: Option<Amount<'a>>,
-    comment: Option<&'a str>,
 }
 
 /// A posting
@@ -57,25 +53,30 @@ pub struct Posting<'a> {
 #[cfg(feature = "unstable")]
 #[derive(Debug, Clone, PartialEq)]
 pub struct Posting<'a, A = Option<Amount<'a>>> {
-    pub(super) flag: Option<Flag>,
-    pub(super) account: Account<'a>,
+    pub(super) info: Info<'a>,
     pub(super) amount: A,
-    pub(super) price: Option<(PriceType, Amount<'a>)>,
-    pub(super) cost: Option<Amount<'a>>,
-    pub(super) comment: Option<&'a str>,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub(super) struct Info<'a> {
+    flag: Option<Flag>,
+    account: Account<'a>,
+    price: Option<(PriceType, Amount<'a>)>,
+    cost: Option<Amount<'a>>,
+    comment: Option<&'a str>,
 }
 
 impl<'a> Posting<'a> {
     /// Returns the flag on this posting (if present)
     #[must_use]
     pub fn flag(&self) -> Option<Flag> {
-        self.flag
+        self.info.flag
     }
 
     /// Returns the account referenced by this posting
     #[must_use]
     pub fn account(&self) -> &Account<'a> {
-        &self.account
+        &self.info.account
     }
 
     /// Returns the amount of the posting (if present)
@@ -87,19 +88,19 @@ impl<'a> Posting<'a> {
     /// Returns a tuple of price-type and the price (if a price was defined)
     #[must_use]
     pub fn price(&self) -> Option<(PriceType, &Amount<'a>)> {
-        self.price.as_ref().map(|(t, p)| (*t, p))
+        self.info.price.as_ref().map(|(t, p)| (*t, p))
     }
 
     /// Returns the cost (if present)
     #[must_use]
     pub fn cost(&self) -> Option<&Amount<'a>> {
-        self.cost.as_ref()
+        self.info.cost.as_ref()
     }
 
     /// Returns the comment (if present)
     #[must_use]
     pub fn comment(&self) -> Option<&str> {
-        self.comment
+        self.info.comment
     }
 }
 
@@ -136,12 +137,14 @@ pub fn posting(input: &str) -> IResult<&str, Posting<'_>> {
             opt(preceded(space0, comment)),
         )),
         |(flag, account, amount, cost, price, comment)| Posting {
-            flag,
-            account,
+            info: Info {
+                flag,
+                account,
+                price,
+                cost,
+                comment,
+            },
             amount,
-            price,
-            cost,
-            comment,
         },
     )(input)
 }
