@@ -35,17 +35,12 @@ pub use posting::{Posting, PriceType};
 /// ```
 #[derive(Debug, Clone)]
 pub struct Transaction<'a> {
-    info: Info<'a>,
-    postings: Vec<Posting<'a>>,
-}
-
-#[derive(Debug, Clone)]
-struct Info<'a> {
     date: Date,
     flag: Option<Flag>,
     payee: Option<String>,
     narration: Option<String>,
-    tags: Vec<&'a str>,
+    pub(crate) tags: Vec<&'a str>,
+    postings: Vec<Posting<'a>>,
     comment: Option<&'a str>,
 }
 
@@ -64,13 +59,13 @@ impl<'a> Transaction<'a> {
     /// Returns the "payee" if one was defined
     #[must_use]
     pub fn payee(&self) -> Option<&str> {
-        self.info.payee.as_deref()
+        self.payee.as_deref()
     }
 
     /// Returns the "narration" if one was defined
     #[must_use]
     pub fn narration(&self) -> Option<&str> {
-        self.info.narration.as_deref()
+        self.narration.as_deref()
     }
 
     /// Returns the postings
@@ -82,29 +77,25 @@ impl<'a> Transaction<'a> {
     /// Returns the flag of the transaction (if present)
     #[must_use]
     pub fn flag(&self) -> Option<Flag> {
-        self.info.flag
+        self.flag
     }
 
     /// Returns the tags attached to this transaction
     #[must_use]
     pub fn tags(&self) -> &[&'a str] {
-        &self.info.tags
+        &self.tags
     }
 
     /// Returns the comment (if present)
     #[must_use]
     pub fn comment(&self) -> Option<&str> {
-        self.info.comment
+        self.comment
     }
 
     /// The date of the transaction
     #[must_use]
     pub fn date(&self) -> Date {
-        self.info.date
-    }
-
-    pub(crate) fn append_tags(&mut self, tags: &[&'a str]) {
-        self.info.tags.extend(tags);
+        self.date
     }
 }
 
@@ -131,15 +122,13 @@ pub(crate) fn transaction(input: &str) -> IResult<&str, Transaction<'_>> {
                 None => (None, None),
             };
             Transaction {
-                info: Info {
-                    date,
-                    flag,
-                    payee,
-                    narration,
-                    tags,
-                    comment,
-                },
+                date,
+                flag,
+                payee,
+                narration,
+                tags,
                 postings,
+                comment,
             }
         },
     )(input)
