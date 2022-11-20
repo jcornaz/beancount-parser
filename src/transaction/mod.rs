@@ -39,7 +39,7 @@ pub struct Transaction<'a> {
     flag: Option<Flag>,
     payee: Option<String>,
     narration: Option<String>,
-    pub(crate) tags: Vec<&'a str>,
+    tags: Vec<&'a str>,
     postings: Vec<Posting<'a>>,
     comment: Option<&'a str>,
 }
@@ -96,6 +96,10 @@ impl<'a> Transaction<'a> {
     #[must_use]
     pub fn date(&self) -> Date {
         self.date
+    }
+
+    pub(crate) fn append_tags(&mut self, tags: &[&'a str]) {
+        self.tags.extend(tags);
     }
 }
 
