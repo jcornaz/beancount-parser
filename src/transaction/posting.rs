@@ -29,6 +29,7 @@ use super::{flag, Flag};
 /// * `Assets:A:B 10 CHF @ 1 EUR` (with price)
 /// * `Assets:A:B 10 CHF {2 USD}` (with cost)
 /// * `Assets:A:B` (without amount)
+#[cfg(not(feature = "unstable"))]
 #[derive(Debug, Clone, PartialEq)]
 pub struct Posting<'a> {
     flag: Option<Flag>,
@@ -37,6 +38,31 @@ pub struct Posting<'a> {
     price: Option<(PriceType, Amount<'a>)>,
     cost: Option<Amount<'a>>,
     comment: Option<&'a str>,
+}
+
+/// A posting
+///
+/// It is the association of an [`Account`] and an [`Amount`].
+/// (though the amount is optional)
+///
+/// A posting may also have, price and cost defined after the amount.
+///
+/// # Examples of postings
+///
+/// * `Assets:A:B 10 CHF` (most common form)
+/// * `! Assets:A:B 10 CHF` (with pending flag)
+/// * `Assets:A:B 10 CHF @ 1 EUR` (with price)
+/// * `Assets:A:B 10 CHF {2 USD}` (with cost)
+/// * `Assets:A:B` (without amount)
+#[cfg(feature = "unstable")]
+#[derive(Debug, Clone, PartialEq)]
+pub struct Posting<'a, A = Option<Amount<'a>>> {
+    pub(super) flag: Option<Flag>,
+    pub(super) account: Account<'a>,
+    pub(super) amount: A,
+    pub(super) price: Option<(PriceType, Amount<'a>)>,
+    pub(super) cost: Option<Amount<'a>>,
+    pub(super) comment: Option<&'a str>,
 }
 
 impl<'a> Posting<'a> {
