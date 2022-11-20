@@ -8,6 +8,7 @@ use nom::{
 pub use self::expression::{ConversionError, Expression, Value};
 
 mod expression;
+mod sum;
 
 /// A beancount amount
 ///
@@ -19,7 +20,7 @@ pub struct Amount<'a> {
 }
 
 impl<'a> Amount<'a> {
-    #[cfg(test)]
+    #[cfg(any(test, feature = "unstable"))]
     pub(crate) fn new(value: impl Into<rust_decimal::Decimal>, currency: &'a str) -> Self {
         Self {
             expression: Expression::value(value),
@@ -41,7 +42,7 @@ impl<'a> Amount<'a> {
 
     /// Returns the currency
     #[must_use]
-    pub fn currency(&self) -> &str {
+    pub fn currency(&self) -> &'a str {
         self.currency
     }
 }

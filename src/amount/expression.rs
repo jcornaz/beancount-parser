@@ -31,7 +31,7 @@ pub enum Expression {
 /// A direct value, the leaf of the expression tree
 #[derive(Debug, Clone, Copy, PartialEq)]
 #[allow(clippy::derive_partial_eq_without_eq)]
-pub struct Value(Decimal);
+pub struct Value(pub(super) Decimal);
 
 /// An operation, made of two expression operands
 #[derive(Debug, Clone, PartialEq)]
@@ -71,7 +71,7 @@ pub enum Operator {
 }
 
 impl Expression {
-    #[cfg(test)]
+    #[cfg(any(test, feature = "unstable"))]
     pub(super) fn value(dec: impl Into<Decimal>) -> Self {
         Self::Value(Value(dec.into()))
     }

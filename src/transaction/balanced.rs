@@ -1,5 +1,4 @@
 #![cfg(feature = "unstable")]
-#![allow(unused)]
 
 use super::{Posting, Transaction};
 use crate::Amount;
@@ -83,7 +82,7 @@ mod tests {
         Posting {
             info: PostingInfo {
                 flag: None,
-                account: Account::new(account::Type::Assets, []),
+                account,
                 price: None,
                 cost: None,
                 comment: None,
