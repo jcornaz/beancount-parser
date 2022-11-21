@@ -1,3 +1,11 @@
+## [1.8.5](https://github.com/jcornaz/beancount-parser/compare/v1.8.4...v1.8.5) (2022-11-21)
+
+
+### Features
+
+* **unstable:** Amount sum ([dc68b38](https://github.com/jcornaz/beancount-parser/commit/dc68b38afae71cfc6a15956187c0f080aa88afe9))
+* **unstable:** introduce `BalancedTransaction` type ([988f801](https://github.com/jcornaz/beancount-parser/commit/988f8017254028972949b2c3789c2c28b86011f5))
+
 ## [1.8.4](https://github.com/jcornaz/beancount-parser/compare/v1.8.3...v1.8.4) (2022-11-20)
 
 
