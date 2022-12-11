@@ -19,14 +19,14 @@ use nom::{
 ///
 /// * `Assets:Liquidity:Cash` (type: `Assets`, components: ["Liquidity", "Cash"]
 /// * `Expenses:Groceries` (type: `Assets`, components: ["Groceries"]
-#[derive(Debug, Clone, Eq, PartialEq)]
+#[derive(Debug, Clone, Eq, PartialEq, Hash)]
 pub struct Account<'a> {
     type_: Type,
     components: Vec<&'a str>,
 }
 
 /// Type of account
-#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
 pub enum Type {
     /// The assets
     Assets,
