@@ -1,3 +1,10 @@
+## [1.9.0](https://github.com/jcornaz/beancount-parser/compare/v1.8.5...v1.9.0) (2022-12-13)
+
+
+### Features
+
+* Implement `Hash` for `Account` and `account::Type` ([#17](https://github.com/jcornaz/beancount-parser/issues/17)) ([84b3df0](https://github.com/jcornaz/beancount-parser/commit/84b3df007303e30cbc944dced683773d89c13581))
+
 ## [1.8.5](https://github.com/jcornaz/beancount-parser/compare/v1.8.4...v1.8.5) (2022-11-21)
 
 
