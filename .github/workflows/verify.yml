@@ -6,9 +6,6 @@ on:
   pull_request:
   workflow_dispatch:
 
-env:
-  CARGO_INCREMENTAL: 0
-
 jobs:
   verify:
     runs-on: ubuntu-latest
