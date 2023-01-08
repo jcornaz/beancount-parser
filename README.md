@@ -1,7 +1,8 @@
 # beancount-parser
 
-[![License](https://img.shields.io/badge/license-Unlicense%20OR%20MIT-green)](#License)
+[![License](https://img.shields.io/crates/l/beancount-parser)](#Unlicense)
 [![Crates.io](https://img.shields.io/crates/v/beancount-parser)](https://crates.io/crates/beancount-parser)
+![rustc](https://img.shields.io/badge/rustc-1.56+-blue?logo=rust)
 [![Docs](https://docs.rs/beancount-parser/badge.svg)](https://docs.rs/beancount-parser)
 
 A beancount file parser library for rust
