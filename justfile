@@ -4,7 +4,7 @@ set dotenv-load
 	just --choose --unsorted
 
 # Perform all verifications (compile, test, lint, etc.)
-verify: test lint doc
+verify: test lint doc check-msrv
 
 # Watch the source files and run `just verify` when source changes
 watch:
@@ -53,5 +53,5 @@ release-dry-run: (release "--dry-run")
 
 # Run the release process (requires `npm`, a `GITHUB_TOKEN` and a `CARGO_REGISTRY_TOKEN`)
 release *args:
-	npm install --no-save conventional-changelog-conventionalcommits @semantic-release/exec @semantic-release/changelog @semantic-release/git
-	npx semantic-release {{args}}
+	npm install --no-save conventional-changelog-conventionalcommits@5 @semantic-release/exec@6 @semantic-release/changelog@6 @semantic-release/git@10
+	npx semantic-release@20 {{args}}
