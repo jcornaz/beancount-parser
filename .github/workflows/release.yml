@@ -22,8 +22,11 @@ jobs:
           components: clippy, rustfmt
       - uses: taiki-e/install-action@cargo-binstall
       - uses: taiki-e/install-action@cargo-hack
+      - uses: taiki-e/install-action@just
       - run: cargo binstall --no-confirm --force cargo-edit cargo-msrv
-      - uses: extractions/setup-just@v1
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
       - run: just release
         env:
           GITHUB_TOKEN: ${{ secrets.RELEASE_GH_TOKEN }}
