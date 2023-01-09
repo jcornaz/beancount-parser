@@ -53,6 +53,11 @@
             {
               "type": "perf",
               "section": "Performance"
+            },
+            {
+              "type": "remove",
+              "scope": "unstable",
+              "section": "Unstable API removed"
             }
           ]
         }
