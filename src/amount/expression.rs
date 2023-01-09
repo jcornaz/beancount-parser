@@ -71,7 +71,7 @@ pub enum Operator {
 }
 
 impl Expression {
-    #[cfg(any(test, feature = "unstable"))]
+    #[cfg(any(test))]
     pub(super) fn value(dec: impl Into<Decimal>) -> Self {
         Self::Value(Value(dec.into()))
     }

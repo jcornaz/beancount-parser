@@ -29,32 +29,10 @@ use super::{flag, Flag};
 /// * `Assets:A:B 10 CHF @ 1 EUR` (with price)
 /// * `Assets:A:B 10 CHF {2 USD}` (with cost)
 /// * `Assets:A:B` (without amount)
-#[cfg(not(feature = "unstable"))]
 #[derive(Debug, Clone, PartialEq)]
 pub struct Posting<'a> {
     info: Info<'a>,
     amount: Option<Amount<'a>>,
-}
-
-/// A posting
-///
-/// It is the association of an [`Account`] and an [`Amount`].
-/// (though the amount is optional)
-///
-/// A posting may also have, price and cost defined after the amount.
-///
-/// # Examples of postings
-///
-/// * `Assets:A:B 10 CHF` (most common form)
-/// * `! Assets:A:B 10 CHF` (with pending flag)
-/// * `Assets:A:B 10 CHF @ 1 EUR` (with price)
-/// * `Assets:A:B 10 CHF {2 USD}` (with cost)
-/// * `Assets:A:B` (without amount)
-#[cfg(feature = "unstable")]
-#[derive(Debug, Clone, PartialEq)]
-pub struct Posting<'a, A = Option<Amount<'a>>> {
-    pub(super) info: Info<'a>,
-    pub(super) amount: A,
 }
 
 #[derive(Debug, Clone, PartialEq)]

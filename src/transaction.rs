@@ -18,7 +18,6 @@ use crate::{
     Date,
 };
 
-mod balanced;
 mod posting;
 
 use posting::posting;
@@ -34,28 +33,10 @@ pub use posting::{Posting, PriceType};
 ///   Expenses:Groceries   10 CHF
 ///   Assets:Bank
 /// ```
-#[cfg(not(feature = "unstable"))]
 #[derive(Debug, Clone)]
 pub struct Transaction<'a> {
     info: Info<'a>,
     postings: Vec<Posting<'a>>,
-}
-
-/// A transaction
-///
-/// Contains, a potential narration as well as the [`Posting`]s.
-///
-/// # Example
-/// ```beancount
-/// 2022-09-11 * "Coffee beans"
-///   Expenses:Groceries   10 CHF
-///   Assets:Bank
-/// ```
-#[cfg(feature = "unstable")]
-#[derive(Debug, Clone)]
-pub struct Transaction<'a, A = Option<crate::Amount<'a>>> {
-    info: Info<'a>,
-    postings: Vec<Posting<'a, A>>,
 }
 
 #[derive(Debug, Clone)]
