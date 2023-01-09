@@ -1,3 +1,13 @@
+## [1.9.1](https://github.com/jcornaz/beancount-parser/compare/v1.9.0...v1.9.1) (2023-01-09)
+
+
+### Documentation
+
+* **readme:** add rustc badge ([f0becaf](https://github.com/jcornaz/beancount-parser/commit/f0becaf1bf9aad95a0c04ada58122e6670cf65f4))
+* **readme:** fix build badge url ([1cbdcc1](https://github.com/jcornaz/beancount-parser/commit/1cbdcc1d46d15fcd32a9c31a4a28a2547c02dae5))
+* **readme:** remove build badge ([7df7d5a](https://github.com/jcornaz/beancount-parser/commit/7df7d5acd97970f53eb1023c31cacbe4d16b0ddd))
+* **readme:** update rustc badge ([4a9a6c3](https://github.com/jcornaz/beancount-parser/commit/4a9a6c337b2bc31f3c7d69467fcbda8d14eb0edd))
+
 ## [1.9.0](https://github.com/jcornaz/beancount-parser/compare/v1.8.5...v1.9.0) (2022-12-13)
 
 
