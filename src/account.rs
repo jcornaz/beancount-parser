@@ -56,7 +56,7 @@ impl<'a> Account<'a> {
 
     /// Returns the components
     #[must_use]
-    pub fn components(&self) -> &[&str] {
+    pub fn components(&self) -> &[&'a str] {
         self.components.as_ref()
     }
 }
