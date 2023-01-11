@@ -1,3 +1,15 @@
+## [1.10.0](https://github.com/jcornaz/beancount-parser/compare/v1.9.1...v1.10.0) (2023-01-11)
+
+
+### Features
+
+* extend the lifetime of items returned by `Account::components()` ([c56d5b1](https://github.com/jcornaz/beancount-parser/commit/c56d5b15e1d2516335e6b92a578715daa6effd44))
+
+
+### Unstable API removed
+
+* **unstable:** Remove transaction balancing and amount sum logic ([a6fb067](https://github.com/jcornaz/beancount-parser/commit/a6fb0678df8ea4cb0fff1581b00970f6d525c3d2))
+
 ## [1.9.1](https://github.com/jcornaz/beancount-parser/compare/v1.9.0...v1.9.1) (2023-01-09)
 
 
