@@ -238,7 +238,8 @@ fn value(input: &str) -> IResult<&str, Value> {
     let value_string = recognize(tuple((
         opt(char('-')),
         digit0,
-        opt(preceded(char('.'), digit1)),
+        opt(char('.')),
+        opt(digit1),
     )));
     map(map_res(value_string, str::parse), Value)(input)
 }
@@ -250,8 +251,10 @@ mod tests {
     #[rstest]
     #[case("0", Decimal::ZERO)]
     #[case("42", Decimal::new(42, 0))]
+    #[case("42.", Decimal::new(42, 0))]
     #[case("1.1", Decimal::new(11, 1))]
     #[case(".1", Decimal::new(1, 1))]
+    #[case("-.1", -Decimal::new(1, 1))]
     #[case("-2", -Decimal::new(2, 0))]
     fn parse_value(#[case] input: &str, #[case] expected: Decimal) {
         assert_eq!(parse(input), Ok(("", Expression::Value(Value(expected)))));
