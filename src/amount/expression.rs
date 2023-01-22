@@ -3,7 +3,7 @@ use nom::{
     character::complete::{char, digit0, digit1, space0},
     combinator::{map, map_res, opt, recognize},
     multi::many0,
-    sequence::{delimited, preceded, tuple},
+    sequence::{delimited, tuple},
     IResult,
 };
 use rust_decimal::{prelude::ToPrimitive, Decimal};
