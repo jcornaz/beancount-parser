@@ -1,8 +1,9 @@
 use nom::{
     branch::alt,
-    bytes::complete::{tag, take_till},
+    bytes::complete::tag,
     character::complete::{char, space0, space1},
     combinator::{map, opt},
+    multi::separated_list0,
     sequence::{delimited, preceded, separated_pair, terminated, tuple},
     IResult,
 };
@@ -10,10 +11,10 @@ use nom::{
 use crate::{
     account::{account, Account},
     amount::{amount, Amount},
-    string::comment,
+    string::{comment, string},
 };
 
-use super::{flag, Flag};
+use super::{date, flag, Date, Flag};
 
 /// A posting
 ///
@@ -37,11 +38,11 @@ pub struct Posting<'a> {
 
 #[derive(Debug, Clone, PartialEq)]
 pub(super) struct Info<'a> {
-    pub(super) flag: Option<Flag>,
-    pub(super) account: Account<'a>,
-    pub(super) price: Option<(PriceType, Amount<'a>)>,
-    pub(super) cost: Option<Amount<'a>>,
-    pub(super) comment: Option<&'a str>,
+    flag: Option<Flag>,
+    account: Account<'a>,
+    price: Option<(PriceType, Amount<'a>)>,
+    lot_attributes: Option<LotAttributes<'a>>,
+    comment: Option<&'a str>,
 }
 
 impl<'a> Posting<'a> {
@@ -72,7 +73,10 @@ impl<'a> Posting<'a> {
     /// Returns the cost (if present)
     #[must_use]
     pub fn cost(&self) -> Option<&Amount<'a>> {
-        self.info.cost.as_ref()
+        self.info
+            .lot_attributes
+            .as_ref()
+            .and_then(|la| la.cost.as_ref())
     }
 
     /// Returns the comment (if present)
@@ -93,6 +97,55 @@ pub enum PriceType {
     Total,
 }
 
+#[derive(Debug, Clone, PartialEq)]
+struct LotAttributes<'a> {
+    cost: Option<Amount<'a>>,
+    date: Option<Date>,
+    label: Option<String>,
+}
+
+enum LotAttribute<'a> {
+    Cost(Amount<'a>),
+    Date(Date),
+    Label(String),
+}
+
+fn lot_attributes(input: &str) -> IResult<&str, LotAttributes<'_>> {
+    let (input, attrs) = separated_list0(
+        tuple((space0, char(','), space0)),
+        alt((
+            map(amount, LotAttribute::Cost),
+            map(date, LotAttribute::Date),
+            map(string, LotAttribute::Label),
+        )),
+    )(input)?;
+
+    Ok((
+        input,
+        attrs.iter().fold(
+            LotAttributes {
+                cost: None,
+                date: None,
+                label: None,
+            },
+            |acc, attr| match attr {
+                LotAttribute::Cost(c) => LotAttributes {
+                    cost: Some(c.clone()),
+                    ..acc
+                },
+                LotAttribute::Date(d) => LotAttributes {
+                    date: Some(*d),
+                    ..acc
+                },
+                LotAttribute::Label(s) => LotAttributes {
+                    label: Some(s.to_string()),
+                    ..acc
+                },
+            },
+        ),
+    ))
+}
+
 pub fn posting(input: &str) -> IResult<&str, Posting<'_>> {
     map(
         tuple((
@@ -103,23 +156,19 @@ pub fn posting(input: &str) -> IResult<&str, Posting<'_>> {
                 space1,
                 delimited(
                     tuple((char('{'), space0)),
-                    amount,
-                    tuple((
-                        space0,
-                        opt(tuple((char(','), take_till(|c| c == '}')))),
-                        char('}'),
-                    )),
+                    lot_attributes,
+                    preceded(space0, char('}')),
                 ),
             )),
             opt(preceded(space1, price)),
             opt(preceded(space0, comment)),
         )),
-        |(flag, account, amount, cost, price, comment)| Posting {
+        |(flag, account, amount, lot_attributes, price, comment)| Posting {
             info: Info {
                 flag,
                 account,
                 price,
-                cost,
+                lot_attributes,
                 comment,
             },
             amount,
@@ -192,9 +241,35 @@ mod tests {
         assert_eq!(posting.cost(), Some(&Amount::new(1, "EUR")));
     }
 
+    #[rstest]
+    fn with_empty_cost_and_nonempty_price(
+        #[values("Assets:A:B -10 CHF {} @ 1 EUR", "Assets:A:B -10 CHF { } @ 1 EUR")] input: &str,
+    ) {
+        let (_, posting) = posting(input).expect("should successfully parse the posting");
+        assert!(posting.cost().is_none());
+        assert_eq!(
+            posting.price(),
+            Some((PriceType::Unit, &Amount::new(1, "EUR")))
+        );
+    }
+
     #[test]
     fn with_cost_and_date() {
-        let input = "Assets:A:B 10 CHF {1 EUR, 2022-10-14}";
+        let input = "Assets:A:B 10 CHF {1 EUR , 2022-10-14}";
+        let (_, posting) = posting(input).expect("should successfully parse the posting");
+        assert_eq!(posting.cost(), Some(&Amount::new(1, "EUR")));
+    }
+
+    #[test]
+    fn with_cost_and_date_and_label() {
+        let input = "Assets:A:B 10 CHF {1 EUR, 2022-10-14, \"label\"}";
+        let (_, posting) = posting(input).expect("should successfully parse the posting");
+        assert_eq!(posting.cost(), Some(&Amount::new(1, "EUR")));
+    }
+
+    #[test]
+    fn with_cost_and_no_date_and_label() {
+        let input = "Assets:A:B 10 CHF {1 EUR, \"label\"}";
         let (_, posting) = posting(input).expect("should successfully parse the posting");
         assert_eq!(posting.cost(), Some(&Amount::new(1, "EUR")));
     }
