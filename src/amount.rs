@@ -1,8 +1,12 @@
 //! Types for representing an [`Amount`]
 
 use nom::{
-    bytes::complete::take_while1, character::complete::space1, combinator::map,
-    sequence::separated_pair, IResult,
+    branch::{alt},
+    character::complete::{one_of, satisfy, space1},
+    combinator::{map, not, opt, peek, recognize},
+    sequence::{pair, separated_pair},
+    multi::{many_till},
+    IResult,
 };
 
 pub use self::expression::{ConversionError, Expression, Value};
@@ -56,13 +60,50 @@ pub(crate) fn amount(input: &str) -> IResult<&str, Amount<'_>> {
     )(input)
 }
 
+fn current_first_char(input: &str) -> IResult<&str, char> {
+    satisfy(|c: char| c.is_ascii_uppercase() && c.is_ascii_alphabetic())(input)
+}
+
+fn current_middle_char(input: &str) -> IResult<&str, char> {
+    alt((
+        satisfy(|c: char| c.is_ascii_uppercase() && c.is_ascii_alphabetic()),
+        satisfy(|c: char| c.is_numeric()),
+        one_of("'._-"),
+    ))(input)
+}
+
+fn current_last_char(input: &str) -> IResult<&str, char> {
+    alt((
+        satisfy(|c: char| c.is_ascii_uppercase() && c.is_ascii_alphabetic()),
+        satisfy(|c: char| c.is_numeric()),
+    ))(input)
+}
+
 pub(crate) fn currency(input: &str) -> IResult<&str, &str> {
-    take_while1(|c: char| c.is_ascii_uppercase() && c.is_ascii_alphabetic())(input)
+    recognize(
+        pair(
+            current_first_char,
+            opt(
+                pair(
+                    many_till(
+                        current_middle_char,
+                        peek(pair(
+                            current_last_char,
+                            not(current_middle_char),
+                        ))
+                    ),
+                    current_last_char
+                ),
+            ),
+        )
+    )(input)
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    use nom::combinator::{all_consuming};
 
     #[test]
     fn parse_amount() {
@@ -81,5 +122,32 @@ mod tests {
     #[test]
     fn invalid_amount() {
         assert!(amount("10 chf").is_err());
+    }
+
+    #[rstest]
+    fn valid_currency(
+        #[values(
+            "CHF",
+            "X-A",
+            "A",
+            "AB",
+        )]
+        input: &str,
+    ) {
+        assert_eq!(all_consuming(currency)(input), Ok(("", input)));
+    }
+
+    #[rstest]
+    fn invalid_currency(
+        #[values(
+            "CHF-",
+            "X-a",
+            "1A",
+            "aA",
+        )]
+        input: &str,
+    ) {
+        let p = all_consuming(currency)(input);
+        assert!(p.is_err(), "Result was actually: {:#?}", p);
     }
 }
