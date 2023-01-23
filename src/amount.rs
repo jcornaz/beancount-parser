@@ -67,7 +67,7 @@ fn current_first_char(input: &str) -> IResult<&str, char> {
 fn current_middle_char(input: &str) -> IResult<&str, char> {
     alt((
         satisfy(|c: char| c.is_ascii_uppercase() && c.is_ascii_alphabetic()),
-        satisfy(|c: char| c.is_numeric()),
+        satisfy(char::is_numeric),
         one_of("'._-"),
     ))(input)
 }
@@ -75,7 +75,7 @@ fn current_middle_char(input: &str) -> IResult<&str, char> {
 fn current_last_char(input: &str) -> IResult<&str, char> {
     alt((
         satisfy(|c: char| c.is_ascii_uppercase() && c.is_ascii_alphabetic()),
-        satisfy(|c: char| c.is_numeric()),
+        satisfy(char::is_numeric),
     ))(input)
 }
 
@@ -125,6 +125,6 @@ mod tests {
     #[rstest]
     fn invalid_currency(#[values("CHF-", "X-a", "1A", "aA")] input: &str) {
         let p = all_consuming(currency)(input);
-        assert!(p.is_err(), "Result was actually: {:#?}", p);
+        assert!(p.is_err(), "Result was actually: {p:#?}");
     }
 }
