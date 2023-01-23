@@ -72,7 +72,7 @@ impl<'a> Posting<'a> {
 
     /// Returns the lot attributes (if present)
     #[must_use]
-    pub fn lot_attributes(&self) -> Option<&LotAttributes<'a>> {
+    fn lot_attributes(&self) -> Option<&LotAttributes<'a>> {
         self.info.lot_attributes.as_ref()
     }
 
@@ -104,7 +104,7 @@ pub enum PriceType {
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub struct LotAttributes<'a> {
+struct LotAttributes<'a> {
     cost: Option<Amount<'a>>,
     date: Option<Date>,
     label: Option<String>,
@@ -208,6 +208,7 @@ mod tests {
         );
         assert_eq!(posting.amount(), Some(&Amount::new(10, "CHF")));
         assert!(posting.price().is_none());
+        assert!(posting.cost().is_none());
         assert!(posting.lot_attributes().is_none());
         assert!(posting.comment().is_none());
     }
