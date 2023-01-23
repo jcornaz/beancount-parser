@@ -1,11 +1,11 @@
 //! Types for representing an [`Amount`]
 
 use nom::{
-    branch::{alt},
+    branch::alt,
     character::complete::{one_of, satisfy, space1},
     combinator::{map, not, opt, peek, recognize},
+    multi::many_till,
     sequence::{pair, separated_pair},
-    multi::{many_till},
     IResult,
 };
 
@@ -80,30 +80,23 @@ fn current_last_char(input: &str) -> IResult<&str, char> {
 }
 
 pub(crate) fn currency(input: &str) -> IResult<&str, &str> {
-    recognize(
-        pair(
-            current_first_char,
-            opt(
-                pair(
-                    many_till(
-                        current_middle_char,
-                        peek(pair(
-                            current_last_char,
-                            not(current_middle_char),
-                        ))
-                    ),
-                    current_last_char
-                ),
+    recognize(pair(
+        current_first_char,
+        opt(pair(
+            many_till(
+                current_middle_char,
+                peek(pair(current_last_char, not(current_middle_char))),
             ),
-        )
-    )(input)
+            current_last_char,
+        )),
+    ))(input)
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
 
-    use nom::combinator::{all_consuming};
+    use nom::combinator::all_consuming;
 
     #[test]
     fn parse_amount() {
@@ -125,28 +118,12 @@ mod tests {
     }
 
     #[rstest]
-    fn valid_currency(
-        #[values(
-            "CHF",
-            "X-A",
-            "A",
-            "AB",
-        )]
-        input: &str,
-    ) {
+    fn valid_currency(#[values("CHF", "X-A", "A", "AB")] input: &str) {
         assert_eq!(all_consuming(currency)(input), Ok(("", input)));
     }
 
     #[rstest]
-    fn invalid_currency(
-        #[values(
-            "CHF-",
-            "X-a",
-            "1A",
-            "aA",
-        )]
-        input: &str,
-    ) {
+    fn invalid_currency(#[values("CHF-", "X-a", "1A", "aA")] input: &str) {
         let p = all_consuming(currency)(input);
         assert!(p.is_err(), "Result was actually: {:#?}", p);
     }
