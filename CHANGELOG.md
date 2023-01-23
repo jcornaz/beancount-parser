@@ -1,3 +1,12 @@
+## [1.10.1](https://github.com/jcornaz/beancount-parser/compare/v1.10.0...v1.10.1) (2023-01-23)
+
+
+### Bug Fixes
+
+* failure to parse currencies with numbers or special chars ([#21](https://github.com/jcornaz/beancount-parser/issues/21)) ([d5f548e](https://github.com/jcornaz/beancount-parser/commit/d5f548ed4763324d4be7dc09ddb5590675ef721e))
+* failure to parse terminal decimal points ([#19](https://github.com/jcornaz/beancount-parser/issues/19)) ([0e31ae4](https://github.com/jcornaz/beancount-parser/commit/0e31ae4687ce10c329872ec0ae5bf1f09712ec26))
+* incorrect lot attributes parsing ([#20](https://github.com/jcornaz/beancount-parser/issues/20)) ([04c2d9a](https://github.com/jcornaz/beancount-parser/commit/04c2d9abc0dc5d0b3e88caa823c3d81bb7db7a2a))
+
 ## [1.10.0](https://github.com/jcornaz/beancount-parser/compare/v1.9.1...v1.10.0) (2023-01-11)
 
 
