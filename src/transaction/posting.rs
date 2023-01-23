@@ -1,6 +1,6 @@
 use nom::{
     branch::alt,
-    bytes::complete::{tag},
+    bytes::complete::tag,
     character::complete::{char, space0, space1},
     combinator::{map, opt},
     multi::separated_list0,
@@ -38,11 +38,11 @@ pub struct Posting<'a> {
 
 #[derive(Debug, Clone, PartialEq)]
 pub(super) struct Info<'a> {
-    pub(super) flag: Option<Flag>,
-    pub(super) account: Account<'a>,
-    pub(super) price: Option<(PriceType, Amount<'a>)>,
-    pub(super) lot_attributes: Option<LotAttributes<'a>>,
-    pub(super) comment: Option<&'a str>,
+    flag: Option<Flag>,
+    account: Account<'a>,
+    price: Option<(PriceType, Amount<'a>)>,
+    lot_attributes: Option<LotAttributes<'a>>,
+    comment: Option<&'a str>,
 }
 
 impl<'a> Posting<'a> {
@@ -68,12 +68,6 @@ impl<'a> Posting<'a> {
     #[must_use]
     pub fn price(&self) -> Option<(PriceType, &Amount<'a>)> {
         self.info.price.as_ref().map(|(t, p)| (*t, p))
-    }
-
-    /// Returns the lot attributes (if present)
-    #[must_use]
-    fn lot_attributes(&self) -> Option<&LotAttributes<'a>> {
-        self.info.lot_attributes.as_ref()
     }
 
     /// Returns the cost (if present)
@@ -111,18 +105,18 @@ struct LotAttributes<'a> {
 }
 
 enum LotAttribute<'a> {
-    CostAttr(Amount<'a>),
-    DateAttr(Date),
-    LabelAttr(String),
+    Cost(Amount<'a>),
+    Date(Date),
+    Label(String),
 }
 
 fn lot_attributes(input: &str) -> IResult<&str, LotAttributes<'_>> {
     let (input, attrs) = separated_list0(
         tuple((space0, char(','), space0)),
         alt((
-            map(amount, |a| LotAttribute::CostAttr(a)),
-            map(date, |d| LotAttribute::DateAttr(d)),
-            map(string, |s| LotAttribute::LabelAttr(s)),
+            map(amount, LotAttribute::Cost),
+            map(date, LotAttribute::Date),
+            map(string, LotAttribute::Label),
         )),
     )(input)?;
 
@@ -135,15 +129,15 @@ fn lot_attributes(input: &str) -> IResult<&str, LotAttributes<'_>> {
                 label: None,
             },
             |acc, attr| match attr {
-                LotAttribute::CostAttr(c) => LotAttributes {
+                LotAttribute::Cost(c) => LotAttributes {
                     cost: Some(c.clone()),
                     ..acc
                 },
-                LotAttribute::DateAttr(d) => LotAttributes {
+                LotAttribute::Date(d) => LotAttributes {
                     date: Some(*d),
                     ..acc
                 },
-                LotAttribute::LabelAttr(s) => LotAttributes {
+                LotAttribute::Label(s) => LotAttributes {
                     label: Some(s.to_string()),
                     ..acc
                 },
@@ -209,7 +203,6 @@ mod tests {
         assert_eq!(posting.amount(), Some(&Amount::new(10, "CHF")));
         assert!(posting.price().is_none());
         assert!(posting.cost().is_none());
-        assert!(posting.lot_attributes().is_none());
         assert!(posting.comment().is_none());
     }
 
