@@ -235,12 +235,7 @@ fn exp_p2(input: &str) -> IResult<&str, Expression> {
 }
 
 fn value(input: &str) -> IResult<&str, Value> {
-    let value_string = recognize(tuple((
-        opt(char('-')),
-        digit0,
-        opt(char('.')),
-        opt(digit1),
-    )));
+    let value_string = recognize(tuple((opt(char('-')), digit0, opt(char('.')), opt(digit1))));
     map(map_res(value_string, str::parse), Value)(input)
 }
 
