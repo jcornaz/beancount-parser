@@ -118,7 +118,7 @@ mod tests {
     }
 
     #[rstest]
-    fn valid_currency(#[values("CHF", "X-A", "A", "AB")] input: &str) {
+    fn valid_currency(#[values("CHF", "X-A", "X_A", "X'A", "A", "AB", "A2", "R2D2")] input: &str) {
         assert_eq!(all_consuming(currency)(input), Ok(("", input)));
     }
 
