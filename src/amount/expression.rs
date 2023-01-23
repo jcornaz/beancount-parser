@@ -3,7 +3,7 @@ use nom::{
     character::complete::{char, digit0, digit1, space0},
     combinator::{map, map_res, opt, recognize},
     multi::many0,
-    sequence::{delimited, preceded, tuple},
+    sequence::{delimited, tuple},
     IResult,
 };
 use rust_decimal::{prelude::ToPrimitive, Decimal};
@@ -235,11 +235,7 @@ fn exp_p2(input: &str) -> IResult<&str, Expression> {
 }
 
 fn value(input: &str) -> IResult<&str, Value> {
-    let value_string = recognize(tuple((
-        opt(char('-')),
-        digit0,
-        opt(preceded(char('.'), digit1)),
-    )));
+    let value_string = recognize(tuple((opt(char('-')), digit0, opt(char('.')), opt(digit1))));
     map(map_res(value_string, str::parse), Value)(input)
 }
 
@@ -250,8 +246,10 @@ mod tests {
     #[rstest]
     #[case("0", Decimal::ZERO)]
     #[case("42", Decimal::new(42, 0))]
+    #[case("42.", Decimal::new(42, 0))]
     #[case("1.1", Decimal::new(11, 1))]
     #[case(".1", Decimal::new(1, 1))]
+    #[case("-.1", -Decimal::new(1, 1))]
     #[case("-2", -Decimal::new(2, 0))]
     fn parse_value(#[case] input: &str, #[case] expected: Decimal) {
         assert_eq!(parse(input), Ok(("", Expression::Value(Value(expected)))));
