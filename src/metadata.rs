@@ -17,10 +17,10 @@ use nom::{
     IResult,
 };
 
-pub type Metadata<'a> = HashMap<String, MetadataValue<'a>>;
+pub type Metadata<'a> = HashMap<String, Value<'a>>;
 
 #[derive(Clone, Debug, PartialEq)]
-pub enum MetadataValue<'a> {
+pub enum Value<'a> {
     Account(Account<'a>),
     Amount(Amount<'a>),
     Currency(String),
@@ -37,23 +37,23 @@ fn metadata_key(input: &str) -> IResult<&str, &str> {
         satisfy(|c: char| c.is_ascii_lowercase() && c.is_ascii_alphabetic()),
         many0(alt((
             satisfy(|c: char| c.is_ascii_alphabetic()),
-            satisfy(|c: char| c.is_numeric()),
+            satisfy(char::is_numeric),
             one_of("-_"),
         ))),
     ))(input)
 }
 
-fn metadata_value(input: &str) -> IResult<&str, MetadataValue<'_>> {
+fn metadata_value(input: &str) -> IResult<&str, Value<'_>> {
     alt((
-        map(account, |a| MetadataValue::Account(a)),
-        map(amount, |a| MetadataValue::Amount(a)),
-        map(currency, |c| MetadataValue::Currency(c.to_owned())),
-        map(date, |d| MetadataValue::Date(d)),
-        map(string, |s| MetadataValue::String(s)),
+        map(account, Value::Account),
+        map(amount, Value::Amount),
+        map(currency, |c| Value::Currency(c.to_owned())),
+        map(date, Value::Date),
+        map(string, Value::String),
     ))(input)
 }
 
-fn metadata_line(input: &str) -> IResult<&str, (&str, MetadataValue<'_>)> {
+fn metadata_line(input: &str) -> IResult<&str, (&str, Value<'_>)> {
     separated_pair(
         metadata_key,
         tuple((space0, tag(":"), space0)),
@@ -68,9 +68,7 @@ pub fn metadata(input: &str) -> IResult<&str, Metadata<'_>> {
         |mut acc: HashMap<_, _>, (k, v)| {
             // Only the first entry is kept per Beancount documentation
             let k = k.to_string();
-            if !acc.contains_key(&k) {
-                let _ = acc.insert(k, v);
-            }
+            let _ = acc.entry(k).or_insert(v);
             acc
         },
     )(input)
@@ -88,13 +86,24 @@ mod tests {
             abc: "hello"
             def-hij: 1 USD"#;
         let mut expected_map = HashMap::new();
-        let _ = expected_map.insert(
-            String::from("abc"),
-            MetadataValue::String(String::from("hello")),
+        std::mem::drop(
+            expected_map.insert(String::from("abc"), Value::String(String::from("hello"))),
         );
-        let _ = expected_map.insert(
+        std::mem::drop(expected_map.insert(
             String::from("def-hij"),
-            MetadataValue::Amount(Amount::new(1, "USD")),
+            Value::Amount(Amount::new(1, "USD")),
+        ));
+        assert_eq!(metadata(input), Ok(("", expected_map)));
+    }
+
+    #[test]
+    fn repeated_key_ignored() {
+        let input = r#"
+            abc: "hello"
+            abc: 1 USD"#;
+        let mut expected_map = HashMap::new();
+        std::mem::drop(
+            expected_map.insert(String::from("abc"), Value::String(String::from("hello"))),
         );
         assert_eq!(metadata(input), Ok(("", expected_map)));
     }
@@ -108,7 +117,7 @@ mod tests {
                 "",
                 (
                     "abc",
-                    MetadataValue::Account(Account::new(Type::Assets, ["Unknown"]))
+                    Value::Account(Account::new(Type::Assets, ["Unknown"]))
                 )
             ))
         );
@@ -119,7 +128,7 @@ mod tests {
         let input = r#"abc: 1 USD"#;
         assert_eq!(
             metadata_line(input),
-            Ok(("", ("abc", MetadataValue::Amount(Amount::new(1, "USD")))))
+            Ok(("", ("abc", Value::Amount(Amount::new(1, "USD")))))
         );
     }
 
@@ -128,7 +137,7 @@ mod tests {
         let input = r#"abc: CHF"#;
         assert_eq!(
             metadata_line(input),
-            Ok(("", ("abc", MetadataValue::Currency(String::from("CHF")))))
+            Ok(("", ("abc", Value::Currency(String::from("CHF")))))
         );
     }
 
@@ -137,7 +146,7 @@ mod tests {
         let input = r#"abc: 2014-01-01"#;
         assert_eq!(
             metadata_line(input),
-            Ok(("", ("abc", MetadataValue::Date(Date::new(2014, 1, 1)))))
+            Ok(("", ("abc", Value::Date(Date::new(2014, 1, 1)))))
         );
     }
 
@@ -146,7 +155,7 @@ mod tests {
         let input = r#"abc: "def""#;
         assert_eq!(
             metadata_line(input),
-            Ok(("", ("abc", MetadataValue::String(String::from("def")))))
+            Ok(("", ("abc", Value::String(String::from("def")))))
         );
     }
 }

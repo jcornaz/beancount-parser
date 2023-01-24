@@ -184,7 +184,7 @@ mod tests {
 
     use crate::{
         account::{Account, Type},
-        metadata::MetadataValue,
+        metadata,
     };
 
     #[rstest]
@@ -235,11 +235,11 @@ mod tests {
             transaction(input).expect("should successfully parse the transaction");
         assert_eq!(
             transaction.metadata.get(&String::from("abc")),
-            Some(&MetadataValue::Account(Account::new(
+            Some(&metadata::Value::Account(Account::new(
                 Type::Assets,
                 ["Unknown"]
             )))
-        )
+        );
     }
 
     #[test]
