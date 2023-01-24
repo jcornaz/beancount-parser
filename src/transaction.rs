@@ -166,8 +166,6 @@ fn flag(input: &str) -> IResult<&str, Flag> {
 mod tests {
     use super::*;
 
-    use crate::account::{Account, Type};
-
     #[rstest]
     fn simple_transaction() {
         let input = r#"2022-09-16 * "Hello \"world\""
