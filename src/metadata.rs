@@ -20,6 +20,7 @@ use nom::{
 pub type Metadata<'a> = HashMap<String, Value<'a>>;
 
 #[derive(Clone, Debug, PartialEq)]
+#[non_exhaustive]
 pub enum Value<'a> {
     Account(Account<'a>),
     Amount(Amount<'a>),
@@ -61,7 +62,7 @@ fn metadata_line(input: &str) -> IResult<&str, (&str, Value<'_>)> {
     )(input)
 }
 
-pub fn metadata(input: &str) -> IResult<&str, Metadata<'_>> {
+pub(crate) fn metadata(input: &str) -> IResult<&str, Metadata<'_>> {
     fold_many0(
         preceded(tuple((space0, line_ending, space1)), metadata_line),
         HashMap::new,
