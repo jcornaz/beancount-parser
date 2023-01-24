@@ -57,6 +57,7 @@ mod close;
 mod date;
 mod directive;
 mod error;
+mod metadata;
 mod open;
 mod price;
 mod string;
