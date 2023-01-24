@@ -1,7 +1,8 @@
+use crate::assertion::assertion;
 use crate::close::close;
 use crate::open::open;
 use crate::price::{price, Price};
-use crate::{Close, Date, Open};
+use crate::{Assertion, Close, Date, Open};
 use nom::branch::alt;
 use nom::{combinator::map, IResult};
 
@@ -23,6 +24,8 @@ pub enum Directive<'a> {
     Open(Open<'a>),
     /// The [`Close`](crate::Close) account directive
     Close(Close<'a>),
+    /// The [`Assertion`](crate::Assertion) (`balance`) account directive
+    Assertion(Assertion<'a>),
 }
 
 impl<'a> Directive<'a> {
@@ -56,6 +59,7 @@ impl<'a> Directive<'a> {
             Directive::Open(o) => o.date(),
             Directive::Close(c) => c.date(),
             Directive::Price(p) => p.date(),
+            Directive::Assertion(a) => a.date(),
         })
     }
 }
@@ -66,6 +70,7 @@ pub(crate) fn directive(input: &str) -> IResult<&str, Directive<'_>> {
         map(price, Directive::Price),
         map(open, Directive::Open),
         map(close, Directive::Close),
+        map(assertion, Directive::Assertion),
     ))(input)
 }
 
