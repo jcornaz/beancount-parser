@@ -5,11 +5,14 @@
 ![rustc](https://img.shields.io/badge/rustc-1.60+-blue?logo=rust)
 [![Docs](https://docs.rs/beancount-parser/badge.svg)](https://docs.rs/beancount-parser)
 
-A beancount file parser library for rust
+A [beancount] file parser library for rust
+
+[beancount]: https://beancount.github.io/docs/index.html
 
 ## Goal
 
-Parse a beancount file into a rust data structure
+Parse a [beancount file](https://beancount.github.io/docs/beancount_language_syntax.html) into a rust data structure
+
 
 ## Non goals
 
@@ -17,12 +20,14 @@ Do not verify beancount rules, such as "transaction must balance to zero", "acco
 
 Do not provide any "business" logic to analyze or manipulate the ledger. No balance, no currency translation, etc.
 
+
 ## Cargo features
 
 | Feature        | Description                                                                          |
 |----------------|--------------------------------------------------------------------------------------|
 | `rust_decimal` | Add conversion from `Value` into `Decimal`                                           |
-| `unstable`     | New, unfinished and unstable API. <br /> **Unstable API is not considered as part os the public API. It may be broken, or even removed in a minor or patch release!** |
+| `unstable`     | New, unfinished and unstable API. <br /> **Unstable API is not considered as part of the public API. It may be broken or removed in a minor or patch release!** |
+
 
 ## MSRV
 
