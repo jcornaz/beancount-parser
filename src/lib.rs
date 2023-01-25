@@ -57,6 +57,7 @@ mod close;
 mod date;
 mod directive;
 mod error;
+#[cfg(feature = "unstable")]
 mod metadata;
 mod open;
 mod price;

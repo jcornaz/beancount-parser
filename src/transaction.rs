@@ -14,10 +14,12 @@ use nom::{
 
 use crate::{
     date::date,
-    metadata::{metadata, Metadata},
     string::{comment, string},
     Date,
 };
+
+#[cfg(feature = "unstable")]
+use crate::metadata::{metadata, Metadata};
 
 mod posting;
 
@@ -37,6 +39,7 @@ pub use posting::{Posting, PriceType};
 #[derive(Debug, Clone)]
 pub struct Transaction<'a> {
     info: Info<'a>,
+    #[cfg(feature = "unstable")]
     metadata: Metadata<'a>,
     postings: Vec<Posting<'a>>,
 }
@@ -77,6 +80,7 @@ impl<'a> Transaction<'a> {
 
     /// Returns the metadata
     #[must_use]
+    #[cfg(feature = "unstable")]
     pub fn metadata(&self) -> &Metadata<'a> {
         &self.metadata
     }
@@ -116,6 +120,7 @@ impl<'a> Transaction<'a> {
     }
 }
 
+#[cfg(feature = "unstable")]
 pub(crate) fn transaction(input: &str) -> IResult<&str, Transaction<'_>> {
     map(
         terminated(
@@ -131,6 +136,17 @@ pub(crate) fn transaction(input: &str) -> IResult<&str, Transaction<'_>> {
             metadata,
             postings,
         },
+    )(input)
+}
+
+#[cfg(not(feature = "unstable"))]
+pub(crate) fn transaction(input: &str) -> IResult<&str, Transaction<'_>> {
+    map(
+        terminated(
+            tuple((info, many0(preceded(tuple((line_ending, space1)), posting)))),
+            cut(alt((line_ending, eof))),
+        ),
+        |(info, postings)| Transaction { info, postings },
     )(input)
 }
 
@@ -182,11 +198,6 @@ fn flag(input: &str) -> IResult<&str, Flag> {
 mod tests {
     use super::*;
 
-    use crate::{
-        account::{Account, Type},
-        metadata,
-    };
-
     #[rstest]
     fn simple_transaction() {
         let input = r#"2022-09-16 * "Hello \"world\""
@@ -224,7 +235,12 @@ mod tests {
     }
 
     #[test]
+    #[cfg(feature = "unstable")]
     fn transaction_with_metadata() {
+        use crate::{
+            account::{self, Account},
+            metadata,
+        };
         let input = r#"2022-01-01 *
             abc: Assets:Unknown
             def: 3 USD
@@ -236,7 +252,7 @@ mod tests {
         assert_eq!(
             transaction.metadata.get(&String::from("abc")),
             Some(&metadata::Value::Account(Account::new(
-                Type::Assets,
+                account::Type::Assets,
                 ["Unknown"]
             )))
         );
