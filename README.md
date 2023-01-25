@@ -33,7 +33,7 @@ Do not provide any "business" logic to analyze or manipulate the ledger. No bala
 
 The minimum supported rust version is currently `1.60`.
 
-It can be updated to a newer stable version when required, and that will not be considered a breaking change (it can happen in for a minor or patch release).
+It can be updated to a newer stable version when required, and that will not be considered a breaking change (it can be increased in a minor or patch release).
 
 
 ## Unlicense
