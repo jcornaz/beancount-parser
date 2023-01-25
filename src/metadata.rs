@@ -24,7 +24,7 @@ pub type Metadata<'a> = HashMap<String, Value<'a>>;
 pub enum Value<'a> {
     Account(Account<'a>),
     Amount(Amount<'a>),
-    Currency(String),
+    Currency(&'a str),
     Date(Date),
     String(String),
     // FIXME: Do not yet handle:
@@ -48,7 +48,7 @@ fn metadata_value(input: &str) -> IResult<&str, Value<'_>> {
     alt((
         map(account, Value::Account),
         map(amount, Value::Amount),
-        map(currency, |c| Value::Currency(c.to_owned())),
+        map(currency, Value::Currency),
         map(date, Value::Date),
         map(string, Value::String),
     ))(input)
@@ -138,7 +138,7 @@ mod tests {
         let input = r#"abc: CHF"#;
         assert_eq!(
             metadata_line(input),
-            Ok(("", ("abc", Value::Currency(String::from("CHF")))))
+            Ok(("", ("abc", Value::Currency("CHF"))))
         );
     }
 
