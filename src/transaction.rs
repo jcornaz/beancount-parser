@@ -18,6 +18,9 @@ use crate::{
     Date,
 };
 
+#[cfg(feature = "unstable")]
+use crate::metadata::{metadata, Metadata};
+
 mod posting;
 
 use posting::posting;
@@ -36,6 +39,8 @@ pub use posting::{Posting, PriceType};
 #[derive(Debug, Clone)]
 pub struct Transaction<'a> {
     info: Info<'a>,
+    #[cfg(feature = "unstable")]
+    metadata: Metadata<'a>,
     postings: Vec<Posting<'a>>,
 }
 
@@ -73,6 +78,13 @@ impl<'a> Transaction<'a> {
         self.info.narration.as_deref()
     }
 
+    /// Returns the metadata
+    #[must_use]
+    #[cfg(feature = "unstable")]
+    pub fn metadata(&self) -> &Metadata<'a> {
+        &self.metadata
+    }
+
     /// Returns the postings
     #[must_use]
     pub fn postings(&self) -> &[Posting<'a>] {
@@ -108,6 +120,26 @@ impl<'a> Transaction<'a> {
     }
 }
 
+#[cfg(feature = "unstable")]
+pub(crate) fn transaction(input: &str) -> IResult<&str, Transaction<'_>> {
+    map(
+        terminated(
+            tuple((
+                info,
+                metadata,
+                many0(preceded(tuple((line_ending, space1)), posting)),
+            )),
+            cut(alt((line_ending, eof))),
+        ),
+        |(info, metadata, postings)| Transaction {
+            info,
+            metadata,
+            postings,
+        },
+    )(input)
+}
+
+#[cfg(not(feature = "unstable"))]
 pub(crate) fn transaction(input: &str) -> IResult<&str, Transaction<'_>> {
     map(
         terminated(
@@ -200,6 +232,30 @@ mod tests {
         let (_, transaction) =
             transaction(input).expect("should successfully parse the transaction");
         assert!(transaction.narration().is_none());
+    }
+
+    #[test]
+    #[cfg(feature = "unstable")]
+    fn transaction_with_metadata() {
+        use crate::{
+            account::{self, Account},
+            metadata,
+        };
+        let input = r#"2022-01-01 *
+            abc: Assets:Unknown
+            def: 3 USD
+            Expenses:A    10 CHF
+            Assets:B     -10 CHF
+        "#;
+        let (_, transaction) =
+            transaction(input).expect("should successfully parse the transaction");
+        assert_eq!(
+            transaction.metadata.get(&String::from("abc")),
+            Some(&metadata::Value::Account(Account::new(
+                account::Type::Assets,
+                ["Unknown"]
+            )))
+        );
     }
 
     #[test]
