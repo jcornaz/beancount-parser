@@ -49,6 +49,9 @@ install-git-hooks:
 	echo 'just verify' >> .git/hooks/pre-commit
 	chmod +x .git/hooks/pre-commit
 
+generate-changelog tag:
+	git cliff --unreleased --tag {{tag}} --strip header
+
 # run the release process in dry run mode (requires npm and a `GITHUB_TOKEN`)
 release-dry-run: (release "--dry-run")
 
