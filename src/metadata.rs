@@ -17,9 +17,14 @@ use nom::{
     IResult,
 };
 
+#[cfg(feature = "unstable")]
 pub type Metadata<'a> = HashMap<String, Value<'a>>;
 
+#[cfg(not(feature = "unstable"))]
+pub(crate) type Metadata<'a> = HashMap<String, Value<'a>>;
+
 #[derive(Clone, Debug, PartialEq)]
+#[cfg(feature = "unstable")]
 #[non_exhaustive]
 pub enum Value<'a> {
     Account(Account<'a>),
@@ -31,6 +36,17 @@ pub enum Value<'a> {
     // 1) Empty metadata
     // 2) Tags
     // 3) Numbers without currencies
+}
+
+#[derive(Clone, Debug, PartialEq)]
+#[cfg(not(feature = "unstable"))]
+#[non_exhaustive]
+pub(crate) enum Value<'a> {
+    Account(Account<'a>),
+    Amount(Amount<'a>),
+    Currency(&'a str),
+    Date(Date),
+    String(String),
 }
 
 fn metadata_key(input: &str) -> IResult<&str, &str> {

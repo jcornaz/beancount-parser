@@ -19,7 +19,7 @@ use crate::{
 };
 
 #[cfg(feature = "unstable")]
-use crate::metadata::{metadata, Metadata};
+use crate::metadata::Metadata;
 
 mod posting;
 
@@ -120,33 +120,25 @@ impl<'a> Transaction<'a> {
     }
 }
 
-#[cfg(feature = "unstable")]
 pub(crate) fn transaction(input: &str) -> IResult<&str, Transaction<'_>> {
+    #[cfg(not(feature = "unstable"))]
+    let build_transaction = |(info, _, postings)| Transaction { info, postings };
+    #[cfg(feature = "unstable")]
+    let build_transaction = |(info, metadata, postings)| Transaction {
+        info,
+        metadata,
+        postings,
+    };
     map(
         terminated(
             tuple((
                 info,
-                metadata,
+                crate::metadata::metadata,
                 many0(preceded(tuple((line_ending, space1)), posting)),
             )),
             cut(alt((line_ending, eof))),
         ),
-        |(info, metadata, postings)| Transaction {
-            info,
-            metadata,
-            postings,
-        },
-    )(input)
-}
-
-#[cfg(not(feature = "unstable"))]
-pub(crate) fn transaction(input: &str) -> IResult<&str, Transaction<'_>> {
-    map(
-        terminated(
-            tuple((info, many0(preceded(tuple((line_ending, space1)), posting)))),
-            cut(alt((line_ending, eof))),
-        ),
-        |(info, postings)| Transaction { info, postings },
+        build_transaction,
     )(input)
 }
 
@@ -236,7 +228,7 @@ mod tests {
 
     #[test]
     #[cfg(feature = "unstable")]
-    fn transaction_with_metadata() {
+    fn should_parse_metadata() {
         use crate::{
             account::{self, Account},
             metadata,
@@ -256,6 +248,19 @@ mod tests {
                 ["Unknown"]
             )))
         );
+    }
+
+    #[test]
+    fn should_succeed_with_metadata() {
+        let input = r#"2022-01-01 *
+            abc: Assets:Unknown
+            def: 3 USD
+            Expenses:A    10 CHF
+            Assets:B     -10 CHF
+        "#;
+        let (_, transaction) =
+            transaction(input).expect("should successfully parse the transaction");
+        assert_eq!(transaction.postings().len(), 2, "{transaction:?}");
     }
 
     #[test]
