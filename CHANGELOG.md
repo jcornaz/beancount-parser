@@ -1,3 +1,22 @@
+## [1.11.0](https://github.com/jcornaz/beancount-parser/compare/v1.10.1...v1.11.0) (2023-01-27)
+
+
+### Features
+
+* balance assertion directive ([#22](https://github.com/jcornaz/beancount-parser/issues/22)) ([bf4e5c6](https://github.com/jcornaz/beancount-parser/commit/bf4e5c67e9581417c0ac17a35619a08dbf7d4000))
+* **unstable:** transaction metadata ([#23](https://github.com/jcornaz/beancount-parser/issues/23)) ([1a49c92](https://github.com/jcornaz/beancount-parser/commit/1a49c9264c785d7afd8763e0035480f52b75d193))
+
+
+### Bug Fixes
+
+* postings not parsed when transaction has metadata ([d6be280](https://github.com/jcornaz/beancount-parser/commit/d6be28047b1f30a3d6d8b377b54ab64305e990fa))
+
+
+### Documentation
+
+* **readme:** fix typo ([04b8693](https://github.com/jcornaz/beancount-parser/commit/04b86939f69899522d8233c07a2fe20e6de2c476))
+* **readme:** link to beancount doc and typo fixes ([74872a6](https://github.com/jcornaz/beancount-parser/commit/74872a63ebdfe6bc43c3f669258eb2e074769721))
+
 ## [1.10.1](https://github.com/jcornaz/beancount-parser/compare/v1.10.0...v1.10.1) (2023-01-23)
 
 
