@@ -2,7 +2,10 @@ use crate::assertion::assertion;
 use crate::close::close;
 use crate::open::open;
 use crate::price::{price, Price};
-use crate::{Assertion, Close, Date, Open};
+use crate::{
+    include::{include, Include},
+    Assertion, Close, Date, Open,
+};
 use nom::branch::alt;
 use nom::{combinator::map, IResult};
 
@@ -26,6 +29,8 @@ pub enum Directive<'a> {
     Close(Close<'a>),
     /// The [`Assertion`](crate::Assertion) (`balance`) account directive
     Assertion(Assertion<'a>),
+    /// The [`Include`](crate::Include) directive
+    Include(Include),
 }
 
 impl<'a> Directive<'a> {
@@ -54,13 +59,14 @@ impl<'a> Directive<'a> {
     /// Returns the date of the directive (if there is one)
     #[must_use]
     pub fn date(&self) -> Option<Date> {
-        Some(match self {
-            Directive::Transaction(t) => t.date(),
-            Directive::Open(o) => o.date(),
-            Directive::Close(c) => c.date(),
-            Directive::Price(p) => p.date(),
-            Directive::Assertion(a) => a.date(),
-        })
+        match self {
+            Directive::Transaction(t) => Some(t.date()),
+            Directive::Open(o) => Some(o.date()),
+            Directive::Close(c) => Some(c.date()),
+            Directive::Price(p) => Some(p.date()),
+            Directive::Assertion(a) => Some(a.date()),
+            Directive::Include(_) => None,
+        }
     }
 }
 
@@ -71,6 +77,7 @@ pub(crate) fn directive(input: &str) -> IResult<&str, Directive<'_>> {
         map(open, Directive::Open),
         map(close, Directive::Close),
         map(assertion, Directive::Assertion),
+        map(include, Directive::Include),
     ))(input)
 }
 
