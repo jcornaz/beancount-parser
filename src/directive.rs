@@ -139,6 +139,18 @@ mod tests {
         );
     }
 
+    #[test]
+    #[cfg(feature = "unstable")]
+    fn include_directive() {
+        use nom::combinator::all_consuming;
+        let (_, directive) = all_consuming(directive)(r#"include "myfile.beancount""#).unwrap();
+        assert_eq!(directive.date(), None);
+        let Directive::Include(include) = directive else {
+            panic!("Expected an include directive but was: {directive:?}")
+        };
+        assert_eq!(include.path(), "myfile.beancount");
+    }
+
     #[rstest]
     fn invalid(
         #[values(
