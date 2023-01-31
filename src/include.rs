@@ -1,3 +1,5 @@
+use std::path::{Path, PathBuf};
+
 use nom::{
     bytes::complete::tag,
     character::complete::space1,
@@ -11,20 +13,20 @@ use crate::string::string;
 /// Include directive
 #[derive(Clone, Debug)]
 pub struct Include {
-    path: String,
+    path: PathBuf,
 }
 
 impl Include {
     /// Path to include
     #[must_use]
-    pub fn path(&self) -> &str {
+    pub fn path(&self) -> &Path {
         self.path.as_ref()
     }
 }
 
 pub(crate) fn include(input: &str) -> IResult<&str, Include> {
     map(preceded(tuple((tag("include"), space1)), string), |path| {
-        Include { path }
+        Include { path: path.into() }
     })(input)
 }
 
@@ -37,7 +39,7 @@ mod tests {
     #[test]
     fn valid_include_directive() {
         let (_, inc) = include(r#"include "abc.beancount""#).unwrap();
-        assert_eq!(inc.path(), "abc.beancount");
+        assert_eq!(inc.path().to_str(), Some("abc.beancount"));
     }
 
     #[rstest]

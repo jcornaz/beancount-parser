@@ -148,7 +148,7 @@ mod tests {
         let Directive::Include(include) = directive else {
             panic!("Expected an include directive but was: {directive:?}")
         };
-        assert_eq!(include.path(), "myfile.beancount");
+        assert_eq!(include.path().to_str(), Some("myfile.beancount"));
     }
 
     #[rstest]
