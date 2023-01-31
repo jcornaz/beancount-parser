@@ -57,6 +57,7 @@ mod close;
 mod date;
 mod directive;
 mod error;
+#[cfg(feature = "unstable")]
 mod include;
 mod metadata;
 mod open;
@@ -68,9 +69,11 @@ use crate::directive::directive;
 
 pub use crate::{
     account::Account, amount::Amount, assertion::Assertion, close::Close, date::Date,
-    directive::Directive, error::Error, include::Include, open::Open, price::Price,
-    transaction::Transaction,
+    directive::Directive, error::Error, open::Open, price::Price, transaction::Transaction,
 };
+
+#[cfg(feature = "unstable")]
+pub use crate::include::Include;
 
 use nom::{
     branch::alt,
