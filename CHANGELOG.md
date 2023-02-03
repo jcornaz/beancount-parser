@@ -1,3 +1,11 @@
+## [1.11.1](https://github.com/jcornaz/beancount-parser/compare/v1.11.0...v1.11.1) (2023-02-03)
+
+
+### Features
+
+* **unstable:** Add support for `include` directives ([#24](https://github.com/jcornaz/beancount-parser/issues/24)) ([e39c414](https://github.com/jcornaz/beancount-parser/commit/e39c414dc146ebf075ff1c4bdcfba8e43aaa4556))
+* **unstable:** Make the include direcvie return a `&Path` ([480061a](https://github.com/jcornaz/beancount-parser/commit/480061a6a72bbd0eb5f86d3383ac26e331540ec8))
+
 ## [1.11.0](https://github.com/jcornaz/beancount-parser/compare/v1.10.1...v1.11.0) (2023-01-27)
 
 
