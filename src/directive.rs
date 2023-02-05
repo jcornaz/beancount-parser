@@ -1,6 +1,5 @@
 use crate::assertion::assertion;
 use crate::close::close;
-#[cfg(feature = "unstable")]
 use crate::include::{include, Include};
 use crate::open::open;
 use crate::price::{price, Price};
@@ -29,7 +28,6 @@ pub enum Directive<'a> {
     /// The [`Assertion`](crate::Assertion) (`balance`) account directive
     Assertion(Assertion<'a>),
     /// The [`Include`](crate::Include) directive
-    #[cfg(feature = "unstable")]
     Include(Include),
 }
 
@@ -65,24 +63,11 @@ impl<'a> Directive<'a> {
             Directive::Close(c) => Some(c.date()),
             Directive::Price(p) => Some(p.date()),
             Directive::Assertion(a) => Some(a.date()),
-            #[cfg(feature = "unstable")]
             Directive::Include(_) => None,
         }
     }
 }
 
-#[cfg(not(feature = "unstable"))]
-pub(crate) fn directive(input: &str) -> IResult<&str, Directive<'_>> {
-    alt((
-        map(transaction, Directive::Transaction),
-        map(price, Directive::Price),
-        map(open, Directive::Open),
-        map(close, Directive::Close),
-        map(assertion, Directive::Assertion),
-    ))(input)
-}
-
-#[cfg(feature = "unstable")]
 pub(crate) fn directive(input: &str) -> IResult<&str, Directive<'_>> {
     alt((
         map(transaction, Directive::Transaction),
@@ -140,7 +125,6 @@ mod tests {
     }
 
     #[test]
-    #[cfg(feature = "unstable")]
     fn include_directive() {
         use nom::combinator::all_consuming;
         let (_, directive) = all_consuming(directive)(r#"include "myfile.beancount""#).unwrap();

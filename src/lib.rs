@@ -57,7 +57,6 @@ mod close;
 mod date;
 mod directive;
 mod error;
-#[cfg(feature = "unstable")]
 mod include;
 mod metadata;
 mod open;
@@ -72,7 +71,6 @@ pub use crate::{
     directive::Directive, error::Error, open::Open, price::Price, transaction::Transaction,
 };
 
-#[cfg(feature = "unstable")]
 pub use crate::include::Include;
 
 use nom::{
