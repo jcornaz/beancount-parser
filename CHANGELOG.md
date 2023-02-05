@@ -1,3 +1,12 @@
+## [1.12.0](https://github.com/jcornaz/beancount-parser/compare/v1.11.1...v1.12.0) (2023-02-05)
+
+
+### Features
+
+* implement `Display` for `account::Type` ([eb6bf10](https://github.com/jcornaz/beancount-parser/commit/eb6bf10b0717d05aeb43c3099430f58e4e7d6ceb))
+* implement `Display` for `Account` ([b890620](https://github.com/jcornaz/beancount-parser/commit/b8906201fad79730604a98ead887f4cd95bba0fc))
+* stabilize include directive ([60c7a2b](https://github.com/jcornaz/beancount-parser/commit/60c7a2bb191215d2d98e0f57ab1ca5c23f26fee9))
+
 ## [1.11.1](https://github.com/jcornaz/beancount-parser/compare/v1.11.0...v1.11.1) (2023-02-03)
 
 
