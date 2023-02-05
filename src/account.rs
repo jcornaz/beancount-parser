@@ -27,6 +27,16 @@ pub struct Account<'a> {
     components: Vec<&'a str>,
 }
 
+impl Display for Account<'_> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.type_)?;
+        for c in &self.components {
+            write!(f, ":{c}")?;
+        }
+        Ok(())
+    }
+}
+
 /// Type of account
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
 pub enum Type {
@@ -95,6 +105,8 @@ fn type_(input: &str) -> IResult<&str, Type> {
 
 #[cfg(test)]
 mod tests {
+    use nom::combinator::all_consuming;
+
     use super::*;
 
     #[rstest]
@@ -104,7 +116,10 @@ mod tests {
     #[case("Expenses:3Foo", Account::new(Type::Expenses, ["3Foo"]))]
     #[case("Equity:Foo-Bar", Account::new(Type::Equity, ["Foo-Bar"]))]
     fn valid_account(#[case] input: &str, #[case] expected: Account<'_>) {
-        assert_eq!(account(input), Ok(("", expected)));
+        let (_, actual) = all_consuming(account)(input).unwrap();
+        assert_eq!(actual, expected);
+        let formatted = format!("{actual}");
+        assert_eq!(&formatted, input);
     }
 
     #[rstest]
