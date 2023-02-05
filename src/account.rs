@@ -1,5 +1,7 @@
 //! Types for representing an [`Account`]
 
+use std::fmt::Display;
+
 use nom::{
     branch::alt,
     bytes::complete::{tag, take_while1},
@@ -38,6 +40,12 @@ pub enum Type {
     Income,
     /// Expenses
     Expenses,
+}
+
+impl Display for Type {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        std::fmt::Debug::fmt(self, f)
+    }
 }
 
 impl<'a> Account<'a> {
@@ -97,5 +105,16 @@ mod tests {
     #[case("Equity:Foo-Bar", Account::new(Type::Equity, ["Foo-Bar"]))]
     fn valid_account(#[case] input: &str, #[case] expected: Account<'_>) {
         assert_eq!(account(input), Ok(("", expected)));
+    }
+
+    #[rstest]
+    #[case(Type::Assets, "Assets")]
+    #[case(Type::Liabilities, "Liabilities")]
+    #[case(Type::Income, "Income")]
+    #[case(Type::Expenses, "Expenses")]
+    #[case(Type::Equity, "Equity")]
+    fn display_type(#[case] type_: Type, #[case] expected: &str) {
+        let actual = format!("{type_}");
+        assert_eq!(actual, expected);
     }
 }
