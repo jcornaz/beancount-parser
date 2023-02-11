@@ -69,7 +69,8 @@ use crate::directive::directive;
 
 pub use crate::{
     account::Account, amount::Amount, assertion::Assertion, close::Close, date::Date,
-    directive::Directive, error::Error, open::Open, price::Price, transaction::Transaction,
+    directive::Directive, error::Error, open::Open, pad::Pad, price::Price,
+    transaction::Transaction,
 };
 
 pub use crate::include::Include;

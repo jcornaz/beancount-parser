@@ -1,5 +1,3 @@
-#![cfg(test)]
-
 use nom::{
     bytes::complete::tag,
     character::complete::space1,
@@ -10,6 +8,12 @@ use nom::{
 
 use crate::{account::account, date::date, Account, Date};
 
+/// Padding directive
+///
+/// The padding directive is an instruction to automatically
+/// insert a transaction that will make the next balance assertion to succeed.
+///
+/// See: <https://beancount.github.io/docs/beancount_language_syntax.html#pad>
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct Pad<'a> {
     date: Date,
@@ -18,14 +22,26 @@ pub struct Pad<'a> {
 }
 
 impl<'a> Pad<'a> {
+    /// Date of the pad
+    #[must_use]
     pub fn date(&self) -> Date {
         self.date
     }
 
+    /// Account to credit on the next balance assertion
+    ///
+    /// It is the account that must have a balance assertion for the pad to be effective
+    ///
+    /// It is the first account mentionned in the directive
+    #[must_use]
     pub fn target_account(&self) -> &Account<'a> {
         &self.target_account
     }
 
+    /// Source of the founds when the [`target_account`] is padded
+    ///
+    /// It is the second account mentionned in the directive
+    #[must_use]
     pub fn source_account(&self) -> &Account<'a> {
         &self.source_account
     }

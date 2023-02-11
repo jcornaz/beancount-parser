@@ -2,6 +2,7 @@ use crate::assertion::assertion;
 use crate::close::close;
 use crate::include::{include, Include};
 use crate::open::open;
+use crate::pad::{pad, Pad};
 use crate::price::{price, Price};
 use crate::{Assertion, Close, Date, Open};
 use nom::branch::alt;
@@ -29,6 +30,8 @@ pub enum Directive<'a> {
     Assertion(Assertion<'a>),
     /// The [`Include`](crate::Include) directive
     Include(Include),
+    /// The [`Pad`](crate::Pad) directive
+    Pad(Pad<'a>),
 }
 
 impl<'a> Directive<'a> {
@@ -64,6 +67,7 @@ impl<'a> Directive<'a> {
             Directive::Price(p) => Some(p.date()),
             Directive::Assertion(a) => Some(a.date()),
             Directive::Include(_) => None,
+            Directive::Pad(p) => Some(p.date()),
         }
     }
 }
@@ -75,12 +79,15 @@ pub(crate) fn directive(input: &str) -> IResult<&str, Directive<'_>> {
         map(open, Directive::Open),
         map(close, Directive::Close),
         map(assertion, Directive::Assertion),
+        map(pad, Directive::Pad),
         map(include, Directive::Include),
     ))(input)
 }
 
 #[cfg(test)]
 mod tests {
+    use nom::combinator::all_consuming;
+
     use crate::account;
 
     use super::*;
@@ -126,13 +133,24 @@ mod tests {
 
     #[test]
     fn include_directive() {
-        use nom::combinator::all_consuming;
         let (_, directive) = all_consuming(directive)(r#"include "myfile.beancount""#).unwrap();
         assert_eq!(directive.date(), None);
         let Directive::Include(include) = directive else {
             panic!("Expected an include directive but was: {directive:?}")
         };
         assert_eq!(include.path().to_str(), Some("myfile.beancount"));
+    }
+
+    #[test]
+    fn pad_directive() {
+        let (_, directive) =
+            all_consuming(directive)("2022-02-11 pad Assets:Cash Equity:OpeningBalances").unwrap();
+        assert_eq!(directive.date(), Some(Date::new(2022, 2, 11)));
+        let Directive::Pad(pad) = directive else {
+            panic!("Expected an include directive but was: {directive:?}")
+        };
+        assert_eq!(pad.target_account().components(), ["Cash"]);
+        assert_eq!(pad.source_account().components(), ["OpeningBalances"]);
     }
 
     #[rstest]
