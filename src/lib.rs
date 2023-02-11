@@ -60,6 +60,7 @@ mod error;
 mod include;
 mod metadata;
 mod open;
+mod pad;
 mod price;
 mod string;
 pub mod transaction;
