@@ -3,13 +3,14 @@
 use nom::{
     bytes::complete::tag,
     character::complete::space1,
-    combinator::map,
-    sequence::{terminated, tuple},
+    combinator::{cut, map},
+    sequence::{preceded, terminated, tuple},
     IResult,
 };
 
 use crate::{account::account, date::date, Account, Date};
 
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct Pad<'a> {
     date: Date,
     target_account: Account<'a>,
@@ -33,11 +34,13 @@ impl<'a> Pad<'a> {
 pub(crate) fn pad(input: &str) -> IResult<&str, Pad<'_>> {
     map(
         tuple((
-            terminated(date, tuple((space1, tag("pad"), space1))),
-            terminated(account, space1),
-            account,
+            terminated(date, tuple((space1, tag("pad")))),
+            cut(tuple((
+                preceded(space1, account),
+                preceded(space1, account),
+            ))),
         )),
-        |(date, target_account, source_account)| Pad {
+        |(date, (target_account, source_account))| Pad {
             date,
             target_account,
             source_account,
@@ -66,5 +69,25 @@ mod tests {
             pad.source_account(),
             &Account::new(account::Type::Equity, ["Opening-Balances"])
         );
+    }
+
+    #[rstest]
+    fn invalid_pad(
+        #[values(
+            "2014-06-01 pad",
+            "2014-06-01 pad oops",
+            "2014-06-01 pad Assets:Test",
+            "2014-06-01 pad Assets:Test oops"
+        )]
+        input: &str,
+    ) {
+        let res = pad(input);
+        assert!(matches!(res, Err(nom::Err::Failure(_))), "{res:?}");
+    }
+
+    #[rstest]
+    fn not_a_pad(#[values("", "2014-06-01 txn", "hello", "; hello")] input: &str) {
+        let res = pad(input);
+        assert!(matches!(res, Err(nom::Err::Error(_))), "{res:?}");
     }
 }
