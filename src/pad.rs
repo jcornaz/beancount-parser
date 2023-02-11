@@ -38,7 +38,7 @@ impl<'a> Pad<'a> {
         &self.target_account
     }
 
-    /// Source of the founds when the [`target_account`] is padded
+    /// Source of the founds when the [`Self::target_account`] is padded
     ///
     /// It is the second account mentionned in the directive
     #[must_use]
