@@ -1,3 +1,15 @@
+## [1.13.0](https://github.com/jcornaz/beancount-parser/compare/v1.12.0...v1.13.0) (2023-02-17)
+
+
+### Features
+
+* pad directive ([e3034e7](https://github.com/jcornaz/beancount-parser/commit/e3034e76979cc7643ebd4dd9164bdf464946adf4))
+
+
+### Documentation
+
+* fix a broken link ([b943bd7](https://github.com/jcornaz/beancount-parser/commit/b943bd74e48915c397a9fe876cbc799848fda441))
+
 ## [1.12.0](https://github.com/jcornaz/beancount-parser/compare/v1.11.1...v1.12.0) (2023-02-05)
 
 
