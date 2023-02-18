@@ -1,4 +1,4 @@
-use beancount_parser::{Directive, Parser};
+use beancount_parser::{Date, Directive, Parser};
 use rstest::rstest;
 
 const SIMPLE: &str = include_str!("examples/simple.beancount");
@@ -90,6 +90,20 @@ fn poptag_removes_only_concerned_tag_from_stack() {
         .into_transaction()
         .expect("should be a transaction");
     assert_eq!(transaction.tags(), &["world"]);
+}
+
+#[test]
+fn close_directive() {
+    let directive =
+        Parser::new("2016-11-28 close Liabilities:CreditCard:CapitalOne").assert_single_directive();
+    let Directive::Close(directive) = directive else {
+        panic!("Expected a close directive but was: {directive:?}")
+    };
+    assert_eq!(directive.date(), Date::new(2016, 11, 28));
+    assert_eq!(
+        directive.account().components(),
+        &["CreditCard", "CapitalOne"]
+    );
 }
 
 trait DirectiveList<'a> {

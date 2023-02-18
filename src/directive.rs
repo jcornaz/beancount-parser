@@ -119,19 +119,6 @@ mod tests {
     }
 
     #[test]
-    fn close_directive() {
-        let result = directive("2016-11-28 close Liabilities:CreditCard:CapitalOne");
-        let Ok((_, Directive::Close(directive))) = result else {
-            panic!("Expected a close directive but was: {result:?}")
-        };
-        assert_eq!(directive.date(), Date::new(2016, 11, 28));
-        assert_eq!(
-            directive.account().components(),
-            &["CreditCard", "CapitalOne"]
-        );
-    }
-
-    #[test]
     fn include_directive() {
         let (_, directive) = all_consuming(directive)(r#"include "myfile.beancount""#).unwrap();
         assert_eq!(directive.date(), None);
