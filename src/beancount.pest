@@ -12,7 +12,7 @@ account_type = { "Assets" | "Liabilities" | "Equity" | "Income" | "Expenses" }
 account_component = { ASCII_ALPHANUMERIC+ }
 
 /// Blue
-date = { year ~ "-" ~ month ~ "-" ~ day }
+date = ${ year ~ "-" ~ month ~ "-" ~ day }
 year = { ASCII_DIGIT{4} }
 month = { ASCII_DIGIT{2} }
 day = { ASCII_DIGIT{2} }

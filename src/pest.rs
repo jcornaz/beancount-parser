@@ -36,17 +36,25 @@ fn build_close_directive(pair: Pair<'_>) -> Close<'_> {
 }
 
 fn build_date(pair: Pair<'_>) -> Date {
-    let mut year = 0;
-    let mut month = 0;
-    let mut day = 0;
-    for pair in pair.into_inner() {
-        match pair.as_rule() {
-            Rule::year => year = pair.as_str().parse().expect("invalid year"),
-            Rule::month => month = pair.as_str().parse().expect("invalid year"),
-            Rule::day => day = pair.as_str().parse().expect("invalid year"),
-            _ => (),
-        }
-    }
+    let mut inner = pair.into_inner();
+    let year = inner
+        .next()
+        .expect("no year in date")
+        .as_str()
+        .parse()
+        .expect("year is not a number");
+    let month = inner
+        .next()
+        .expect("no month in date")
+        .as_str()
+        .parse()
+        .expect("year is not a number");
+    let day = inner
+        .next()
+        .expect("no day in date")
+        .as_str()
+        .parse()
+        .expect("year is not a number");
     Date::new(year, month, day)
 }
 
@@ -82,6 +90,24 @@ mod tests {
         if let Err(err) = parse(input) {
             panic!("{err}");
         }
+    }
+
+    #[rstest]
+    fn comments(
+        #[values(
+            "",
+            "\n",
+            "2016 - 11 - 28 close Liabilities:CreditCard:CapitalOne",
+            "Hello world",
+            "* Banking",
+            "** Bank of America",
+            ";; Transactions follow …",
+            "; foo bar"
+        )]
+        input: &str,
+    ) {
+        let count = parse(input).expect("successful parse").count();
+        assert_eq!(count, 0);
     }
 
     #[rstest]

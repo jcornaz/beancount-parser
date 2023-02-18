@@ -92,6 +92,26 @@ fn poptag_removes_only_concerned_tag_from_stack() {
     assert_eq!(transaction.tags(), &["world"]);
 }
 
+#[rstest]
+fn comment_line(
+    #[values(
+        "",
+        "\n",
+        "2016 - 11 - 28 close Liabilities:CreditCard:CapitalOne",
+        "Hello world",
+        "* Banking",
+        "** Bank of America",
+        ";; Transactions follow …",
+        "; foo bar"
+    )]
+    input: &str,
+) {
+    let directives = Parser::new(input)
+        .collect::<Result<Vec<_>, _>>()
+        .expect("successful parse");
+    assert_eq!(directives.len(), 0);
+}
+
 #[test]
 fn close_directive() {
     let directive =
