@@ -32,22 +32,16 @@ fn build_date(pair: Pair<'_>) -> Date {
     let mut inner = pair.into_inner();
     let year = inner
         .next()
-        .expect("no year in date")
-        .as_str()
-        .parse()
-        .expect("year is not a number");
+        .and_then(|y| y.as_str().parse().ok())
+        .expect("invalid year");
     let month = inner
         .next()
-        .expect("no month in date")
-        .as_str()
-        .parse()
-        .expect("year is not a number");
+        .and_then(|m| m.as_str().parse().ok())
+        .expect("invalid month");
     let day = inner
         .next()
-        .expect("no day in date")
-        .as_str()
-        .parse()
-        .expect("year is not a number");
+        .and_then(|d| d.as_str().parse().ok())
+        .expect("invalid day");
     Date::new(year, month, day)
 }
 
