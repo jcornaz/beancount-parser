@@ -20,19 +20,10 @@ fn parse(input: &str) -> Result<impl Iterator<Item = Directive<'_>>, Box<dyn std
 }
 
 fn build_close_directive(pair: Pair<'_>) -> Close<'_> {
-    let mut date = Date::new(0, 0, 0);
-    let mut account = None;
-    for p in pair.into_inner() {
-        match p.as_rule() {
-            Rule::date => date = build_date(p),
-            Rule::account => account = Some(build_account(p)),
-            _ => (),
-        }
-    }
-    Close {
-        date,
-        account: account.expect("account not found"),
-    }
+    let mut inner = pair.into_inner();
+    let date = build_date(inner.next().expect("no date in close directive"));
+    let account = build_account(inner.next().expect("no account in close directive"));
+    Close { date, account }
 }
 
 fn build_date(pair: Pair<'_>) -> Date {
@@ -59,19 +50,13 @@ fn build_date(pair: Pair<'_>) -> Date {
 }
 
 fn build_account(pair: Pair<'_>) -> Account<'_> {
-    let mut type_ = None;
-    let mut components = Vec::new();
-    for comp in pair.into_inner() {
-        match (comp.as_rule(), comp.as_str()) {
-            (Rule::account_type, "Liabilities") => type_ = Some(account::Type::Liabilities),
-            (Rule::account_component, name) => components.push(name),
-            _ => (),
-        }
-    }
-    Account {
-        type_: type_.expect("account type not found"),
-        components,
-    }
+    let mut inner = pair.into_inner();
+    let type_ = match inner.next().expect("no account type in account").as_str() {
+        "Liabilities" => account::Type::Liabilities,
+        _ => unreachable!("invalid account type"),
+    };
+    let components = inner.map(|c| c.as_str()).collect();
+    Account { type_, components }
 }
 
 #[cfg(test)]
