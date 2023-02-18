@@ -149,7 +149,8 @@ mod tests {
             "2016-11-28closeLiabilities:CreditCard:CapitalOne",
             "2016-11-28 closeLiabilities:CreditCard:CapitalOne",
             "2016-11-28close Liabilities:CreditCard:CapitalOne",
-            "2016-11-28 close Liabilities:CreditCard:CapitalOne Oops"
+            "2016-11-28 close Liabilities:CreditCard:CapitalOne Oops",
+            "2016-11-28 close Oops"
         )]
         input: &str,
     ) {

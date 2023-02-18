@@ -13,7 +13,7 @@ comment = _{ (!NEWLINE ~ ANY)* }
 known_directive_head = _{ date ~ space? ~ ("close") }
 
 /// Yellow
-account = { account_type  ~ (":" ~ account_component)* }
+account = { account_type ~ (":" ~ account_component)* }
 account_type = { "Assets" | "Liabilities" | "Equity" | "Income" | "Expenses" }
 account_component = { (ASCII_ALPHANUMERIC | "-")+ }
 
