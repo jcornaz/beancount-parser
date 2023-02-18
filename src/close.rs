@@ -11,8 +11,8 @@ use crate::{account::account, date::date, Account, Date};
 /// The close account directive
 #[derive(Debug, Clone)]
 pub struct Close<'a> {
-    date: Date,
-    account: Account<'a>,
+    pub(crate) date: Date,
+    pub(crate) account: Account<'a>,
 }
 
 impl<'a> Close<'a> {

@@ -1,0 +1,17 @@
+beancount = { SOI ~ directive* ~ EOI }
+
+directive = _{ close_directive }
+close_directive = { date ~ "close" ~ account }
+
+/// Yellow
+account = { account_type  ~ (":" ~ account_component)+ }
+account_type = { "Assets" | "Liabilities" | "Equity" | "Income" | "Expenses" }
+account_component = { ASCII_ALPHANUMERIC+ }
+
+/// Blue
+date = { year ~ "-" ~ month ~ "-" ~ day }
+year = { ASCII_DIGIT{4} }
+month = { ASCII_DIGIT{2} }
+day = { ASCII_DIGIT{2} }
+
+WHITESPACE = _{ (" " | "\t")+ }

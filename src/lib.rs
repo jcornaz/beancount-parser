@@ -61,6 +61,7 @@ mod include;
 mod metadata;
 mod open;
 mod pad;
+mod pest;
 mod price;
 mod string;
 pub mod transaction;

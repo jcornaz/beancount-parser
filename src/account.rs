@@ -23,8 +23,8 @@ use nom::{
 /// * `Expenses:Groceries` (type: `Assets`, components: ["Groceries"]
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
 pub struct Account<'a> {
-    type_: Type,
-    components: Vec<&'a str>,
+    pub(crate) type_: Type,
+    pub(crate) components: Vec<&'a str>,
 }
 
 impl Display for Account<'_> {
