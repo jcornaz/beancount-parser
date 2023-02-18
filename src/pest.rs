@@ -52,7 +52,11 @@ fn build_date(pair: Pair<'_>) -> Date {
 fn build_account(pair: Pair<'_>) -> Account<'_> {
     let mut inner = pair.into_inner();
     let type_ = match inner.next().expect("no account type in account").as_str() {
+        "Assets" => account::Type::Assets,
         "Liabilities" => account::Type::Liabilities,
+        "Expenses" => account::Type::Expenses,
+        "Income" => account::Type::Income,
+        "Equity" => account::Type::Equity,
         _ => unreachable!("invalid account type"),
     };
     let components = inner.map(|c| c.as_str()).collect();
@@ -96,17 +100,41 @@ mod tests {
     }
 
     #[rstest]
-    #[case("2016-11-28 close Liabilities:CreditCard:CapitalOne", account::Type::Liabilities, &["CreditCard", "CapitalOne"])]
-    #[case("2016-11-28  close\tLiabilities:CreditCard:CapitalOne", account::Type::Liabilities, &["CreditCard", "CapitalOne"])]
-    fn close_directive(
+    fn parse_close_directive_date() {
+        let input = "2016-11-28 close Liabilities:CreditCard:CapitalOne";
+        let directive = parse_single_directive(input);
+        let Directive::Close(close) = directive else { panic!("expected close directive but was {directive:?}") };
+        assert_eq!(close.date(), Date::new(2016, 11, 28));
+    }
+
+    #[rstest]
+    #[case("2016-11-28 close Assets:Hello", account::Type::Assets)]
+    #[case("2016-11-28 close Liabilities:Hello", account::Type::Liabilities)]
+    #[case("2016-11-28 close Expenses:Hello", account::Type::Expenses)]
+    #[case("2016-11-28 close Income:Hello", account::Type::Income)]
+    #[case("2016-11-28 close Equity:Hello", account::Type::Equity)]
+    fn parse_close_directive_account_type(
         #[case] input: &str,
         #[case] expected_account_type: account::Type,
-        #[case] expected_account_components: &[&str],
     ) {
         let directive = parse_single_directive(input);
         let Directive::Close(close) = directive else { panic!("expected close directive but was {directive:?}") };
         assert_eq!(close.date(), Date::new(2016, 11, 28));
         assert_eq!(close.account().type_(), expected_account_type);
+    }
+
+    #[rstest]
+    #[case("2016-11-28 close Liabilities:CreditCard:CapitalOne", &["CreditCard", "CapitalOne"])]
+    #[case("2016-11-28 close Assets:Hello", &["Hello"])]
+    #[case("2016-11-28 close Assets", &[])]
+    #[case("2016-11-28  close\tLiabilities:CreditCard:CapitalOne", &["CreditCard", "CapitalOne"])]
+    fn parse_close_directive_account_components(
+        #[case] input: &str,
+        #[case] expected_account_components: &[&str],
+    ) {
+        let directive = parse_single_directive(input);
+        let Directive::Close(close) = directive else { panic!("expected close directive but was {directive:?}") };
+        assert_eq!(close.date(), Date::new(2016, 11, 28));
         assert_eq!(close.account().components(), expected_account_components);
     }
 

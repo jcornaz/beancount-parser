@@ -7,7 +7,7 @@ close_directive = { date ~ "close" ~ account }
 comment_line = { ANY+ ~ (NEWLINE | EOI) }
 
 /// Yellow
-account = { account_type  ~ (":" ~ account_component)+ }
+account = { account_type  ~ (":" ~ account_component)* }
 account_type = { "Assets" | "Liabilities" | "Equity" | "Income" | "Expenses" }
 account_component = { ASCII_ALPHANUMERIC+ }
 
