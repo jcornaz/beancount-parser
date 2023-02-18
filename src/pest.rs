@@ -12,7 +12,9 @@ type Pair<'a> = pest::iterators::Pair<'a, Rule>;
 
 fn parse(input: &str) -> Result<impl Iterator<Item = Directive<'_>>, Box<dyn std::error::Error>> {
     Ok(Parser::parse(Rule::beancount_file, input)?
-        .flatten()
+        .next()
+        .expect("no root rule")
+        .into_inner()
         .filter_map(|p| match p.as_rule() {
             Rule::close_directive => Some(Directive::Close(build_close_directive(p))),
             _ => None,
@@ -97,7 +99,9 @@ mod tests {
         )]
         input: &str,
     ) {
-        let count = parse(input).expect("successful parse").count();
+        let count = parse(input)
+            .expect("should successfully parse input")
+            .count();
         assert_eq!(count, 0);
     }
 
@@ -129,6 +133,7 @@ mod tests {
     #[case("2016-11-28 close Liabilities:CreditCard:CapitalOne", &["CreditCard", "CapitalOne"])]
     #[case("2016-11-28 close Assets:Hello", &["Hello"])]
     #[case("2016-11-28 close Assets", &[])]
+    #[case("2016-11-28 close Assets:Hello-World:123", &["Hello-World", "123"])]
     #[case("2016-11-28  close\tLiabilities:CreditCard:CapitalOne", &["CreditCard", "CapitalOne"])]
     fn parse_close_directive_account_components(
         #[case] input: &str,
@@ -138,6 +143,20 @@ mod tests {
         let Directive::Close(close) = directive else { panic!("expected close directive but was {directive:?}") };
         assert_eq!(close.date(), Date::new(2016, 11, 28));
         assert_eq!(close.account().components(), expected_account_components);
+    }
+
+    #[rstest]
+    fn error_case(
+        #[values(
+            "2016-11-28closeLiabilities:CreditCard:CapitalOne",
+            "2016-11-28 closeLiabilities:CreditCard:CapitalOne",
+            "2016-11-28close Liabilities:CreditCard:CapitalOne",
+            "2016-11-28 close Liabilities:CreditCard:CapitalOne Oops"
+        )]
+        input: &str,
+    ) {
+        let result = parse(input);
+        assert!(result.is_err());
     }
 
     fn parse_single_directive(input: &str) -> Directive<'_> {
