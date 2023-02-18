@@ -86,12 +86,14 @@ mod tests {
         #[values(
             "",
             "\n",
+            "\n\n\r\n",
             "2016 - 11 - 28 close Liabilities:CreditCard:CapitalOne",
             "Hello world",
             "* Banking",
             "** Bank of America",
             ";; Transactions follow …",
-            "; foo bar"
+            "; foo bar",
+            ";"
         )]
         input: &str,
     ) {
