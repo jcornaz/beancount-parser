@@ -119,6 +119,10 @@ mod tests {
     #[case("2016-11-28 close Expenses:Hello", account::Type::Expenses)]
     #[case("2016-11-28 close Income:Hello", account::Type::Income)]
     #[case("2016-11-28 close Equity:Hello", account::Type::Equity)]
+    #[case("2016-11-28 close Equity:Hello ; Foo bar", account::Type::Equity)]
+    #[case("2016-11-28 close Equity:Hello; Foo bar", account::Type::Equity)]
+    #[case("2016-11-28 close Equity:Hello;Foo bar", account::Type::Equity)]
+    #[case("2016-11-28 close Equity:Hello;", account::Type::Equity)]
     fn parse_close_directive_account_type(
         #[case] input: &str,
         #[case] expected_account_type: account::Type,
