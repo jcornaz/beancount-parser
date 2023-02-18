@@ -11,7 +11,7 @@ struct Parser;
 type Pair<'a> = pest::iterators::Pair<'a, Rule>;
 
 fn parse(input: &str) -> Result<impl Iterator<Item = Directive<'_>>, Box<dyn std::error::Error>> {
-    Ok(Parser::parse(Rule::beancount, input)?
+    Ok(Parser::parse(Rule::beancount_file, input)?
         .flatten()
         .filter_map(|p| match p.as_rule() {
             Rule::close_directive => Some(Directive::Close(build_close_directive(p))),
@@ -70,10 +70,18 @@ fn build_account(pair: Pair<'_>) -> Account<'_> {
 mod tests {
     use super::*;
 
-    #[test]
-    fn empty_beancount() {
-        let directive_count = parse("").expect("should parse successfully").count();
-        assert_eq!(directive_count, 0);
+    #[rstest]
+    fn successful_parse(
+        #[values("", " ", " \n ", " \t ",
+            include_str!("../tests/examples/simple.beancount"),
+            include_str!("../tests/examples/official.beancount"),
+            include_str!("../tests/examples/comments.beancount"),
+        )]
+        input: &str,
+    ) {
+        if let Err(err) = parse(input) {
+            panic!("{err}");
+        }
     }
 
     #[rstest]
@@ -92,7 +100,10 @@ mod tests {
     }
 
     fn parse_single_directive(input: &str) -> Directive<'_> {
-        let mut iter = parse(input).expect("Parse failed");
+        let mut iter = match parse(input) {
+            Ok(iter) => iter,
+            Err(err) => panic!("{err}"),
+        };
         let directive = iter.next().expect("There was no directives");
         assert!(iter.next().is_none(), "There was more than one directive");
         directive

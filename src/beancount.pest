@@ -1,7 +1,10 @@
-beancount = { SOI ~ directive* ~ EOI }
+beancount_file = { SOI ~ (directive | comment_line)* ~ EOI }
 
-directive = _{ close_directive }
+directive = { close_directive }
 close_directive = { date ~ "close" ~ account }
+
+/// Cyan
+comment_line = { ANY+ ~ (NEWLINE | EOI) }
 
 /// Yellow
 account = { account_type  ~ (":" ~ account_component)+ }
@@ -14,4 +17,4 @@ year = { ASCII_DIGIT{4} }
 month = { ASCII_DIGIT{2} }
 day = { ASCII_DIGIT{2} }
 
-WHITESPACE = _{ (" " | "\t")+ }
+WHITESPACE = _{ " " | "\t" | "\n" }
