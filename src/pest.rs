@@ -31,11 +31,17 @@ fn build_transaction(pair: Pair<'_>) -> Transaction<'_> {
     let mut inner = pair.into_inner();
     let date = build_date(inner.next().expect("no date in transaction"));
     let mut flag = None;
+    let mut payee = None;
+    let mut narration = None;
     for pair in inner {
-        match (pair.as_rule(), pair.as_str()) {
-            (Rule::transaction_flag, "*") => flag = Some(Flag::Cleared),
-            (Rule::transaction_flag, "!") => flag = Some(Flag::Pending),
-            (Rule::transaction_flag, _) => unreachable!("Invalid transaction flag"),
+        match (pair.as_rule(), pair.as_str(), narration.take()) {
+            (Rule::transaction_flag, "*", _) => flag = Some(Flag::Cleared),
+            (Rule::transaction_flag, "!", _) => flag = Some(Flag::Pending),
+            (Rule::string, s, None) => narration = Some(s.into()),
+            (Rule::string, s, Some(n)) => {
+                payee = Some(n);
+                narration = Some(s.into());
+            }
             _ => (),
         }
     }
@@ -43,8 +49,8 @@ fn build_transaction(pair: Pair<'_>) -> Transaction<'_> {
         info: Info {
             date,
             flag,
-            payee: None,
-            narration: None,
+            payee,
+            narration,
             tags: vec![],
             comment: None,
         },
@@ -168,6 +174,23 @@ mod tests {
     fn parse_transaction_flag(#[case] input: &str, #[case] expected: Option<Flag>) {
         let transaction = parse_single_directive(input).into_transaction().unwrap();
         assert_eq!(transaction.flag(), expected);
+    }
+
+    #[rstest]
+    #[case("2022-02-12 txn", None, None)]
+    #[case("2022-02-12 *", None, None)]
+    #[case("2022-02-12 txn \"Hello\"", None, Some("Hello"))]
+    #[case("2022-02-12 * \"Hello\"", None, Some("Hello"))]
+    #[case("2022-02-12 txn \"Hello\" \"World\"", Some("Hello"), Some("World"))]
+    #[case("2022-02-12 ! \"Hello\" \"World\"", Some("Hello"), Some("World"))]
+    fn parse_transaction_payee_and_description(
+        #[case] input: &str,
+        #[case] expected_payee: Option<&str>,
+        #[case] expected_narration: Option<&str>,
+    ) {
+        let transaction = parse_single_directive(input).into_transaction().unwrap();
+        assert_eq!(transaction.payee(), expected_payee);
+        assert_eq!(transaction.narration(), expected_narration);
     }
 
     #[rstest]
