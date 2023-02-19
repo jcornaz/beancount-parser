@@ -13,9 +13,9 @@ use crate::{account, date::date, Account, Date};
 /// Open account directive
 #[derive(Debug, Clone)]
 pub struct Open<'a> {
-    date: Date,
-    account: Account<'a>,
-    currencies: Vec<&'a str>,
+    pub(crate) date: Date,
+    pub(crate) account: Account<'a>,
+    pub(crate) currencies: Vec<&'a str>,
 }
 
 impl<'a> Open<'a> {

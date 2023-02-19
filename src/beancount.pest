@@ -1,11 +1,16 @@
 beancount_file = { SOI ~ (directive | blank_line | comment_line)* ~ EOI }
 
 /// Grey
-directive = _{ (close_directive | unsupported_directive) ~ space* ~ inline_comment? ~ (NEWLINE | EOI) }
+directive = _{ (close_directive | open_directive | unsupported_directive) ~ space* ~ inline_comment? ~ (NEWLINE | EOI) }
 close_directive = { date ~ space+ ~ "close" ~ space+ ~ account }
-unsupported_directive = _{ date ~ space+ ~ !"close" ~ directive_type ~ space+ ~ (!(NEWLINE | ";") ~ ANY)* }
+open_directive = { date ~ space+ ~ "open" ~ space+ ~ account ~ space* ~ currency_list? }
+currency_list = { currency ~ (comma_separator ~ currency)* }
+unsupported_directive = _{ date ~ space+ ~ !("close" | "open") ~ directive_type ~ space+ ~ (!(NEWLINE | ";") ~ ANY)* }
 directive_type = _{ ASCII_ALPHA_LOWER+ | transaction_flag }
 transaction_flag = _{ "*" | "!" }
+
+currency = { ASCII_ALPHA_UPPER ~ (ASCII_ALPHA_UPPER | ASCII_DIGIT | "'" | "-" | "." | "_")* }
+
 
 /// Yellow
 account = { account_type ~ (":" ~ account_component)* }
@@ -22,4 +27,6 @@ blank_line = _{ !EOI ~ space* ~ (NEWLINE | EOI) }
 comment_line = _{ !(date | EOI) ~ comment ~ (NEWLINE | EOI) }
 inline_comment = _{ ";"+ ~ comment }
 comment = _{ (!NEWLINE ~ ANY)* }
+
 space = _{ (" " | "\t")+ }
+comma_separator = _{ space* ~ "," ~ space* }

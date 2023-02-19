@@ -1,6 +1,6 @@
 #![cfg(test)]
 
-use crate::{account, Account, Close, Date, Directive};
+use crate::{account, Account, Close, Date, Directive, Open};
 use pest::Parser as Parse;
 use pest_derive::Parser;
 
@@ -16,9 +16,25 @@ fn parse(input: &str) -> Result<impl Iterator<Item = Directive<'_>>, Box<dyn std
         .expect("no root rule")
         .into_inner()
         .filter_map(|p| match p.as_rule() {
+            Rule::open_directive => Some(Directive::Open(build_open_directive(p))),
             Rule::close_directive => Some(Directive::Close(build_close_directive(p))),
             _ => None,
         }))
+}
+
+fn build_open_directive(pair: Pair<'_>) -> Open<'_> {
+    let mut inner = pair.into_inner();
+    let date = build_date(inner.next().expect("no date in open directive"));
+    let account = build_account(inner.next().expect("no account in open directive"));
+    let currencies = inner
+        .flat_map(pest::iterators::Pair::into_inner)
+        .map(|c| c.as_str())
+        .collect();
+    Open {
+        date,
+        account,
+        currencies,
+    }
 }
 
 fn build_close_directive(pair: Pair<'_>) -> Close<'_> {
@@ -100,11 +116,14 @@ mod tests {
     }
 
     #[rstest]
-    fn parse_close_directive_date() {
-        let input = "2016-11-28 close Liabilities:CreditCard:CapitalOne";
+    #[case(
+        "2016-11-28 close Liabilities:CreditCard:CapitalOne",
+        Date::new(2016, 11, 28)
+    )]
+    #[case("2022-02-19 open Assets:A", Date::new(2022, 2, 19))]
+    fn parse_date(#[case] input: &str, #[case] expected: Date) {
         let directive = parse_single_directive(input);
-        let Directive::Close(close) = directive else { panic!("expected close directive but was {directive:?}") };
-        assert_eq!(close.date(), Date::new(2016, 11, 28));
+        assert_eq!(directive.date(), Some(expected));
     }
 
     #[rstest]
@@ -123,8 +142,19 @@ mod tests {
     ) {
         let directive = parse_single_directive(input);
         let Directive::Close(close) = directive else { panic!("expected close directive but was {directive:?}") };
-        assert_eq!(close.date(), Date::new(2016, 11, 28));
         assert_eq!(close.account().type_(), expected_account_type);
+    }
+
+    #[rstest]
+    #[case("2016-11-28 open Assets:Hello", account::Type::Assets)]
+    #[case("2016-11-28 open Liabilities:Hello", account::Type::Liabilities)]
+    fn parse_open_directive_account_type(
+        #[case] input: &str,
+        #[case] expected_account_type: account::Type,
+    ) {
+        let directive = parse_single_directive(input);
+        let Directive::Open(open) = directive else { panic!("expected open directive but was {directive:?}") };
+        assert_eq!(open.account().type_(), expected_account_type);
     }
 
     #[rstest]
@@ -139,8 +169,34 @@ mod tests {
     ) {
         let directive = parse_single_directive(input);
         let Directive::Close(close) = directive else { panic!("expected close directive but was {directive:?}") };
-        assert_eq!(close.date(), Date::new(2016, 11, 28));
         assert_eq!(close.account().components(), expected_account_components);
+    }
+
+    #[rstest]
+    #[case("2016-11-28 open Liabilities:CreditCard:CapitalOne", &["CreditCard", "CapitalOne"])]
+    #[case("2016-11-28 open Assets:Hello", &["Hello"])]
+    #[case("2016-11-28 open Assets", &[])]
+    #[case("2016-11-28 open Assets:Hello-World:123", &["Hello-World", "123"])]
+    #[case("2016-11-28  open\t\tLiabilities:CreditCard:CapitalOne", &["CreditCard", "CapitalOne"])]
+    fn parse_open_directive_account_components(
+        #[case] input: &str,
+        #[case] expected_account_components: &[&str],
+    ) {
+        let directive = parse_single_directive(input);
+        let Directive::Open(open) = directive else { panic!("expected open directive but was {directive:?}") };
+        assert_eq!(open.account().components(), expected_account_components);
+    }
+
+    #[rstest]
+    #[case("2016-11-28 open Assets", &[])]
+    #[case("2016-11-28 open Assets CHF", &["CHF"])]
+    #[case("2016-11-28 open Assets CHF,EUR", &["CHF", "EUR"])]
+    #[case("2016-11-28 open Assets CHF , EUR", &["CHF", "EUR"])]
+    #[case("2016-11-28 open Assets AB-CD, A_2B, A.B, A'B", &["AB-CD", "A_2B", "A.B", "A'B"])]
+    fn parse_open_directive_currencies(#[case] input: &str, #[case] expected: &[&str]) {
+        let directive = parse_single_directive(input);
+        let Directive::Open(open) = directive else { panic!("expected open directive but was {directive:?}") };
+        assert_eq!(open.currencies(), expected);
     }
 
     #[rstest]
@@ -150,7 +206,10 @@ mod tests {
             "2016-11-28 closeLiabilities:CreditCard:CapitalOne",
             "2016-11-28close Liabilities:CreditCard:CapitalOne",
             "2016-11-28 close Liabilities:CreditCard:CapitalOne Oops",
-            "2016-11-28 close Oops"
+            "2016-11-28 close Oops",
+            "2016-11-28 open Assets:A oops",
+            "2016-11-28 open Assets:A 22",
+            "2016-11-28 open Oops"
         )]
         input: &str,
     ) {
