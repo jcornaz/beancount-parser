@@ -40,20 +40,8 @@ fn build_transaction(pair: Pair<'_>) -> Transaction<'_> {
     for pair in inner {
         match pair.as_rule() {
             Rule::transaction_flag => flag = Some(build_trx_flag(pair)),
-            Rule::payee_and_narration => {
-                let mut payee_and_narration = pair
-                    .into_inner()
-                    .flat_map(Pair::into_inner)
-                    .map(|p| p.as_str().to_owned());
-                let first = payee_and_narration.next();
-                match payee_and_narration.next() {
-                    Some(n) => {
-                        payee = first;
-                        narration = Some(n);
-                    }
-                    None => narration = first,
-                }
-            }
+            Rule::payee => payee = pair.into_inner().next().map(|p| p.as_str().into()),
+            Rule::narration => narration = pair.into_inner().next().map(|p| p.as_str().into()),
             Rule::postings => postings = pair.into_inner().map(build_posting).collect(),
             _ => (),
         }
