@@ -5,7 +5,7 @@ use pest_derive::Parser;
 
 use std::collections::HashMap;
 
-use crate::transaction::Info;
+use crate::transaction::{Flag, Info};
 use crate::{account, Account, Close, Date, Directive, Open, Transaction};
 
 #[derive(Parser)]
@@ -30,10 +30,19 @@ fn parse(input: &str) -> Result<impl Iterator<Item = Directive<'_>>, Box<dyn std
 fn build_transaction(pair: Pair<'_>) -> Transaction<'_> {
     let mut inner = pair.into_inner();
     let date = build_date(inner.next().expect("no date in transaction"));
+    let mut flag = None;
+    for pair in inner {
+        match (pair.as_rule(), pair.as_str()) {
+            (Rule::transaction_flag, "*") => flag = Some(Flag::Cleared),
+            (Rule::transaction_flag, "!") => flag = Some(Flag::Pending),
+            (Rule::transaction_flag, _) => unreachable!("Invalid transaction flag"),
+            _ => (),
+        }
+    }
     Transaction {
         info: Info {
             date,
-            flag: None,
+            flag,
             payee: None,
             narration: None,
             tags: vec![],
@@ -97,6 +106,7 @@ fn build_account(pair: Pair<'_>) -> Account<'_> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::transaction::Flag;
 
     #[rstest]
     fn successful_parse(
@@ -146,6 +156,18 @@ mod tests {
     fn parse_date(#[case] input: &str, #[case] expected: Date) {
         let directive = parse_single_directive(input);
         assert_eq!(directive.date(), Some(expected));
+    }
+
+    #[rstest]
+    #[case("2000-01-01 txn", None)]
+    #[case("2000-01-01 txn \"Store\"", None)]
+    #[case("2000-01-01 *", Some(Flag::Cleared))]
+    #[case("2000-01-01 * \"Store\"", Some(Flag::Cleared))]
+    #[case("2000-01-01 !", Some(Flag::Pending))]
+    #[case("2000-01-01 ! \"Store\"", Some(Flag::Pending))]
+    fn parse_transaction_flag(#[case] input: &str, #[case] expected: Option<Flag>) {
+        let transaction = parse_single_directive(input).into_transaction().unwrap();
+        assert_eq!(transaction.flag(), expected);
     }
 
     #[rstest]
