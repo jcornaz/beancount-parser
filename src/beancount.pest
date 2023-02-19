@@ -1,11 +1,10 @@
 beancount_file = { SOI ~ (directive | blank_line | comment_line)* ~ EOI }
 
 /// Grey
-directive = _{ (close_directive | open_directive | unsupported_directive) ~ space* ~ inline_comment? ~ (NEWLINE | EOI) }
+directive = _{ (close_directive | open_directive) ~ space* ~ inline_comment? ~ (NEWLINE | EOI) }
 close_directive = { date ~ space+ ~ "close" ~ space+ ~ account }
 open_directive = { date ~ space+ ~ "open" ~ space+ ~ account ~ space* ~ currency_list? }
-currency_list = { currency ~ (comma_separator ~ currency)* }
-unsupported_directive = _{ date ~ space+ ~ !("close" | "open") ~ directive_type ~ space+ ~ (!(NEWLINE | ";") ~ ANY)* }
+currency_list = _{ currency ~ (comma_separator ~ currency)* }
 directive_type = _{ ASCII_ALPHA_LOWER+ | transaction_flag }
 transaction_flag = _{ "*" | "!" }
 

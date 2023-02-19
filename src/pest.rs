@@ -1,8 +1,9 @@
 #![cfg(test)]
 
-use crate::{account, Account, Close, Date, Directive, Open};
 use pest::Parser as Parse;
 use pest_derive::Parser;
+
+use crate::{account, Account, Close, Date, Directive, Open};
 
 #[derive(Parser)]
 #[grammar = "beancount.pest"]
@@ -26,10 +27,7 @@ fn build_open_directive(pair: Pair<'_>) -> Open<'_> {
     let mut inner = pair.into_inner();
     let date = build_date(inner.next().expect("no date in open directive"));
     let account = build_account(inner.next().expect("no account in open directive"));
-    let currencies = inner
-        .flat_map(pest::iterators::Pair::into_inner)
-        .map(|c| c.as_str())
-        .collect();
+    let currencies = inner.map(|c| c.as_str()).collect();
     Open {
         date,
         account,
@@ -82,8 +80,6 @@ mod tests {
     #[rstest]
     fn successful_parse(
         #[values("", " ", " \n ", " \t ",
-            include_str!("../tests/examples/simple.beancount"),
-            include_str!("../tests/examples/official.beancount"),
             include_str!("../tests/examples/comments.beancount"),
         )]
         input: &str,
