@@ -32,14 +32,9 @@ use super::{date, flag, Date, Flag};
 /// * `Assets:A:B` (without amount)
 #[derive(Debug, Clone, PartialEq)]
 pub struct Posting<'a> {
-    pub(crate) info: Info<'a>,
-    pub(crate) amount: Option<Amount<'a>>,
-}
-
-#[derive(Debug, Clone, PartialEq)]
-pub(crate) struct Info<'a> {
     pub(crate) flag: Option<Flag>,
     pub(crate) account: Account<'a>,
+    pub(crate) amount: Option<Amount<'a>>,
     pub(crate) price: Option<(PriceType, Amount<'a>)>,
     pub(crate) lot_attributes: Option<LotAttributes<'a>>,
     pub(crate) comment: Option<&'a str>,
@@ -49,13 +44,13 @@ impl<'a> Posting<'a> {
     /// Returns the flag on this posting (if present)
     #[must_use]
     pub fn flag(&self) -> Option<Flag> {
-        self.info.flag
+        self.flag
     }
 
     /// Returns the account referenced by this posting
     #[must_use]
     pub fn account(&self) -> &Account<'a> {
-        &self.info.account
+        &self.account
     }
 
     /// Returns the amount of the posting (if present)
@@ -67,22 +62,19 @@ impl<'a> Posting<'a> {
     /// Returns a tuple of price-type and the price (if a price was defined)
     #[must_use]
     pub fn price(&self) -> Option<(PriceType, &Amount<'a>)> {
-        self.info.price.as_ref().map(|(t, p)| (*t, p))
+        self.price.as_ref().map(|(t, p)| (*t, p))
     }
 
     /// Returns the cost (if present)
     #[must_use]
     pub fn cost(&self) -> Option<&Amount<'a>> {
-        self.info
-            .lot_attributes
-            .as_ref()
-            .and_then(|la| la.cost.as_ref())
+        self.lot_attributes.as_ref().and_then(|la| la.cost.as_ref())
     }
 
     /// Returns the comment (if present)
     #[must_use]
     pub fn comment(&self) -> Option<&str> {
-        self.info.comment
+        self.comment
     }
 }
 
@@ -164,14 +156,12 @@ pub fn posting(input: &str) -> IResult<&str, Posting<'_>> {
             opt(preceded(space0, comment)),
         )),
         |(flag, account, amount, lot_attributes, price, comment)| Posting {
-            info: Info {
-                flag,
-                account,
-                price,
-                lot_attributes,
-                comment,
-            },
+            flag,
+            account,
             amount,
+            price,
+            lot_attributes,
+            comment,
         },
     )(input)
 }
@@ -189,8 +179,9 @@ fn price(input: &str) -> IResult<&str, (PriceType, Amount<'_>)> {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use crate::account::Type as AccountType;
+
+    use super::*;
 
     #[test]
     fn simple_posting() {

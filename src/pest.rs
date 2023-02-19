@@ -5,7 +5,7 @@ use std::collections::HashMap;
 use pest::Parser as Parse;
 use pest_derive::Parser;
 
-use crate::transaction::{posting, Flag, Info, Posting};
+use crate::transaction::{Flag, Info, Posting};
 use crate::{account, Account, Close, Date, Directive, Open, Transaction};
 
 #[cfg(test)]
@@ -70,13 +70,11 @@ fn build_trx_flag(pair: Pair<'_>) -> Flag {
 
 fn build_posting(pair: Pair<'_>) -> Posting<'_> {
     Posting {
-        info: posting::Info {
-            flag: None,
-            account: build_account(pair.into_inner().next().expect("No account")),
-            price: None,
-            lot_attributes: None,
-            comment: None,
-        },
+        flag: None,
+        account: build_account(pair.into_inner().next().expect("No account")),
+        price: None,
+        lot_attributes: None,
+        comment: None,
         amount: None,
     }
 }
