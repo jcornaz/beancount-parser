@@ -34,13 +34,22 @@ fn build_transaction(pair: Pair<'_>) -> Transaction<'_> {
     let mut payee = None;
     let mut narration = None;
     for pair in inner {
-        match (pair.as_rule(), pair.as_str(), narration.take()) {
-            (Rule::transaction_flag, "*", _) => flag = Some(Flag::Cleared),
-            (Rule::transaction_flag, "!", _) => flag = Some(Flag::Pending),
-            (Rule::string, s, None) => narration = Some(s.into()),
-            (Rule::string, s, Some(n)) => {
-                payee = Some(n);
-                narration = Some(s.into());
+        match (pair.as_rule(), pair.as_str()) {
+            (Rule::transaction_flag, "*") => flag = Some(Flag::Cleared),
+            (Rule::transaction_flag, "!") => flag = Some(Flag::Pending),
+            (Rule::payee_and_narration, _) => {
+                let mut payee_and_narration = pair
+                    .into_inner()
+                    .flat_map(Pair::into_inner)
+                    .map(|p| p.as_str().to_owned());
+                let first = payee_and_narration.next();
+                match payee_and_narration.next() {
+                    Some(n) => {
+                        payee = first;
+                        narration = Some(n);
+                    }
+                    None => narration = first,
+                }
             }
             _ => (),
         }

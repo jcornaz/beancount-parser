@@ -8,8 +8,9 @@ currency_list = _{ currency ~ (comma_separator ~ currency)* }
 
 transaction = { date ~ space+ ~ (transaction_flag | "txn") ~ (space+ ~ payee_and_narration)? }
 transaction_flag = { "*" | "!" }
-payee_and_narration = _{ "\"" ~ string ~ "\"" ~ (space+ ~ "\"" ~ string ~ "\"")? }
-string = { (!"\"" ~ ANY)* }
+payee_and_narration = { string ~ (space+ ~ string)? }
+string = { "\"" ~ string_content ~  "\"" }
+string_content = { (!"\"" ~ ANY)* }
 
 currency = { ASCII_ALPHA_UPPER ~ (ASCII_ALPHA_UPPER | ASCII_DIGIT | "'" | "-" | "." | "_")* }
 
