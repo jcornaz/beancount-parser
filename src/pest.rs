@@ -207,6 +207,9 @@ mod tests {
             "2016-11-28close Liabilities:CreditCard:CapitalOne",
             "2016-11-28 close Liabilities:CreditCard:CapitalOne Oops",
             "2016-11-28 close Oops",
+            "2016-11-28openAssets:A",
+            "2016-11-28 openAssets:A",
+            "2016-11-28open Assets:A",
             "2016-11-28 open Assets:A oops",
             "2016-11-28 open Assets:A 22",
             "2016-11-28 open Oops"
