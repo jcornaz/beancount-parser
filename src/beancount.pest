@@ -1,16 +1,11 @@
-beancount_file = { SOI ~ NEWLINE* ~ (entry ~ (NEWLINE+ | EOI))* ~ EOI }
-
-entry = _{ (directive | comment_line) }
+beancount_file = { SOI ~ (directive | blank_line | comment_line)* ~ EOI }
 
 /// Grey
-directive = _{ close_directive ~ inline_comment? }
-close_directive = { date ~ space ~ "close" ~ space ~ account }
-
-/// Cyan
-comment_line = _{ !known_directive_head ~ !(NEWLINE | EOI) ~ comment }
-inline_comment = _{ space* ~ ";" ~ comment }
-comment = _{ (!NEWLINE ~ ANY)* }
-known_directive_head = _{ date ~ space? ~ ("close") }
+directive = _{ (close_directive | unsupported_directive) ~ space* ~ inline_comment? ~ (NEWLINE | EOI) }
+close_directive = { date ~ space+ ~ "close" ~ space+ ~ account }
+unsupported_directive = _{ date ~ space+ ~ !"close" ~ directive_type ~ space+ ~ (!(NEWLINE | ";") ~ ANY)* }
+directive_type = _{ ASCII_ALPHA_LOWER+ | transaction_flag }
+transaction_flag = _{ "*" | "!" }
 
 /// Yellow
 account = { account_type ~ (":" ~ account_component)* }
@@ -23,4 +18,8 @@ year = { ASCII_DIGIT{4} }
 month = { ASCII_DIGIT{2} }
 day = { ASCII_DIGIT{2} }
 
-space = _{ (WHITE_SPACE | NEWLINE)+ }
+blank_line = _{ !EOI ~ space* ~ (NEWLINE | EOI) }
+comment_line = _{ !(date | EOI) ~ comment ~ (NEWLINE | EOI) }
+inline_comment = _{ ";"+ ~ comment }
+comment = _{ (!NEWLINE ~ ANY)* }
+space = _{ (" " | "\t")+ }
