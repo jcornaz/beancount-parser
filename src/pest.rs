@@ -5,7 +5,7 @@ use std::collections::HashMap;
 use pest::Parser as Parse;
 use pest_derive::Parser;
 
-use crate::transaction::{Flag, Info, Posting};
+use crate::transaction::{Flag, Posting};
 use crate::{account, Account, Close, Date, Directive, Open, Transaction};
 
 #[cfg(test)]
@@ -47,14 +47,12 @@ fn build_transaction(pair: Pair<'_>) -> Transaction<'_> {
         }
     }
     Transaction {
-        info: Info {
-            date,
-            flag,
-            payee,
-            narration,
-            tags: vec![],
-            comment: None,
-        },
+        date,
+        flag,
+        payee,
+        narration,
+        tags: vec![],
+        comment: None,
         metadata: HashMap::default(),
         postings,
     }
