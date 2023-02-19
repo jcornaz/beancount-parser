@@ -32,17 +32,17 @@ use super::{date, flag, Date, Flag};
 /// * `Assets:A:B` (without amount)
 #[derive(Debug, Clone, PartialEq)]
 pub struct Posting<'a> {
-    info: Info<'a>,
-    amount: Option<Amount<'a>>,
+    pub(crate) info: Info<'a>,
+    pub(crate) amount: Option<Amount<'a>>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub(super) struct Info<'a> {
-    flag: Option<Flag>,
-    account: Account<'a>,
-    price: Option<(PriceType, Amount<'a>)>,
-    lot_attributes: Option<LotAttributes<'a>>,
-    comment: Option<&'a str>,
+pub(crate) struct Info<'a> {
+    pub(crate) flag: Option<Flag>,
+    pub(crate) account: Account<'a>,
+    pub(crate) price: Option<(PriceType, Amount<'a>)>,
+    pub(crate) lot_attributes: Option<LotAttributes<'a>>,
+    pub(crate) comment: Option<&'a str>,
 }
 
 impl<'a> Posting<'a> {
@@ -98,7 +98,7 @@ pub enum PriceType {
 }
 
 #[derive(Debug, Clone, PartialEq)]
-struct LotAttributes<'a> {
+pub(crate) struct LotAttributes<'a> {
     cost: Option<Amount<'a>>,
     date: Option<Date>,
     label: Option<String>,

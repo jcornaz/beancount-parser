@@ -5,7 +5,7 @@ use std::collections::HashMap;
 use pest::Parser as Parse;
 use pest_derive::Parser;
 
-use crate::transaction::{Flag, Info};
+use crate::transaction::{posting, Flag, Info, Posting};
 use crate::{account, Account, Close, Date, Directive, Open, Transaction};
 
 #[cfg(test)]
@@ -36,11 +36,11 @@ fn build_transaction(pair: Pair<'_>) -> Transaction<'_> {
     let mut flag = None;
     let mut payee = None;
     let mut narration = None;
+    let mut postings = Vec::new();
     for pair in inner {
-        match (pair.as_rule(), pair.as_str()) {
-            (Rule::transaction_flag, "*") => flag = Some(Flag::Cleared),
-            (Rule::transaction_flag, "!") => flag = Some(Flag::Pending),
-            (Rule::payee_and_narration, _) => {
+        match pair.as_rule() {
+            Rule::transaction_flag => flag = Some(build_trx_flag(pair)),
+            Rule::payee_and_narration => {
                 let mut payee_and_narration = pair
                     .into_inner()
                     .flat_map(Pair::into_inner)
@@ -54,6 +54,7 @@ fn build_transaction(pair: Pair<'_>) -> Transaction<'_> {
                     None => narration = first,
                 }
             }
+            Rule::postings => postings = pair.into_inner().map(build_posting).collect(),
             _ => (),
         }
     }
@@ -67,7 +68,28 @@ fn build_transaction(pair: Pair<'_>) -> Transaction<'_> {
             comment: None,
         },
         metadata: HashMap::default(),
-        postings: vec![],
+        postings,
+    }
+}
+
+fn build_trx_flag(pair: Pair<'_>) -> Flag {
+    match pair.as_str() {
+        "*" => Flag::Cleared,
+        "!" => Flag::Pending,
+        _ => unreachable!("Invalid transaction flag"),
+    }
+}
+
+fn build_posting(pair: Pair<'_>) -> Posting<'_> {
+    Posting {
+        info: posting::Info {
+            flag: None,
+            account: build_account(pair.into_inner().next().expect("No account")),
+            price: None,
+            lot_attributes: None,
+            comment: None,
+        },
+        amount: None,
     }
 }
 

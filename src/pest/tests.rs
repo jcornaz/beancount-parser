@@ -1,5 +1,5 @@
 use super::*;
-use crate::transaction::Flag;
+use crate::transaction::{Flag, Posting};
 
 const COMMENTS: &str = include_str!("../../tests/examples/comments.beancount");
 // TODO const SIMPLE: &str = include_str!("../../tests/examples/simple.beancount");
@@ -77,6 +77,21 @@ fn parse_transaction_payee_and_description(
     let transaction = parse_single_directive(input).into_transaction().unwrap();
     assert_eq!(transaction.payee(), expected_payee);
     assert_eq!(transaction.narration(), expected_narration);
+}
+
+#[rstest]
+#[case("2022-02-12 txn", &[])]
+#[case("2022-02-12 txn\n  Assets:Hello\n\tExpenses:Test \nLiabilities:Other", &["Assets:Hello", "Expenses:Test", "Liabilities:Other"])]
+fn parse_posting_accounts(#[case] input: &str, #[case] expected: &[&str]) {
+    let expected: Vec<String> = expected.iter().map(ToString::to_string).collect();
+    let transaction = parse_single_directive(input).into_transaction().unwrap();
+    let actual: Vec<String> = transaction
+        .postings()
+        .iter()
+        .map(Posting::account)
+        .map(ToString::to_string)
+        .collect();
+    assert_eq!(actual, expected);
 }
 
 #[rstest]

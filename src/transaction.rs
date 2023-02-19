@@ -21,7 +21,7 @@ use crate::{
 #[cfg(feature = "unstable")]
 use crate::metadata::Metadata;
 
-mod posting;
+pub(crate) mod posting;
 
 use posting::posting;
 pub use posting::{Posting, PriceType};
