@@ -38,20 +38,20 @@ pub use posting::{Posting, PriceType};
 /// ```
 #[derive(Debug, Clone)]
 pub struct Transaction<'a> {
-    info: Info<'a>,
+    pub(crate) info: Info<'a>,
     #[cfg(feature = "unstable")]
-    metadata: Metadata<'a>,
-    postings: Vec<Posting<'a>>,
+    pub(crate) metadata: Metadata<'a>,
+    pub(crate) postings: Vec<Posting<'a>>,
 }
 
 #[derive(Debug, Clone)]
-struct Info<'a> {
-    date: Date,
-    flag: Option<Flag>,
-    payee: Option<String>,
-    narration: Option<String>,
-    tags: Vec<&'a str>,
-    comment: Option<&'a str>,
+pub(crate) struct Info<'a> {
+    pub(crate) date: Date,
+    pub(crate) flag: Option<Flag>,
+    pub(crate) payee: Option<String>,
+    pub(crate) narration: Option<String>,
+    pub(crate) tags: Vec<&'a str>,
+    pub(crate) comment: Option<&'a str>,
 }
 
 /// The transaction flag

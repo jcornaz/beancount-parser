@@ -1,9 +1,12 @@
-#![cfg(test)]
+#![cfg(all(test, feature = "unstable"))]
 
 use pest::Parser as Parse;
 use pest_derive::Parser;
 
-use crate::{account, Account, Close, Date, Directive, Open};
+use std::collections::HashMap;
+
+use crate::transaction::Info;
+use crate::{account, Account, Close, Date, Directive, Open, Transaction};
 
 #[derive(Parser)]
 #[grammar = "beancount.pest"]
@@ -17,10 +20,28 @@ fn parse(input: &str) -> Result<impl Iterator<Item = Directive<'_>>, Box<dyn std
         .expect("no root rule")
         .into_inner()
         .filter_map(|p| match p.as_rule() {
-            Rule::open_directive => Some(Directive::Open(build_open_directive(p))),
-            Rule::close_directive => Some(Directive::Close(build_close_directive(p))),
+            Rule::transaction => Some(Directive::Transaction(build_transaction(p))),
+            Rule::open => Some(Directive::Open(build_open_directive(p))),
+            Rule::close => Some(Directive::Close(build_close_directive(p))),
             _ => None,
         }))
+}
+
+fn build_transaction(pair: Pair<'_>) -> Transaction<'_> {
+    let mut inner = pair.into_inner();
+    let date = build_date(inner.next().expect("no date in transaction"));
+    Transaction {
+        info: Info {
+            date,
+            flag: None,
+            payee: None,
+            narration: None,
+            tags: vec![],
+            comment: None,
+        },
+        metadata: HashMap::default(),
+        postings: vec![],
+    }
 }
 
 fn build_open_directive(pair: Pair<'_>) -> Open<'_> {
@@ -116,7 +137,12 @@ mod tests {
         "2016-11-28 close Liabilities:CreditCard:CapitalOne",
         Date::new(2016, 11, 28)
     )]
-    #[case("2022-02-19 open Assets:A", Date::new(2022, 2, 19))]
+    #[case("2022-12-31 open Assets:A", Date::new(2022, 12, 31))]
+    #[case("2000-01-01 txn", Date::new(2000, 1, 1))]
+    #[case("2000-01-02 * \"Groceries\"", Date::new(2000, 1, 2))]
+    #[case("2000-01-03 * \"Store\" \"Groceries\"", Date::new(2000, 1, 3))]
+    #[case("2000-01-04 *", Date::new(2000, 1, 4))]
+    #[case("2000-01-05 !", Date::new(2000, 1, 5))]
     fn parse_date(#[case] input: &str, #[case] expected: Date) {
         let directive = parse_single_directive(input);
         assert_eq!(directive.date(), Some(expected));
