@@ -12,20 +12,8 @@ use nom::{
     IResult,
 };
 
-/// Account
-///
-/// An account has a type (`Assets`, `Liabilities`, `Equity`, `Income` or `Expenses`)
-/// and components.
-///
-/// # Examples
-///
-/// * `Assets:Liquidity:Cash` (type: `Assets`, components: ["Liquidity", "Cash"]
-/// * `Expenses:Groceries` (type: `Assets`, components: ["Groceries"]
-#[derive(Debug, Clone, Eq, PartialEq, Hash)]
-pub struct Account<'a> {
-    pub(crate) type_: Type,
-    pub(crate) components: Vec<&'a str>,
-}
+#[allow(missing_docs)]
+pub type Account<'a> = crate::Account<'a>;
 
 impl Display for Account<'_> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -37,20 +25,8 @@ impl Display for Account<'_> {
     }
 }
 
-/// Type of account
-#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
-pub enum Type {
-    /// The assets
-    Assets,
-    /// The liabilities
-    Liabilities,
-    /// The equity
-    Equity,
-    /// Income
-    Income,
-    /// Expenses
-    Expenses,
-}
+#[allow(missing_docs)]
+pub type Type = crate::AccountType;
 
 impl Display for Type {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
