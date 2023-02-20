@@ -1,7 +1,10 @@
+use std::collections::HashMap;
+
+use rust_decimal::Decimal;
+
 use crate::pest_parser::{build_account, build_date, Pair, Rule};
 use crate::transaction::{Flag, Posting};
-use crate::Transaction;
-use std::collections::HashMap;
+use crate::{Amount, Transaction};
 
 pub(super) fn build(pair: Pair<'_>) -> Transaction<'_> {
     let mut inner = pair.into_inner();
@@ -40,12 +43,27 @@ fn build_flag(pair: Pair<'_>) -> Flag {
 }
 
 fn build_posting(pair: Pair<'_>) -> Posting<'_> {
+    let mut inner = pair.into_inner();
+    let account = build_account(inner.next().expect("no account in posting"));
+    let amount = inner.next().map(build_amount);
     Posting {
         flag: None,
-        account: build_account(pair.into_inner().next().expect("No account")),
+        account,
         price: None,
         lot_attributes: None,
         comment: None,
-        amount: None,
+        amount,
     }
+}
+
+fn build_amount(pair: Pair<'_>) -> Amount<'_> {
+    let mut inner = pair.into_inner();
+    let value: Decimal = inner
+        .next()
+        .expect("no value in amount")
+        .as_str()
+        .parse()
+        .expect("invalid value");
+    let currency = inner.next().expect("no currency in amount").as_str();
+    Amount::new(value, currency)
 }

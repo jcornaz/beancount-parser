@@ -21,8 +21,12 @@ string = _{ "\"" ~ string_content ~  "\"" }
 string_content = { (!"\"" ~ ANY)* }
 
 postings = { (NEWLINE ~ posting)* }
-posting = { space* ~ account ~ space* }
+posting = { space* ~ account ~ (space+ ~ amount)? ~ space* }
 
+amount = { expression ~ space+ ~ currency }
+expression = { value }
+value = { sign? ~ ASCII_DIGIT* ~ ("." ~ ASCII_DIGIT+)? }
+sign = { "-" | "+" }
 currency = { ASCII_ALPHA_UPPER ~ (ASCII_ALPHA_UPPER | ASCII_DIGIT | "'" | "-" | "." | "_")* }
 
 account = { account_type ~ (":" ~ account_component)* }

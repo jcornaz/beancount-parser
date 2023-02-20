@@ -1,9 +1,11 @@
 use super::*;
 use crate::transaction::{Flag, Posting};
+use crate::Amount;
+use rust_decimal::Decimal;
 
 const COMMENTS: &str = include_str!("../../tests/examples/comments.beancount");
 // TODO const SIMPLE: &str = include_str!("../../tests/examples/simple.beancount");
-// TODO const OFICIAL: &str = include_str!("../../tests/examples/official.beancount");
+// TODO const OFFICIAL: &str = include_str!("../../tests/examples/official.beancount");
 
 #[rstest]
 fn successful_parse(#[values("", " ", " \n ", " \t ", COMMENTS)] input: &str) {
@@ -92,6 +94,28 @@ fn parse_posting_accounts(#[case] input: &str, #[case] expected: &[&str]) {
         .map(ToString::to_string)
         .collect();
     assert_eq!(actual, expected);
+}
+
+#[rstest]
+#[case("2022-02-12 txn\n  Assets:Hello", None)]
+#[case("2022-02-12 txn\n  Assets:Hello  10 CHF", Some(Amount::new(10, "CHF")))]
+#[case("2022-02-12 txn\n  Assets:Hello  -2 CHF", Some(Amount::new(-2, "CHF")))]
+#[case(
+    "2022-02-12 txn\n  Assets:Hello  1.2 CHF",
+    Some(Amount::new(Decimal::new(12, 1), "CHF"))
+)]
+#[case(
+    "2022-02-12 txn\n  Assets:Hello  0.2 CHF",
+    Some(Amount::new(Decimal::new(2, 1), "CHF"))
+)]
+#[case(
+    "2022-02-12 txn\n  Assets:Hello  .2 CHF",
+    Some(Amount::new(Decimal::new(2, 1), "CHF"))
+)]
+fn parse_posting_amount(#[case] input: &str, #[case] expected: Option<Amount<'_>>) {
+    let transaction = parse_single_directive(input).into_transaction().unwrap();
+    let posting = &transaction.postings()[0];
+    assert_eq!(posting.amount(), expected.as_ref());
 }
 
 #[rstest]
