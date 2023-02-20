@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
-use rust_decimal::Decimal;
-
+use crate::amount::expression::Operation;
+use crate::amount::{expression::Operator, Expression, Value};
 use crate::pest_parser::{build_account, build_date, Pair, Rule};
 use crate::transaction::{Flag, Posting};
 use crate::{Amount, Transaction};
@@ -58,12 +58,33 @@ fn build_posting(pair: Pair<'_>) -> Posting<'_> {
 
 fn build_amount(pair: Pair<'_>) -> Amount<'_> {
     let mut inner = pair.into_inner();
-    let value: Decimal = inner
-        .next()
-        .expect("no value in amount")
-        .as_str()
-        .parse()
-        .expect("invalid value");
+    let expression = build_expression(inner.next().expect("no value in amount"));
     let currency = inner.next().expect("no currency in amount").as_str();
-    Amount::new(value, currency)
+    Amount {
+        expression,
+        currency,
+    }
+}
+
+fn build_expression(pair: Pair<'_>) -> Expression {
+    let mut inner = pair.into_inner();
+    let mut exp = Expression::Value(build_value(inner.next().expect("no value in expression")));
+    if let Some(operator) = inner.next() {
+        let operator = match operator.as_str() {
+            "+" => Operator::Add,
+            _ => unreachable!("invalid operator"),
+        };
+        exp = Expression::Operation(Operation {
+            operator,
+            left: exp.into(),
+            right: Box::new(Expression::Value(build_value(
+                inner.next().expect("no right operand"),
+            ))),
+        });
+    }
+    exp
+}
+
+fn build_value(pair: Pair<'_>) -> Value {
+    Value(pair.as_str().parse().expect("invalid number"))
 }

@@ -24,7 +24,8 @@ postings = { (NEWLINE ~ posting)* }
 posting = { space* ~ account ~ (space+ ~ amount)? ~ space* }
 
 amount = { expression ~ space+ ~ currency }
-expression = { value }
+expression = { value ~ (space* ~ operator ~ space* ~ value)? }
+operator = { "+" }
 value = { ("-" | "+")? ~ ASCII_DIGIT* ~ ("." ~ ASCII_DIGIT+)? }
 currency = { ASCII_ALPHA_UPPER ~ (ASCII_ALPHA_UPPER | ASCII_DIGIT | "'" | "-" | "." | "_")* }
 

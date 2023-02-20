@@ -1,4 +1,5 @@
 use super::*;
+use crate::amount::Expression;
 use crate::transaction::{Flag, Posting};
 use crate::Amount;
 use rust_decimal::Decimal;
@@ -121,6 +122,20 @@ fn parse_posting_amount(#[case] input: &str, #[case] expected: Option<Amount<'_>
     let transaction = parse_single_directive(input).into_transaction().unwrap();
     let posting = &transaction.postings()[0];
     assert_eq!(posting.amount(), expected.as_ref());
+}
+
+#[rstest]
+#[case("2", Expression::value(2))]
+#[case("2+3", Expression::plus(Expression::value(2), Expression::value(3)))]
+#[case("2 + 3", Expression::plus(Expression::value(2), Expression::value(3)))]
+fn parse_expression(#[case] input: &str, #[case] expected: Expression) {
+    let input = format!("2022-02-20 txn\n  Assets:A  {input} CHF");
+    let transaction = parse_single_directive(&input).into_transaction().unwrap();
+    let actual = transaction.postings()[0]
+        .amount()
+        .expect("no amount")
+        .expression();
+    assert_eq!(actual, &expected);
 }
 
 #[rstest]

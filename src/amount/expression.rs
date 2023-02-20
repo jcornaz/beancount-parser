@@ -31,14 +31,14 @@ pub enum Expression {
 /// A direct value, the leaf of the expression tree
 #[derive(Debug, Clone, Copy, PartialEq)]
 #[allow(clippy::derive_partial_eq_without_eq)]
-pub struct Value(pub(super) Decimal);
+pub struct Value(pub(crate) Decimal);
 
 /// An operation, made of two expression operands
 #[derive(Debug, Clone, PartialEq)]
 pub struct Operation {
-    operator: Operator,
-    left: Box<Expression>,
-    right: Box<Expression>,
+    pub(crate) operator: Operator,
+    pub(crate) left: Box<Expression>,
+    pub(crate) right: Box<Expression>,
 }
 
 impl Operation {
@@ -71,8 +71,8 @@ pub enum Operator {
 }
 
 impl Expression {
-    #[cfg(any(test))]
-    pub(super) fn value(dec: impl Into<Decimal>) -> Self {
+    #[cfg(test)]
+    pub(crate) fn value(dec: impl Into<Decimal>) -> Self {
         Self::Value(Value(dec.into()))
     }
 
@@ -91,22 +91,22 @@ impl Expression {
     }
 
     #[cfg(test)]
-    fn div(left: Self, right: Self) -> Self {
+    pub(crate) fn div(left: Self, right: Self) -> Self {
         Self::operation(Operator::Divide, left, right)
     }
 
     #[cfg(test)]
-    fn mul(left: Self, right: Self) -> Self {
+    pub(crate) fn mul(left: Self, right: Self) -> Self {
         Self::operation(Operator::Multiply, left, right)
     }
 
     #[cfg(test)]
-    fn plus(left: Self, right: Self) -> Self {
+    pub(crate) fn plus(left: Self, right: Self) -> Self {
         Self::operation(Operator::Add, left, right)
     }
 
     #[cfg(test)]
-    fn minus(left: Self, right: Self) -> Self {
+    pub(crate) fn minus(left: Self, right: Self) -> Self {
         Self::operation(Operator::Substract, left, right)
     }
 

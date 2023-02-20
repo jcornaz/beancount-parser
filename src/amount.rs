@@ -11,15 +11,15 @@ use nom::{
 
 pub use self::expression::{ConversionError, Expression, Value};
 
-mod expression;
+pub(crate) mod expression;
 
 /// A beancount amount
 ///
 /// The amount is the combination of an [`Expression`] and the currency.
 #[derive(Debug, Clone, PartialEq)]
 pub struct Amount<'a> {
-    expression: Expression,
-    currency: &'a str,
+    pub(crate) expression: Expression,
+    pub(crate) currency: &'a str,
 }
 
 impl<'a> Amount<'a> {
