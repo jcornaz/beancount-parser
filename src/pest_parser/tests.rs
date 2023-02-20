@@ -128,6 +128,20 @@ fn parse_posting_amount(#[case] input: &str, #[case] expected: Option<Amount<'_>
 #[case("2", Expression::value(2))]
 #[case("2+3", Expression::plus(Expression::value(2), Expression::value(3)))]
 #[case("2 + 3", Expression::plus(Expression::value(2), Expression::value(3)))]
+#[case(
+    "2 + 3 + 4",
+    Expression::plus(
+        Expression::plus(Expression::value(2), Expression::value(3)),
+        Expression::value(4)
+    )
+)]
+#[case(
+    "2 + 3 - 4",
+    Expression::minus(
+        Expression::plus(Expression::value(2), Expression::value(3)),
+        Expression::value(4)
+    )
+)]
 fn parse_expression(#[case] input: &str, #[case] expected: Expression) {
     let input = format!("2022-02-20 txn\n  Assets:A  {input} CHF");
     let transaction = parse_single_directive(&input).into_transaction().unwrap();

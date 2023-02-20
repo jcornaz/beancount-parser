@@ -69,9 +69,10 @@ fn build_amount(pair: Pair<'_>) -> Amount<'_> {
 fn build_expression(pair: Pair<'_>) -> Expression {
     let mut inner = pair.into_inner();
     let mut exp = Expression::Value(build_value(inner.next().expect("no value in expression")));
-    if let Some(operator) = inner.next() {
+    while let Some(operator) = inner.next() {
         let operator = match operator.as_str() {
             "+" => Operator::Add,
+            "-" => Operator::Subtract,
             _ => unreachable!("invalid operator"),
         };
         exp = Expression::Operation(Operation {

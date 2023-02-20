@@ -67,7 +67,7 @@ pub enum Operator {
     Divide,
     Multiply,
     Add,
-    Substract,
+    Subtract,
 }
 
 impl Expression {
@@ -107,7 +107,7 @@ impl Expression {
 
     #[cfg(test)]
     pub(crate) fn minus(left: Self, right: Self) -> Self {
-        Self::operation(Operator::Substract, left, right)
+        Self::operation(Operator::Subtract, left, right)
     }
 
     /// Evaluate the expression
@@ -130,7 +130,7 @@ impl Operator {
             Operator::Divide => left / right,
             Operator::Multiply => left * right,
             Operator::Add => left + right,
-            Operator::Substract => left - right,
+            Operator::Subtract => left - right,
         })
     }
 }
@@ -223,7 +223,7 @@ fn exp_p1(input: &str) -> IResult<&str, Expression> {
 fn exp_p2(input: &str) -> IResult<&str, Expression> {
     let operator = alt((
         map(char('+'), |_| Operator::Add),
-        map(char('-'), |_| Operator::Substract),
+        map(char('-'), |_| Operator::Subtract),
     ));
     map(
         tuple((
