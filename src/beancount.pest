@@ -25,8 +25,7 @@ posting = { space* ~ account ~ (space+ ~ amount)? ~ space* }
 
 amount = { expression ~ space+ ~ currency }
 expression = { value }
-value = { sign? ~ ASCII_DIGIT* ~ ("." ~ ASCII_DIGIT+)? }
-sign = { "-" | "+" }
+value = { ("-" | "+")? ~ ASCII_DIGIT* ~ ("." ~ ASCII_DIGIT+)? }
 currency = { ASCII_ALPHA_UPPER ~ (ASCII_ALPHA_UPPER | ASCII_DIGIT | "'" | "-" | "." | "_")* }
 
 account = { account_type ~ (":" ~ account_component)* }
@@ -39,9 +38,9 @@ month = { ASCII_DIGIT{2} }
 day = { ASCII_DIGIT{2} }
 
 blank_line = _{ !EOI ~ space* ~ (NEWLINE | EOI) }
-comment_line = _{ !(date | EOI) ~ comment ~ (NEWLINE | EOI) }
+comment_line = _{ space* ~ !(date | (account_type ~ ":") | EOI) ~ comment ~ (NEWLINE | EOI) }
 inline_comment = _{ ";"+ ~ comment }
 comment = _{ (!NEWLINE ~ ANY)* }
 
-space = _{ (" " | "\t")+ }
+space = _{ " " | "\t" }
 comma_separator = _{ space* ~ "," ~ space* }

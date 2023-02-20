@@ -99,7 +99,12 @@ fn parse_posting_accounts(#[case] input: &str, #[case] expected: &[&str]) {
 #[rstest]
 #[case("2022-02-12 txn\n  Assets:Hello", None)]
 #[case("2022-02-12 txn\n  Assets:Hello  10 CHF", Some(Amount::new(10, "CHF")))]
+#[case(
+    "2022-02-12 txn\n  Assets:Hello  10  \tCHF",
+    Some(Amount::new(10, "CHF"))
+)]
 #[case("2022-02-12 txn\n  Assets:Hello  -2 CHF", Some(Amount::new(-2, "CHF")))]
+#[case("2022-02-12 txn\n  Assets:Hello  +2 CHF", Some(Amount::new(2, "CHF")))]
 #[case(
     "2022-02-12 txn\n  Assets:Hello  1.2 CHF",
     Some(Amount::new(Decimal::new(12, 1), "CHF"))
@@ -204,7 +209,9 @@ fn error_case(
         "2016-11-28open Assets:A",
         "2016-11-28 open Assets:A oops",
         "2016-11-28 open Assets:A 22",
-        "2016-11-28 open Oops"
+        "2016-11-28 open Oops",
+        "2022-02-12 txn\n  Assets:Hello  10CHF",
+        "2022-02-12 txn\n  Assets:Hello10 CHF"
     )]
     input: &str,
 ) {
