@@ -5,7 +5,6 @@ open = { date ~ space+ ~ "open" ~ space+ ~ account ~ space* ~ currency_list? }
 close = { date ~ space+ ~ "close" ~ space+ ~ account }
 currency_list = _{ currency ~ (comma_separator ~ currency)* }
 
-/// Blue
 transaction =
     { date
     ~ space+
@@ -24,8 +23,14 @@ postings = { (NEWLINE ~ posting)* }
 posting = { space* ~ account ~ (space+ ~ amount)? ~ space* }
 
 amount = { expression ~ space+ ~ currency }
-expression = { value ~ (space* ~ operator ~ space* ~ value)* }
-operator = { "+" | "-" }
+
+expression = { exp_p2 }
+exp_p1 = { value ~ (space* ~ op_p1 ~ space* ~ value)* }
+exp_p2 = { exp_p1 ~ (space* ~ op_p2 ~ space* ~ exp_p1)* }
+op_p1 = { "*" | "/" }
+op_p2 = { "+" | "-" }
+
+// TODO: Don't accept empty string as a valid value
 value = { ("-" | "+")? ~ ASCII_DIGIT* ~ ("." ~ ASCII_DIGIT+)? }
 currency = { ASCII_ALPHA_UPPER ~ (ASCII_ALPHA_UPPER | ASCII_DIGIT | "'" | "-" | "." | "_")* }
 

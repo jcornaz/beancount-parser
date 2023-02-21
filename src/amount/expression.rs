@@ -128,14 +128,38 @@ impl Expression {
 
     #[cfg(all(test, feature = "unstable"))]
     pub(super) fn from_pair(pair: Pair<'_>) -> Self {
+        Self::from_exp_p2_pair(pair.into_inner().next().expect("no inner expression"))
+    }
+
+    #[cfg(all(test, feature = "unstable"))]
+    fn from_exp_p2_pair(pair: Pair<'_>) -> Self {
+        let mut inner = pair.into_inner();
+        let mut exp = Self::from_exp_p1_pair(inner.next().expect("no value in expression"));
+        while let Some(operator) = inner.next() {
+            let operator = match operator.as_str() {
+                "+" => Operator::Add,
+                "-" => Operator::Subtract,
+                _ => unreachable!("invalid operator"),
+            };
+            exp = Self::Operation(Operation {
+                operator,
+                left: exp.into(),
+                right: Self::from_exp_p1_pair(inner.next().expect("no right operand")).into(),
+            });
+        }
+        exp
+    }
+
+    #[cfg(all(test, feature = "unstable"))]
+    fn from_exp_p1_pair(pair: Pair<'_>) -> Self {
         let mut inner = pair.into_inner();
         let mut exp = Self::Value(Value::from_pair(
             inner.next().expect("no value in expression"),
         ));
         while let Some(operator) = inner.next() {
             let operator = match operator.as_str() {
-                "+" => Operator::Add,
-                "-" => Operator::Subtract,
+                "*" => Operator::Multiply,
+                "/" => Operator::Divide,
                 _ => unreachable!("invalid operator"),
             };
             exp = Self::Operation(Operation {

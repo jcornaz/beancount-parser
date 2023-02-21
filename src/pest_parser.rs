@@ -172,7 +172,25 @@ mod tests {
             Expression::value(4)
         )
     )]
+    #[case("2*3", Expression::mul(Expression::value(2), Expression::value(3)))]
+    #[case("2 * 3", Expression::mul(Expression::value(2), Expression::value(3)))]
+    #[case("2 / 3", Expression::div(Expression::value(2), Expression::value(3)))]
+    #[case(
+        "1 + 2 * 3",
+        Expression::plus(
+            Expression::value(1),
+            Expression::mul(Expression::value(2), Expression::value(3)),
+        )
+    )]
+    #[case(
+        "1+2/3",
+        Expression::plus(
+            Expression::value(1),
+            Expression::div(Expression::value(2), Expression::value(3)),
+        )
+    )]
     fn parse_expression(#[case] input: &str, #[case] expected: Expression) {
+        println!("{input}");
         let input = format!("2022-02-20 txn\n  Assets:A  {input} CHF");
         let transaction = parse_single_directive(&input).into_transaction().unwrap();
         let actual = transaction.postings()[0]
