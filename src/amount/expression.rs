@@ -9,6 +9,9 @@ use nom::{
 use rust_decimal::{prelude::ToPrimitive, Decimal};
 use thiserror::Error;
 
+#[cfg(all(test, feature = "unstable"))]
+use crate::pest_parser::Pair;
+
 /// An expression
 ///
 /// Examples of expressions:
@@ -122,6 +125,29 @@ impl Expression {
             }) => operator.evaluate(left.evaluate(), right.evaluate()),
         }
     }
+
+    #[cfg(all(test, feature = "unstable"))]
+    pub(super) fn from_pair(pair: Pair<'_>) -> Self {
+        let mut inner = pair.into_inner();
+        let mut exp = Self::Value(Value::from_pair(
+            inner.next().expect("no value in expression"),
+        ));
+        while let Some(operator) = inner.next() {
+            let operator = match operator.as_str() {
+                "+" => Operator::Add,
+                "-" => Operator::Subtract,
+                _ => unreachable!("invalid operator"),
+            };
+            exp = Self::Operation(Operation {
+                operator,
+                left: exp.into(),
+                right: Box::new(Self::Value(Value::from_pair(
+                    inner.next().expect("no right operand"),
+                ))),
+            });
+        }
+        exp
+    }
 }
 
 impl Operator {
@@ -152,6 +178,11 @@ impl Value {
     /// Returns an error in case of overflow
     pub fn try_into_f32(self) -> Result<f32, ConversionError> {
         self.try_into()
+    }
+
+    #[cfg(all(test, feature = "unstable"))]
+    fn from_pair(pair: Pair<'_>) -> Self {
+        Value(pair.as_str().parse().expect("invalid number"))
     }
 }
 

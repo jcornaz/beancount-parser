@@ -2,6 +2,8 @@
 
 use std::fmt::Display;
 
+#[cfg(all(test, feature = "unstable"))]
+use crate::pest_parser::Pair;
 use nom::{
     branch::alt,
     bytes::complete::{tag, take_while1},
@@ -12,8 +14,20 @@ use nom::{
     IResult,
 };
 
-#[allow(missing_docs)]
-pub type Account<'a> = crate::Account<'a>;
+/// Account
+///
+/// An account has a type (`Assets`, `Liabilities`, `Equity`, `Income` or `Expenses`)
+/// and components.
+///
+/// # Examples
+///
+/// * `Assets:Liquidity:Cash` (type: `Assets`, components: ["Liquidity", "Cash"]
+/// * `Expenses:Groceries` (type: `Assets`, components: ["Groceries"]
+#[derive(Debug, Clone, Eq, PartialEq, Hash)]
+pub struct Account<'a> {
+    type_: Type,
+    components: Vec<&'a str>,
+}
 
 impl Display for Account<'_> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -25,8 +39,20 @@ impl Display for Account<'_> {
     }
 }
 
-#[allow(missing_docs)]
-pub type Type = crate::AccountType;
+/// Type of account
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
+pub enum Type {
+    /// The assets
+    Assets,
+    /// The liabilities
+    Liabilities,
+    /// The equity
+    Equity,
+    /// Income
+    Income,
+    /// Expenses
+    Expenses,
+}
 
 impl Display for Type {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -52,6 +78,21 @@ impl<'a> Account<'a> {
     #[must_use]
     pub fn components(&self) -> &[&'a str] {
         self.components.as_ref()
+    }
+
+    #[cfg(all(test, feature = "unstable"))]
+    pub(crate) fn from_pair(pair: Pair<'a>) -> Self {
+        let mut inner = pair.into_inner();
+        let type_ = match inner.next().expect("no account type in account").as_str() {
+            "Assets" => Type::Assets,
+            "Liabilities" => Type::Liabilities,
+            "Expenses" => Type::Expenses,
+            "Income" => Type::Income,
+            "Equity" => Type::Equity,
+            _ => unreachable!("invalid account type"),
+        };
+        let components = inner.map(|c| c.as_str()).collect();
+        Account { type_, components }
     }
 }
 

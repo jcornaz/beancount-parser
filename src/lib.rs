@@ -53,8 +53,17 @@ extern crate rstest;
 pub use crate::include::Include;
 pub use crate::nom_parser::Parser;
 pub use crate::{
-    amount::Amount, assertion::Assertion, close::Close, date::Date, directive::Directive,
-    error::Error, open::Open, pad::Pad, price::Price, transaction::Transaction,
+    account::{Account, Type},
+    amount::Amount,
+    assertion::Assertion,
+    close::Close,
+    date::Date,
+    directive::Directive,
+    error::Error,
+    open::Open,
+    pad::Pad,
+    price::Price,
+    transaction::Transaction,
 };
 
 pub mod account;
@@ -73,33 +82,3 @@ mod pest_parser;
 mod price;
 mod string;
 pub mod transaction;
-
-/// Account
-///
-/// An account has a type (`Assets`, `Liabilities`, `Equity`, `Income` or `Expenses`)
-/// and components.
-///
-/// # Examples
-///
-/// * `Assets:Liquidity:Cash` (type: `Assets`, components: ["Liquidity", "Cash"]
-/// * `Expenses:Groceries` (type: `Assets`, components: ["Groceries"]
-#[derive(Debug, Clone, Eq, PartialEq, Hash)]
-pub struct Account<'a> {
-    type_: AccountType,
-    components: Vec<&'a str>,
-}
-
-/// Type of account
-#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
-pub enum AccountType {
-    /// The assets
-    Assets,
-    /// The liabilities
-    Liabilities,
-    /// The equity
-    Equity,
-    /// Income
-    Income,
-    /// Expenses
-    Expenses,
-}

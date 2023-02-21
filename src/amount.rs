@@ -9,6 +9,9 @@ use nom::{
     IResult,
 };
 
+#[cfg(all(test, feature = "unstable"))]
+use crate::pest_parser::Pair;
+
 pub use self::expression::{ConversionError, Expression, Value};
 
 pub(crate) mod expression;
@@ -47,6 +50,17 @@ impl<'a> Amount<'a> {
     #[must_use]
     pub fn currency(&self) -> &'a str {
         self.currency
+    }
+
+    #[cfg(all(test, feature = "unstable"))]
+    pub(crate) fn from_pair(pair: Pair<'_>) -> Amount<'_> {
+        let mut inner = pair.into_inner();
+        let expression = Expression::from_pair(inner.next().expect("no value in amount"));
+        let currency = inner.next().expect("no currency in amount").as_str();
+        Amount {
+            expression,
+            currency,
+        }
     }
 }
 

@@ -8,6 +8,8 @@ use nom::{
     IResult,
 };
 
+#[cfg(all(test, feature = "unstable"))]
+use crate::pest_parser::Pair;
 use crate::{
     account::{account, Account},
     amount::{amount, Amount},
@@ -75,6 +77,21 @@ impl<'a> Posting<'a> {
     #[must_use]
     pub fn comment(&self) -> Option<&str> {
         self.comment
+    }
+
+    #[cfg(all(test, feature = "unstable"))]
+    pub(super) fn from_pair(pair: Pair<'_>) -> Posting<'_> {
+        let mut inner = pair.into_inner();
+        let account = Account::from_pair(inner.next().expect("no account in posting"));
+        let amount = inner.next().map(Amount::from_pair);
+        Posting {
+            flag: None,
+            account,
+            price: None,
+            lot_attributes: None,
+            comment: None,
+            amount,
+        }
     }
 }
 

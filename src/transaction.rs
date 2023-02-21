@@ -1,5 +1,7 @@
 //! Types for representing an [`Transaction`]
 
+#[cfg(all(test, feature = "unstable"))]
+use std::collections::HashMap;
 use std::str;
 
 use nom::bytes::complete::{self, take_till};
@@ -17,6 +19,8 @@ pub use posting::{Posting, PriceType};
 
 #[cfg(feature = "unstable")]
 use crate::metadata::Metadata;
+#[cfg(all(test, feature = "unstable"))]
+use crate::pest_parser::{Pair, Rule};
 use crate::{
     date::date,
     string::{comment, string},
@@ -57,6 +61,17 @@ pub enum Flag {
     Cleared,
     /// Pending flag (the `!` character)
     Pending,
+}
+
+impl Flag {
+    #[cfg(all(test, feature = "unstable"))]
+    fn from_pair(pair: Pair<'_>) -> Flag {
+        match pair.as_str() {
+            "*" => Flag::Cleared,
+            "!" => Flag::Pending,
+            _ => unreachable!("Invalid transaction flag"),
+        }
+    }
 }
 
 impl<'a> Transaction<'a> {
@@ -111,6 +126,35 @@ impl<'a> Transaction<'a> {
 
     pub(crate) fn append_tags(&mut self, tags: &[&'a str]) {
         self.tags.extend(tags);
+    }
+
+    #[cfg(all(test, feature = "unstable"))]
+    pub(crate) fn from_pair(pair: Pair<'_>) -> Transaction<'_> {
+        let mut inner = pair.into_inner();
+        let date = Date::from_pair(inner.next().expect("no date in transaction"));
+        let mut flag = None;
+        let mut payee = None;
+        let mut narration = None;
+        let mut postings = Vec::new();
+        for pair in inner {
+            match pair.as_rule() {
+                Rule::transaction_flag => flag = Some(Flag::from_pair(pair)),
+                Rule::payee => payee = pair.into_inner().next().map(|p| p.as_str().into()),
+                Rule::narration => narration = pair.into_inner().next().map(|p| p.as_str().into()),
+                Rule::postings => postings = pair.into_inner().map(Posting::from_pair).collect(),
+                _ => (),
+            }
+        }
+        Transaction {
+            date,
+            flag,
+            payee,
+            narration,
+            tags: vec![],
+            comment: None,
+            metadata: HashMap::default(),
+            postings,
+        }
     }
 }
 
