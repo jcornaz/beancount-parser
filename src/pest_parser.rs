@@ -288,7 +288,10 @@ mod tests {
             "2016-11-28 open Assets:A 22",
             "2016-11-28 open Oops",
             "2022-02-12 txn\n  Assets:Hello  10CHF",
-            "2022-02-12 txn\n  Assets:Hello10 CHF"
+            "2022-02-12 txn\n  Assets:Hello10 CHF",
+            "2022-02-12 txn\n  Assets:Hello 1 +  CHF",
+            "2022-02-12 txn\n  Assets:Hello 2 *  CHF",
+            "2022-02-12 txn\n  Assets:Hello 1 /  CHF"
         )]
         input: &str,
     ) {

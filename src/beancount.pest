@@ -30,8 +30,7 @@ exp_p2 = { exp_p1 ~ (space* ~ op_p2 ~ space* ~ exp_p1)* }
 op_p1 = { "*" | "/" }
 op_p2 = { "+" | "-" }
 
-// TODO: Don't accept empty string as a valid value
-value = { ("-" | "+")? ~ ASCII_DIGIT* ~ ("." ~ ASCII_DIGIT+)? }
+value = { ("-" | "+")? ~ (ASCII_DIGIT+ ~ ("." ~ ASCII_DIGIT+)? | "." ~ ASCII_DIGIT+) }
 currency = { ASCII_ALPHA_UPPER ~ (ASCII_ALPHA_UPPER | ASCII_DIGIT | "'" | "-" | "." | "_")* }
 
 account = { account_type ~ (":" ~ account_component)* }
