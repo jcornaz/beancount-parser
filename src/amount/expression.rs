@@ -10,7 +10,7 @@ use rust_decimal::{prelude::ToPrimitive, Decimal};
 use thiserror::Error;
 
 #[cfg(all(test, feature = "unstable"))]
-use crate::pest_parser::Pair;
+use crate::pest_parser::{Pair, Rule};
 
 /// An expression
 ///
@@ -127,12 +127,7 @@ impl Expression {
     }
 
     #[cfg(all(test, feature = "unstable"))]
-    pub(super) fn from_pair(pair: Pair<'_>) -> Self {
-        Self::from_exp_p2_pair(pair.into_inner().next().expect("no inner expression"))
-    }
-
-    #[cfg(all(test, feature = "unstable"))]
-    fn from_exp_p2_pair(pair: Pair<'_>) -> Self {
+    pub(crate) fn from_pair(pair: Pair<'_>) -> Self {
         let mut inner = pair.into_inner();
         let mut exp = Self::from_exp_p1_pair(inner.next().expect("no value in expression"));
         while let Some(operator) = inner.next() {
@@ -153,9 +148,7 @@ impl Expression {
     #[cfg(all(test, feature = "unstable"))]
     fn from_exp_p1_pair(pair: Pair<'_>) -> Self {
         let mut inner = pair.into_inner();
-        let mut exp = Self::Value(Value::from_pair(
-            inner.next().expect("no value in expression"),
-        ));
+        let mut exp = Self::from_exp_p0_pair(inner.next().expect("no value in expression"));
         while let Some(operator) = inner.next() {
             let operator = match operator.as_str() {
                 "*" => Operator::Multiply,
@@ -165,12 +158,20 @@ impl Expression {
             exp = Self::Operation(Operation {
                 operator,
                 left: exp.into(),
-                right: Box::new(Self::Value(Value::from_pair(
-                    inner.next().expect("no right operand"),
-                ))),
+                right: Self::from_exp_p0_pair(inner.next().expect("missing operand")).into(),
             });
         }
         exp
+    }
+
+    #[cfg(all(test, feature = "unstable"))]
+    fn from_exp_p0_pair(pair: Pair<'_>) -> Self {
+        let pair = pair.into_inner().next().expect("no inner expression");
+        match pair.as_rule() {
+            Rule::value => Self::Value(Value::from_pair(pair)),
+            Rule::exp_p2 => Self::from_pair(pair),
+            _ => unreachable!("invalid p0 expression"),
+        }
     }
 }
 

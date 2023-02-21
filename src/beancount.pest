@@ -24,8 +24,9 @@ posting = { space* ~ account ~ (space+ ~ amount)? ~ space* }
 
 amount = { expression ~ space+ ~ currency }
 
-expression = { exp_p2 }
-exp_p1 = { value ~ (space* ~ op_p1 ~ space* ~ value)* }
+expression = _{ exp_p2 }
+exp_p0 = { value | "(" ~ space* ~ expression ~ space* ~ ")" }
+exp_p1 = { exp_p0 ~ (space* ~ op_p1 ~ space* ~ exp_p0)* }
 exp_p2 = { exp_p1 ~ (space* ~ op_p2 ~ space* ~ exp_p1)* }
 op_p1 = { "*" | "/" }
 op_p2 = { "+" | "-" }

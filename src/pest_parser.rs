@@ -34,9 +34,9 @@ mod tests {
 
     use super::*;
 
-    const COMMENTS: &str = include_str!("../tests/examples/comments.beancount");
-    // TODO const SIMPLE: &str = include_str!("../tests/examples/simple.beancount");
-    // TODO const OFFICIAL: &str = include_str!("../tests/examples/official.beancount");
+    const COMMENTS: &str = include_str!("../tests/samples/comments.beancount");
+    // TODO const SIMPLE: &str = include_str!("../tests/samples/simple.beancount");
+    // TODO const OFFICIAL: &str = include_str!("../tests/samples/official.beancount");
 
     #[rstest]
     fn successful_parse(#[values("", " ", " \n ", " \t ", COMMENTS)] input: &str) {
@@ -189,8 +189,21 @@ mod tests {
             Expression::div(Expression::value(2), Expression::value(3)),
         )
     )]
+    #[case(
+        "(1+2)/3",
+        Expression::div(
+            Expression::plus(Expression::value(1), Expression::value(2)),
+            Expression::value(3),
+        )
+    )]
+    #[case(
+        "( 1 + 2 ) / 3",
+        Expression::div(
+            Expression::plus(Expression::value(1), Expression::value(2)),
+            Expression::value(3),
+        )
+    )]
     fn parse_expression(#[case] input: &str, #[case] expected: Expression) {
-        println!("{input}");
         let input = format!("2022-02-20 txn\n  Assets:A  {input} CHF");
         let transaction = parse_single_directive(&input).into_transaction().unwrap();
         let actual = transaction.postings()[0]

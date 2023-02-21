@@ -1,9 +1,9 @@
 use beancount_parser::{Date, Directive, Parser};
 use rstest::rstest;
 
-const SIMPLE: &str = include_str!("examples/simple.beancount");
-const COMMENTS: &str = include_str!("examples/comments.beancount");
-const OFFICIAL: &str = include_str!("examples/official.beancount");
+const SIMPLE: &str = include_str!("samples/simple.beancount");
+const COMMENTS: &str = include_str!("samples/comments.beancount");
+const OFFICIAL: &str = include_str!("samples/official.beancount");
 
 #[rstest]
 fn valid_examples_do_not_return_an_error(
