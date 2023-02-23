@@ -3,8 +3,7 @@
 use pest::Parser as Parse;
 use pest_derive::Parser;
 
-use crate::commodity::Commodity;
-use crate::{account, Assertion, Close, Date, Directive, Open, Transaction};
+use crate::Directive;
 
 #[derive(Parser)]
 #[grammar = "beancount.pest"]
@@ -17,15 +16,8 @@ fn parse(input: &str) -> Result<impl Iterator<Item = Directive<'_>>, Box<dyn std
         .next()
         .expect("no root rule")
         .into_inner()
-        .filter_map(|p| match p.as_rule() {
-            Rule::transaction => Some(Directive::Transaction(Transaction::from_pair(p))),
-            Rule::balance => Some(Directive::Assertion(Assertion::from_pair(p))),
-            Rule::open => Some(Directive::Open(Open::from_pair(p))),
-            Rule::close => Some(Directive::Close(Close::from_pair(p))),
-            Rule::commodity => Some(Directive::Commodity(Commodity::from_pair(p))),
-            Rule::option => Some(Directive::Option(crate::Option::from_pair(p))),
-            _ => None,
-        }))
+        .filter(|pair| !matches!(pair.as_rule(), Rule::EOI | Rule::comment))
+        .map(Directive::from_pair))
 }
 
 #[cfg(test)]
@@ -34,7 +26,7 @@ mod tests {
 
     use crate::amount::Expression;
     use crate::transaction::{Flag, Posting};
-    use crate::Amount;
+    use crate::{account, Amount, Date};
 
     use super::*;
 

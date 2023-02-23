@@ -5,6 +5,8 @@ use crate::commodity::Commodity;
 use crate::include::{include, Include};
 use crate::open::open;
 use crate::pad::{pad, Pad};
+#[cfg(all(test, feature = "unstable"))]
+use crate::pest_parser::{Pair, Rule};
 use crate::price::{price, Price};
 use crate::{Assertion, Close, Date, Open};
 use nom::branch::alt;
@@ -80,6 +82,19 @@ impl<'a> Directive<'a> {
             Directive::Commodity(_) => None,
             #[cfg(all(test, feature = "unstable"))]
             Directive::Option(_) => None,
+        }
+    }
+
+    #[cfg(all(test, feature = "unstable"))]
+    pub(crate) fn from_pair(pair: Pair<'a>) -> Self {
+        match pair.as_rule() {
+            Rule::transaction => Directive::Transaction(Transaction::from_pair(pair)),
+            Rule::balance => Directive::Assertion(Assertion::from_pair(pair)),
+            Rule::open => Directive::Open(Open::from_pair(pair)),
+            Rule::close => Directive::Close(Close::from_pair(pair)),
+            Rule::commodity => Directive::Commodity(Commodity::from_pair(pair)),
+            Rule::option => Directive::Option(crate::Option::from_pair(pair)),
+            rule => panic!("unexpected directive rule {rule:?}"),
         }
     }
 }
