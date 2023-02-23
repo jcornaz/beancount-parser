@@ -84,11 +84,13 @@ impl<'a> Posting<'a> {
         let mut flag = None;
         let mut account = None;
         let mut amount = None;
+        let mut comment = None;
         for pair in pair.into_inner() {
             match pair.as_rule() {
                 Rule::account => account = Some(Account::from_pair(pair)),
                 Rule::amount => amount = Some(Amount::from_pair(pair)),
                 Rule::transaction_flag => flag = Some(Flag::from_pair(pair)),
+                Rule::comment => comment = Some(pair.as_str()),
                 _ => (),
             }
         }
@@ -97,7 +99,7 @@ impl<'a> Posting<'a> {
             account: account.expect("no account in posting"),
             price: None,
             lot_attributes: None,
-            comment: None,
+            comment,
             amount,
         }
     }

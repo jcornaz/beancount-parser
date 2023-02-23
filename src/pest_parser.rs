@@ -35,11 +35,11 @@ mod tests {
     use super::*;
 
     const COMMENTS: &str = include_str!("../tests/samples/comments.beancount");
-    // TODO const SIMPLE: &str = include_str!("../tests/samples/simple.beancount");
+    const SIMPLE: &str = include_str!("../tests/samples/simple.beancount");
     // TODO const OFFICIAL: &str = include_str!("../tests/samples/official.beancount");
 
     #[rstest]
-    fn successful_parse(#[values("", " ", " \n ", " \t ", COMMENTS)] input: &str) {
+    fn successful_parse(#[values("", " ", " \n ", " \t ", COMMENTS, SIMPLE)] input: &str) {
         if let Err(err) = parse(input) {
             panic!("{err}");
         }
@@ -139,6 +139,19 @@ mod tests {
         let transaction = parse_single_directive(&input).into_transaction().unwrap();
         let posting = &transaction.postings()[0];
         assert_eq!(posting.flag(), expected);
+    }
+
+    #[rstest]
+    #[case("Assets:Hello", None)]
+    #[case("Assets:Hello ; Hello", Some("Hello"))]
+    #[case("Assets:Hello 10 CHF ; World", Some("World"))]
+    #[case("Assets:Hello 10 CHF ;;;  World", Some("World"))]
+    #[case("Assets:Hello 10 CHF; Tadaa", Some("Tadaa"))]
+    fn parse_posting_comment(#[case] input: &str, #[case] expected: Option<&str>) {
+        let input = format!("2022-02-23 txn\n{input}");
+        let transaction = parse_single_directive(&input).into_transaction().unwrap();
+        let posting = &transaction.postings()[0];
+        assert_eq!(posting.comment(), expected);
     }
 
     #[rstest]

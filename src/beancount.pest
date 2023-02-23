@@ -20,7 +20,7 @@ string = _{ "\"" ~ string_content ~  "\"" }
 string_content = { (!"\"" ~ ANY)* }
 
 postings = { (NEWLINE ~ posting)* }
-posting = { space* ~ (transaction_flag ~ space*)? ~ account ~ (space+ ~ amount)? ~ space* }
+posting = { space* ~ (transaction_flag ~ space*)? ~ account ~ (space+ ~ amount)? ~ space* ~ inline_comment? }
 
 amount = { expression ~ space+ ~ currency }
 
@@ -45,8 +45,8 @@ day = { ASCII_DIGIT{2} }
 
 blank_line = _{ !EOI ~ space* ~ (NEWLINE | EOI) }
 comment_line = _{ space* ~ !(date | (account_type ~ ":") | EOI) ~ comment ~ (NEWLINE | EOI) }
-inline_comment = _{ ";"+ ~ comment }
-comment = _{ (!NEWLINE ~ ANY)* }
+inline_comment = _{ ";"+ ~ space* ~ comment }
+comment = { (!NEWLINE ~ ANY)* }
 
 space = _{ " " | "\t" }
 comma_separator = _{ space* ~ "," ~ space* }
