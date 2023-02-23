@@ -1,5 +1,7 @@
 use crate::assertion::assertion;
 use crate::close::close;
+#[cfg(all(test, feature = "unstable"))]
+use crate::commodity::Commodity;
 use crate::include::{include, Include};
 use crate::open::open;
 use crate::pad::{pad, Pad};
@@ -32,6 +34,9 @@ pub enum Directive<'a> {
     Include(Include),
     /// The [`Pad`](crate::Pad) directive
     Pad(Pad<'a>),
+    /// The [`Commodity`](crate::Commodity) directive
+    #[cfg(all(test, feature = "unstable"))]
+    Commodity(Commodity<'a>),
 }
 
 impl<'a> Directive<'a> {
@@ -68,6 +73,8 @@ impl<'a> Directive<'a> {
             Directive::Assertion(a) => Some(a.date()),
             Directive::Include(_) => None,
             Directive::Pad(p) => Some(p.date()),
+            #[cfg(all(test, feature = "unstable"))]
+            Directive::Commodity(_) => None,
         }
     }
 }

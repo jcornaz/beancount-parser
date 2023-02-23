@@ -66,10 +66,14 @@ pub use crate::{
     transaction::Transaction,
 };
 
+#[cfg(all(test, feature = "unstable"))]
+pub use crate::commodity::Commodity;
+
 pub mod account;
 pub mod amount;
 mod assertion;
 mod close;
+mod commodity;
 mod date;
 mod directive;
 mod error;

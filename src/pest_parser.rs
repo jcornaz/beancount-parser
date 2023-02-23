@@ -3,6 +3,7 @@
 use pest::Parser as Parse;
 use pest_derive::Parser;
 
+use crate::commodity::Commodity;
 use crate::{account, Close, Date, Directive, Open, Transaction};
 
 #[derive(Parser)]
@@ -20,6 +21,7 @@ fn parse(input: &str) -> Result<impl Iterator<Item = Directive<'_>>, Box<dyn std
             Rule::transaction => Some(Directive::Transaction(Transaction::from_pair(p))),
             Rule::open => Some(Directive::Open(Open::from_pair(p))),
             Rule::close => Some(Directive::Close(Close::from_pair(p))),
+            Rule::commodity => Some(Directive::Commodity(Commodity::from_pair(p))),
             _ => None,
         }))
 }
@@ -348,6 +350,14 @@ mod tests {
     }
 
     #[rstest]
+    #[case("1792-01-01 commodity USD", "USD")]
+    fn parse_commodity_currency(#[case] input: &str, #[case] expected: &str) {
+        let directive = parse_single_directive(input);
+        let Directive::Commodity(commodity) = directive else { panic!("expected commodity but was {directive:?}") };
+        assert_eq!(commodity.currency(), expected);
+    }
+
+    #[rstest]
     fn error_case(
         #[values(
             "2016-11-28closeLiabilities:CreditCard:CapitalOne",
@@ -365,7 +375,8 @@ mod tests {
             "2022-02-12 txn\n  Assets:Hello10 CHF",
             "2022-02-12 txn\n  Assets:Hello 1 +  CHF",
             "2022-02-12 txn\n  Assets:Hello 2 *  CHF",
-            "2022-02-12 txn\n  Assets:Hello 1 /  CHF"
+            "2022-02-12 txn\n  Assets:Hello 1 /  CHF",
+            "1792-01-01 commodityUSD"
         )]
         input: &str,
     ) {
