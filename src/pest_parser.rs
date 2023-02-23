@@ -4,7 +4,7 @@ use pest::Parser as Parse;
 use pest_derive::Parser;
 
 use crate::commodity::Commodity;
-use crate::{account, Close, Date, Directive, Open, Transaction};
+use crate::{account, Assertion, Close, Date, Directive, Open, Transaction};
 
 #[derive(Parser)]
 #[grammar = "beancount.pest"]
@@ -19,6 +19,7 @@ fn parse(input: &str) -> Result<impl Iterator<Item = Directive<'_>>, Box<dyn std
         .into_inner()
         .filter_map(|p| match p.as_rule() {
             Rule::transaction => Some(Directive::Transaction(Transaction::from_pair(p))),
+            Rule::balance => Some(Directive::Assertion(Assertion::from_pair(p))),
             Rule::open => Some(Directive::Open(Open::from_pair(p))),
             Rule::close => Some(Directive::Close(Close::from_pair(p))),
             Rule::commodity => Some(Directive::Commodity(Commodity::from_pair(p))),
@@ -80,6 +81,10 @@ mod tests {
     #[case("2000-01-03 * \"Store\" \"Groceries\"", Date::new(2000, 1, 3))]
     #[case("2000-01-04 *", Date::new(2000, 1, 4))]
     #[case("2000-01-05 !", Date::new(2000, 1, 5))]
+    #[case(
+        "2020-01-02 balance Assets:US:BofA:Checking        3467.65 USD",
+        Date::new(2020, 1, 2)
+    )]
     fn parse_date(#[case] input: &str, #[case] expected: Date) {
         let directive = parse_single_directive(input);
         assert_eq!(directive.date(), Some(expected));
@@ -358,6 +363,16 @@ mod tests {
     }
 
     #[rstest]
+    fn parse_balance_assertion() {
+        let input = "2020-01-02 balance Assets:US:BofA:Checking        1.2 USD";
+        let directive = parse_single_directive(input);
+        let Directive::Assertion(assertion) = directive else { panic!("expected balance assertion but was {directive:?}") };
+        assert_eq!(assertion.date(), Date::new(2020, 1, 2));
+        assert_eq!(&assertion.account().to_string(), "Assets:US:BofA:Checking");
+        assert_eq!(assertion.amount(), &Amount::new(Decimal::new(12, 1), "USD"));
+    }
+
+    #[rstest]
     fn error_case(
         #[values(
             "2016-11-28closeLiabilities:CreditCard:CapitalOne",
@@ -376,7 +391,14 @@ mod tests {
             "2022-02-12 txn\n  Assets:Hello 1 +  CHF",
             "2022-02-12 txn\n  Assets:Hello 2 *  CHF",
             "2022-02-12 txn\n  Assets:Hello 1 /  CHF",
-            "1792-01-01 commodityUSD"
+            "1792-01-01 commodityUSD",
+            "1792-01-01commodity USD",
+            "1792-01-01 balance",
+            "1792-01-01 balance Test",
+            "1792-01-01 balance Assets:A",
+            "1792-01-01 balance Assets:A",
+            "1792-01-01 balanceAssets:A 1 CHF",
+            "1792-01-01balance Assets:A 1 CHF"
         )]
         input: &str,
     ) {

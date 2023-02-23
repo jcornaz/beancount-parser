@@ -1,8 +1,3 @@
-use crate::account::{account, Account};
-use crate::date::date;
-use crate::Date;
-use crate::{amount::amount, Amount};
-
 use nom::{
     bytes::complete::tag,
     character::streaming::space1,
@@ -10,6 +5,13 @@ use nom::{
     sequence::{terminated, tuple},
     IResult,
 };
+
+use crate::account::{account, Account};
+use crate::date::date;
+#[cfg(all(test, feature = "unstable"))]
+use crate::pest_parser::Pair;
+use crate::Date;
+use crate::{amount::amount, Amount};
 
 /// Account balance assertion directive
 #[derive(Clone, Debug, PartialEq)]
@@ -37,6 +39,19 @@ impl<'a> Assertion<'a> {
     pub fn amount(&self) -> &Amount<'a> {
         &self.amount
     }
+
+    #[cfg(all(test, feature = "unstable"))]
+    pub(crate) fn from_pair(pair: Pair<'a>) -> Self {
+        let mut inner = pair.into_inner();
+        let date = Date::from_pair(inner.next().expect("no date in balance assertion"));
+        let account = Account::from_pair(inner.next().expect("no account in balance assertion"));
+        let amount = Amount::from_pair(inner.next().expect("no amount in balance assertion"));
+        Self {
+            date,
+            account,
+            amount,
+        }
+    }
 }
 
 pub(crate) fn assertion(input: &str) -> IResult<&str, Assertion<'_>> {
@@ -56,11 +71,11 @@ pub(crate) fn assertion(input: &str) -> IResult<&str, Assertion<'_>> {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-
     use nom::combinator::all_consuming;
 
     use crate::account::Type;
+
+    use super::*;
 
     #[test]
     fn valid_assertion() {
