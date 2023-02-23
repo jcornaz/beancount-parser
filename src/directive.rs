@@ -37,6 +37,9 @@ pub enum Directive<'a> {
     /// The [`Commodity`](crate::Commodity) directive
     #[cfg(all(test, feature = "unstable"))]
     Commodity(Commodity<'a>),
+    /// The [`Option`](crate::Option) directive
+    #[cfg(all(test, feature = "unstable"))]
+    Option(crate::Option<'a>),
 }
 
 impl<'a> Directive<'a> {
@@ -75,6 +78,8 @@ impl<'a> Directive<'a> {
             Directive::Pad(p) => Some(p.date()),
             #[cfg(all(test, feature = "unstable"))]
             Directive::Commodity(_) => None,
+            #[cfg(all(test, feature = "unstable"))]
+            Directive::Option(_) => None,
         }
     }
 }

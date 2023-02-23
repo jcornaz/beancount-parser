@@ -69,6 +69,9 @@ pub use crate::{
 #[cfg(all(test, feature = "unstable"))]
 pub use crate::commodity::Commodity;
 
+#[cfg(all(test, feature = "unstable"))]
+pub use crate::option::Option;
+
 pub mod account;
 pub mod amount;
 mod assertion;
@@ -81,6 +84,7 @@ mod include;
 mod metadata;
 mod nom_parser;
 mod open;
+mod option;
 mod pad;
 mod pest_parser;
 mod price;

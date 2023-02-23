@@ -23,6 +23,7 @@ fn parse(input: &str) -> Result<impl Iterator<Item = Directive<'_>>, Box<dyn std
             Rule::open => Some(Directive::Open(Open::from_pair(p))),
             Rule::close => Some(Directive::Close(Close::from_pair(p))),
             Rule::commodity => Some(Directive::Commodity(Commodity::from_pair(p))),
+            Rule::option => Some(Directive::Option(crate::Option::from_pair(p))),
             _ => None,
         }))
 }
@@ -362,7 +363,7 @@ mod tests {
         assert_eq!(commodity.currency(), expected);
     }
 
-    #[rstest]
+    #[test]
     fn parse_balance_assertion() {
         let input = "2020-01-02 balance Assets:US:BofA:Checking        1.2 USD";
         let directive = parse_single_directive(input);
@@ -370,6 +371,15 @@ mod tests {
         assert_eq!(assertion.date(), Date::new(2020, 1, 2));
         assert_eq!(&assertion.account().to_string(), "Assets:US:BofA:Checking");
         assert_eq!(assertion.amount(), &Amount::new(Decimal::new(12, 1), "USD"));
+    }
+
+    #[test]
+    fn parse_option() {
+        let input = r#"option "operating_currency" "USD""#;
+        let directive = parse_single_directive(input);
+        let Directive::Option(option) = directive else { panic!("expected option but was {directive:?}") };
+        assert_eq!(option.name(), "operating_currency");
+        assert_eq!(option.value(), "USD");
     }
 
     #[rstest]
@@ -398,7 +408,13 @@ mod tests {
             "1792-01-01 balance Assets:A",
             "1792-01-01 balance Assets:A",
             "1792-01-01 balanceAssets:A 1 CHF",
-            "1792-01-01balance Assets:A 1 CHF"
+            "1792-01-01balance Assets:A 1 CHF",
+            "option",
+            "option a b",
+            "option \"a\"",
+            "option \"a\" b",
+            "option\"a\" \"b\"",
+            "option \"a\"\"b\""
         )]
         input: &str,
     ) {
