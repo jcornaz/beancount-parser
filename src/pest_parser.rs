@@ -128,6 +128,20 @@ mod tests {
     }
 
     #[rstest]
+    #[case("Assets:Hello", None)]
+    #[case("  Assets:Hello", None)]
+    #[case("* Assets:Hello", Some(Flag::Cleared))]
+    #[case("  * Assets:Hello", Some(Flag::Cleared))]
+    #[case("! Assets:Hello", Some(Flag::Pending))]
+    #[case("  ! Assets:Hello", Some(Flag::Pending))]
+    fn parse_posting_flag(#[case] input: &str, #[case] expected: Option<Flag>) {
+        let input = format!("2022-02-23 txn\n{input}");
+        let transaction = parse_single_directive(&input).into_transaction().unwrap();
+        let posting = &transaction.postings()[0];
+        assert_eq!(posting.flag(), expected);
+    }
+
+    #[rstest]
     #[case("2022-02-12 txn\n  Assets:Hello", None)]
     #[case("2022-02-12 txn\n  Assets:Hello  10 CHF", Some(Amount::new(10, "CHF")))]
     #[case(

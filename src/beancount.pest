@@ -20,7 +20,7 @@ string = _{ "\"" ~ string_content ~  "\"" }
 string_content = { (!"\"" ~ ANY)* }
 
 postings = { (NEWLINE ~ posting)* }
-posting = { space* ~ account ~ (space+ ~ amount)? ~ space* }
+posting = { space* ~ (transaction_flag ~ space*)? ~ account ~ (space+ ~ amount)? ~ space* }
 
 amount = { expression ~ space+ ~ currency }
 

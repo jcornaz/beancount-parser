@@ -9,7 +9,7 @@ use nom::{
 };
 
 #[cfg(all(test, feature = "unstable"))]
-use crate::pest_parser::Pair;
+use crate::pest_parser::{Pair, Rule};
 use crate::{
     account::{account, Account},
     amount::{amount, Amount},
@@ -81,12 +81,20 @@ impl<'a> Posting<'a> {
 
     #[cfg(all(test, feature = "unstable"))]
     pub(super) fn from_pair(pair: Pair<'_>) -> Posting<'_> {
-        let mut inner = pair.into_inner();
-        let account = Account::from_pair(inner.next().expect("no account in posting"));
-        let amount = inner.next().map(Amount::from_pair);
+        let mut flag = None;
+        let mut account = None;
+        let mut amount = None;
+        for pair in pair.into_inner() {
+            match pair.as_rule() {
+                Rule::account => account = Some(Account::from_pair(pair)),
+                Rule::amount => amount = Some(Amount::from_pair(pair)),
+                Rule::transaction_flag => flag = Some(Flag::from_pair(pair)),
+                _ => (),
+            }
+        }
         Posting {
-            flag: None,
-            account,
+            flag,
+            account: account.expect("no account in posting"),
             price: None,
             lot_attributes: None,
             comment: None,
