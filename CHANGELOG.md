@@ -1,3 +1,10 @@
+## [1.14.0](https://github.com/jcornaz/beancount-parser/compare/v1.13.0...v1.14.0) (2023-02-24)
+
+
+### Features
+
+* provide `AccountType` from root module (equivalent of `account::Type`) ([7602beb](https://github.com/jcornaz/beancount-parser/commit/7602beb03cac02a60b141cbda5c8e67078bc1561))
+
 ## [1.13.0](https://github.com/jcornaz/beancount-parser/compare/v1.12.0...v1.13.0) (2023-02-17)
 
 
