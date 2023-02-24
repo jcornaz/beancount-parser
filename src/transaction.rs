@@ -136,12 +136,19 @@ impl<'a> Transaction<'a> {
         let mut payee = None;
         let mut narration = None;
         let mut postings = Vec::new();
+        let mut tags = Vec::new();
         for pair in inner {
             match pair.as_rule() {
                 Rule::transaction_flag => flag = Some(Flag::from_pair(pair)),
                 Rule::payee => payee = pair.into_inner().next().map(|p| p.as_str().into()),
                 Rule::narration => narration = pair.into_inner().next().map(|p| p.as_str().into()),
                 Rule::postings => postings = pair.into_inner().map(Posting::from_pair).collect(),
+                Rule::tags => {
+                    tags = pair
+                        .into_inner()
+                        .filter_map(|p| p.as_str().strip_prefix('#'))
+                        .collect();
+                }
                 _ => (),
             }
         }
@@ -150,7 +157,7 @@ impl<'a> Transaction<'a> {
             flag,
             payee,
             narration,
-            tags: vec![],
+            tags,
             comment: None,
             metadata: HashMap::default(),
             postings,

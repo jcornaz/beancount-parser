@@ -113,6 +113,16 @@ mod tests {
     }
 
     #[rstest]
+    #[case(r#"2022-02-12 txn"#, &[])]
+    #[case(r#"2022-02-12 txn #hello"#, &["hello"])]
+    #[case(r#"2022-02-12 txn "Payee" "Narration" #hello"#, &["hello"])]
+    #[case(r#"2022-02-12 txn "Payee" "Narration" #Hello #world"#, &["Hello", "world"])]
+    fn parse_transaction_tags(#[case] input: &str, #[case] expected: &[&str]) {
+        let transaction = parse_single_directive(input).into_transaction().unwrap();
+        assert_eq!(transaction.tags(), expected);
+    }
+
+    #[rstest]
     #[case("2022-02-12 txn", &[])]
     #[case("2022-02-12 txn\n  Assets:Hello\n\tExpenses:Test \nLiabilities:Other", &["Assets:Hello", "Expenses:Test", "Liabilities:Other"])]
     fn parse_posting_accounts(#[case] input: &str, #[case] expected: &[&str]) {
@@ -403,6 +413,12 @@ mod tests {
             "2022-02-12 txn\n  Assets:Hello 1 +  CHF",
             "2022-02-12 txn\n  Assets:Hello 2 *  CHF",
             "2022-02-12 txn\n  Assets:Hello 1 /  CHF",
+            "2022-02-12 txnAssets:Hello 1 /  CHF",
+            "2022-02-12 txn oops",
+            r#"2022-02-12 txn "hello""world""#,
+            r#"2022-02-12 txn"hello" "world""#,
+            r#"2022-02-12 txn#Hello"#,
+            r#"2022-02-12 txn #Hello#world"#,
             "1792-01-01 commodityUSD",
             "1792-01-01commodity USD",
             "1792-01-01 balance",
@@ -423,8 +439,8 @@ mod tests {
         )]
         input: &str,
     ) {
-        let result = parse(input);
-        assert!(result.is_err());
+        let result = parse(input).map(Iterator::collect::<Vec<_>>);
+        assert!(result.is_err(), "{result:?}");
     }
 
     fn parse_single_directive(input: &str) -> Directive<'_> {
