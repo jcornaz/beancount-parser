@@ -374,6 +374,16 @@ mod tests {
         assert_eq!(option.value(), "USD");
     }
 
+    #[test]
+    fn parse_event() {
+        let input = r#"2020-11-23 event "location" "Boston""#;
+        let directive = parse_single_directive(input);
+        let Directive::Event(event) = directive else { panic!("expected event but was {directive:?}") };
+        assert_eq!(event.date(), Date::new(2020, 11, 23));
+        assert_eq!(event.name(), "location");
+        assert_eq!(event.value(), "Boston");
+    }
+
     #[rstest]
     fn error_case(
         #[values(
@@ -401,6 +411,9 @@ mod tests {
             "1792-01-01 balance Assets:A",
             "1792-01-01 balanceAssets:A 1 CHF",
             "1792-01-01balance Assets:A 1 CHF",
+            r#"2020-11-23event "location" "Boston""#,
+            r#"2020-11-23 event"location" "Boston""#,
+            r#"2020-11-23 event "location""Boston""#,
             "option",
             "option a b",
             "option \"a\"",

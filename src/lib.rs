@@ -72,6 +72,9 @@ pub use crate::commodity::Commodity;
 #[cfg(all(test, feature = "unstable"))]
 pub use crate::option::Option;
 
+#[cfg(all(test, feature = "unstable"))]
+pub use crate::event::Event;
+
 pub mod account;
 pub mod amount;
 mod assertion;
@@ -80,6 +83,7 @@ mod commodity;
 mod date;
 mod directive;
 mod error;
+mod event;
 mod include;
 mod metadata;
 mod nom_parser;

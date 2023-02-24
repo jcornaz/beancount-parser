@@ -1,10 +1,11 @@
 beancount_file = { SOI ~ (directive | blank_line | comment_line)* ~ EOI }
 
-directive = _{ (transaction | balance | open | close | commodity | option) ~ space* ~ inline_comment? ~ (NEWLINE | EOI) }
+directive = _{ (transaction | balance | open | close | commodity | event | option) ~ space* ~ inline_comment? ~ (NEWLINE | EOI) }
 open = { date ~ space+ ~ "open" ~ space+ ~ account ~ space* ~ currency_list? }
 close = { date ~ space+ ~ "close" ~ space+ ~ account }
 commodity = { date ~ space+ ~ "commodity" ~ space+ ~ currency }
 balance = { date ~ space+ ~ "balance" ~ space+ ~ account ~ space+ ~ amount }
+event = { date ~ space+ ~ "event" ~ space+ ~ string ~ space+ ~ string }
 option = { "option" ~ space+ ~ string ~ space+ ~ string }
 currency_list = _{ currency ~ (comma_separator ~ currency)* }
 

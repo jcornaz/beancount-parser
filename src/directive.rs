@@ -1,7 +1,5 @@
 use crate::assertion::assertion;
 use crate::close::close;
-#[cfg(all(test, feature = "unstable"))]
-use crate::commodity::Commodity;
 use crate::include::{include, Include};
 use crate::open::open;
 use crate::pad::{pad, Pad};
@@ -9,6 +7,8 @@ use crate::pad::{pad, Pad};
 use crate::pest_parser::{Pair, Rule};
 use crate::price::{price, Price};
 use crate::{Assertion, Close, Date, Open};
+#[cfg(all(test, feature = "unstable"))]
+use crate::{Commodity, Event};
 use nom::branch::alt;
 use nom::{combinator::map, IResult};
 
@@ -42,6 +42,9 @@ pub enum Directive<'a> {
     /// The [`Option`](crate::Option) directive
     #[cfg(all(test, feature = "unstable"))]
     Option(crate::Option<'a>),
+    /// The [`Event`](crate::Event) directive
+    #[cfg(all(test, feature = "unstable"))]
+    Event(Event<'a>),
 }
 
 impl<'a> Directive<'a> {
@@ -76,12 +79,10 @@ impl<'a> Directive<'a> {
             Directive::Close(c) => Some(c.date()),
             Directive::Price(p) => Some(p.date()),
             Directive::Assertion(a) => Some(a.date()),
-            Directive::Include(_) => None,
             Directive::Pad(p) => Some(p.date()),
+            Directive::Include(_) => None,
             #[cfg(all(test, feature = "unstable"))]
-            Directive::Commodity(_) => None,
-            #[cfg(all(test, feature = "unstable"))]
-            Directive::Option(_) => None,
+            Directive::Commodity(_) | Directive::Option(_) | Directive::Event(_) => None,
         }
     }
 
@@ -93,6 +94,7 @@ impl<'a> Directive<'a> {
             Rule::open => Directive::Open(Open::from_pair(pair)),
             Rule::close => Directive::Close(Close::from_pair(pair)),
             Rule::commodity => Directive::Commodity(Commodity::from_pair(pair)),
+            Rule::event => Directive::Event(Event::from_pair(pair)),
             Rule::option => Directive::Option(crate::Option::from_pair(pair)),
             rule => panic!("unexpected directive rule {rule:?}"),
         }
