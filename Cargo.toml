@@ -25,6 +25,7 @@ pest = { version = "2.5", default-features = false, features = ["std"], optional
 pest_derive = { version = "2.5", default-features = false, features = ["std"], optional = true }
 
 [dev-dependencies]
+criterion = "0.4.0"
 rstest = { version = "0.16.0", default-features = false }
 
 [build-dependencies]
@@ -37,3 +38,7 @@ debug = false
 [profile.release]
 lto = true
 codegen-units = 1
+
+[[bench]]
+name = "benchmark"
+harness = false
