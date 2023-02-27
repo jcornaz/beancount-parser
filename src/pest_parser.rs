@@ -194,6 +194,24 @@ mod tests {
     }
 
     #[rstest]
+    #[case("2023-02-27 txn\n  Assets:A 10 CHF", None)]
+    #[case(
+        "2023-02-27 txn\n  Assets:A 10 CHF {40 PLN}",
+        Some(Amount::new(40, "PLN"))
+    )]
+    #[case(
+        "2023-02-27 txn\n  Assets:A 10 CHF { 40 PLN }",
+        Some(Amount::new(40, "PLN"))
+    )]
+    #[case("2023-02-27 txn\n  Assets:A 10 CHF {}", None)]
+    #[case("2023-02-27 txn\n  Assets:A 10 CHF { }", None)]
+    fn parse_cost(#[case] input: &str, #[case] expected: Option<Amount<'_>>) {
+        let transaction = parse_single_directive(input).into_transaction().unwrap();
+        let posting = &transaction.postings()[0];
+        assert_eq!(posting.cost(), expected.as_ref());
+    }
+
+    #[rstest]
     #[case("2", Expression::value(2))]
     #[case("2+3", Expression::plus(Expression::value(2), Expression::value(3)))]
     #[case("2 + 3", Expression::plus(Expression::value(2), Expression::value(3)))]
@@ -415,6 +433,8 @@ mod tests {
             "2022-02-12 txn\n  Assets:Hello 1 +  CHF",
             "2022-02-12 txn\n  Assets:Hello 2 *  CHF",
             "2022-02-12 txn\n  Assets:Hello 1 /  CHF",
+            "2022-02-12 txn\n  Assets:Hello 1 CHF {",
+            "2022-02-12 txn\n  Assets:Hello 1 CHF }",
             "2022-02-12 txnAssets:Hello 1 /  CHF",
             "2022-02-12 txn oops",
             r#"2022-02-12 txn "hello""world""#,

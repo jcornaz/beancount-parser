@@ -34,12 +34,12 @@ use super::{date, flag, Date, Flag};
 /// * `Assets:A:B` (without amount)
 #[derive(Debug, Clone, PartialEq)]
 pub struct Posting<'a> {
-    pub(crate) flag: Option<Flag>,
-    pub(crate) account: Account<'a>,
-    pub(crate) amount: Option<Amount<'a>>,
-    pub(crate) price: Option<(PriceType, Amount<'a>)>,
-    pub(crate) lot_attributes: Option<LotAttributes<'a>>,
-    pub(crate) comment: Option<&'a str>,
+    flag: Option<Flag>,
+    account: Account<'a>,
+    amount: Option<Amount<'a>>,
+    price: Option<(PriceType, Amount<'a>)>,
+    lot: Option<LotAttributes<'a>>,
+    comment: Option<&'a str>,
 }
 
 impl<'a> Posting<'a> {
@@ -70,7 +70,7 @@ impl<'a> Posting<'a> {
     /// Returns the cost (if present)
     #[must_use]
     pub fn cost(&self) -> Option<&Amount<'a>> {
-        self.lot_attributes.as_ref().and_then(|la| la.cost.as_ref())
+        self.lot.as_ref().and_then(|la| la.cost.as_ref())
     }
 
     /// Returns the comment (if present)
@@ -85,12 +85,14 @@ impl<'a> Posting<'a> {
         let mut account = None;
         let mut amount = None;
         let mut comment = None;
+        let mut lot = None;
         for pair in pair.into_inner() {
             match pair.as_rule() {
                 Rule::account => account = Some(Account::from_pair(pair)),
                 Rule::amount => amount = Some(Amount::from_pair(pair)),
                 Rule::transaction_flag => flag = Some(Flag::from_pair(pair)),
                 Rule::comment => comment = Some(pair.as_str()),
+                Rule::lot => lot = Some(LotAttributes::from_pair(pair)),
                 _ => (),
             }
         }
@@ -98,7 +100,7 @@ impl<'a> Posting<'a> {
             flag,
             account: account.expect("no account in posting"),
             price: None,
-            lot_attributes: None,
+            lot,
             comment,
             amount,
         }
@@ -127,6 +129,17 @@ enum LotAttribute<'a> {
     Cost(Amount<'a>),
     Date(Date),
     Label(String),
+}
+
+impl<'a> LotAttributes<'a> {
+    #[cfg(all(test, feature = "unstable"))]
+    fn from_pair(pair: Pair<'a>) -> Self {
+        Self {
+            cost: pair.into_inner().next().map(Amount::from_pair),
+            date: None,
+            label: None,
+        }
+    }
 }
 
 fn lot_attributes(input: &str) -> IResult<&str, LotAttributes<'_>> {
@@ -187,7 +200,7 @@ pub fn posting(input: &str) -> IResult<&str, Posting<'_>> {
             account,
             amount,
             price,
-            lot_attributes,
+            lot: lot_attributes,
             comment,
         },
     )(input)
