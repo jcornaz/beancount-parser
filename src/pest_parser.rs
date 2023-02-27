@@ -33,10 +33,12 @@ mod tests {
 
     const COMMENTS: &str = include_str!("../tests/samples/comments.beancount");
     const SIMPLE: &str = include_str!("../tests/samples/simple.beancount");
-    // TODO const OFFICIAL: &str = include_str!("../tests/samples/official.beancount");
+    const OFFICIAL: &str = include_str!("../tests/samples/official.beancount");
 
     #[rstest]
-    fn successful_parse(#[values("", " ", " \n ", " \t ", COMMENTS, SIMPLE)] input: &str) {
+    fn successful_parse(
+        #[values("", " ", " \n ", " \t ", COMMENTS, SIMPLE, OFFICIAL)] input: &str,
+    ) {
         if let Err(err) = parse(input) {
             panic!("{err}");
         }
