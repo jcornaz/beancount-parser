@@ -211,7 +211,7 @@ mod tests {
         "2023-02-27 txn\n  Assets:A  10 CHF {42 PLN,2001-02-03}",
         Some(Amount::new(42, "PLN"))
     )]
-    fn parse_cost(#[case] input: &str, #[case] expected: Option<Amount<'_>>) {
+    fn parse_posting_cost(#[case] input: &str, #[case] expected: Option<Amount<'_>>) {
         let transaction = parse_single_directive(input).into_transaction().unwrap();
         let posting = &transaction.postings()[0];
         assert_eq!(posting.cost(), expected.as_ref());
@@ -219,26 +219,6 @@ mod tests {
             posting.lot().and_then(LotAttributes::cost),
             expected.as_ref()
         );
-    }
-
-    #[rstest]
-    #[case("2023-02-27 txn\n  Assets:A 10 CHF", None)]
-    #[case(
-        "2023-02-27 txn\n  Assets:A 10 CHF@19 EUR",
-        Some((PriceType::Unit, Amount::new(19, "EUR")))
-    )]
-    #[case(
-        "2023-02-27 txn\n  Assets:A 10 CHF  @  2 EUR",
-        Some((PriceType::Unit, Amount::new(2, "EUR")))
-    )]
-    #[case(
-        "2023-02-27 txn\n  Assets:A 10 CHF  @@  20 EUR",
-        Some((PriceType::Total, Amount::new(20, "EUR")))
-    )]
-    fn parse_price(#[case] input: &str, #[case] expected: Option<(PriceType, Amount<'_>)>) {
-        let transaction = parse_single_directive(input).into_transaction().unwrap();
-        let posting = &transaction.postings()[0];
-        assert_eq!(posting.price().map(|(t, a)| (t, a.clone())), expected);
     }
 
     #[rstest]
@@ -261,10 +241,30 @@ mod tests {
         "2023-02-27 txn\n  Assets:A  10 CHF {  40 PLN  , 2001-02-03  }",
         Some(Date::new(2001, 2, 3))
     )]
-    fn parse_lot_date(#[case] input: &str, #[case] expected: Option<Date>) {
+    fn parse_posting_lot_date(#[case] input: &str, #[case] expected: Option<Date>) {
         let transaction = parse_single_directive(input).into_transaction().unwrap();
         let posting = &transaction.postings()[0];
         assert_eq!(posting.lot().and_then(LotAttributes::date), expected);
+    }
+
+    #[rstest]
+    #[case("2023-02-27 txn\n  Assets:A 10 CHF", None)]
+    #[case(
+        "2023-02-27 txn\n  Assets:A 10 CHF@19 EUR",
+        Some((PriceType::Unit, Amount::new(19, "EUR")))
+    )]
+    #[case(
+        "2023-02-27 txn\n  Assets:A 10 CHF  @  2 EUR",
+        Some((PriceType::Unit, Amount::new(2, "EUR")))
+    )]
+    #[case(
+        "2023-02-27 txn\n  Assets:A 10 CHF  @@  20 EUR",
+        Some((PriceType::Total, Amount::new(20, "EUR")))
+    )]
+    fn parse_posting_price(#[case] input: &str, #[case] expected: Option<(PriceType, Amount<'_>)>) {
+        let transaction = parse_single_directive(input).into_transaction().unwrap();
+        let posting = &transaction.postings()[0];
+        assert_eq!(posting.price().map(|(t, a)| (t, a.clone())), expected);
     }
 
     #[rstest]
@@ -442,6 +442,16 @@ mod tests {
     }
 
     #[test]
+    fn parse_price() {
+        let input = "2020-01-03 price VBMPX 186 USD";
+        let directive = parse_single_directive(input);
+        let Directive::Price(price) = directive else { panic!("expected price but was {directive:?}") };
+        assert_eq!(price.date(), Date::new(2020, 1, 3));
+        assert_eq!(price.commodity(), "VBMPX");
+        assert_eq!(price.price(), &Amount::new(186, "USD"));
+    }
+
+    #[test]
     fn parse_balance_assertion() {
         let input = "2020-01-02 balance Assets:US:BofA:Checking        1.2 USD";
         let directive = parse_single_directive(input);
@@ -484,6 +494,11 @@ mod tests {
             "2016-11-28 open Assets:A oops",
             "2016-11-28 open Assets:A 22",
             "2016-11-28 open Oops",
+            "2020-01-03price VBMPX 186 USD",
+            "2020-01-03 priceVBMPX 186 USD",
+            "2020-01-03 price VBMPX186 USD",
+            "2020-01-03 price VBMPX",
+            "2020-01-03 price ",
             "2022-02-12 txn\n  Assets:Hello  10CHF",
             "2022-02-12 txn\n  Assets:Hello10 CHF",
             "2022-02-12 txn\n  Assets:Hello 1 +  CHF",

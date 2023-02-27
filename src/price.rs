@@ -1,13 +1,16 @@
-use crate::amount::{amount, currency};
-use crate::date::date;
-use crate::string::comment;
-use crate::{Amount, Date};
 use nom::bytes::complete::tag;
 use nom::character::complete::space0;
 use nom::character::streaming::space1;
 use nom::combinator::{map, opt};
 use nom::sequence::{preceded, terminated, tuple};
 use nom::IResult;
+
+use crate::amount::{amount, currency};
+use crate::date::date;
+#[cfg(all(test, feature = "unstable"))]
+use crate::pest_parser::Pair;
+use crate::string::comment;
+use crate::{Amount, Date};
 
 /// A price directive
 ///
@@ -46,6 +49,23 @@ impl<'a> Price<'a> {
     #[must_use]
     pub fn comment(&self) -> Option<&'a str> {
         self.comment
+    }
+
+    #[cfg(all(test, feature = "unstable"))]
+    pub(crate) fn from_pair(pair: Pair<'a>) -> Self {
+        let mut inner = pair.into_inner();
+        let date = Date::from_pair(inner.next().expect("no date in price directive"));
+        let commodity = inner
+            .next()
+            .expect("no commodity in price directive")
+            .as_str();
+        let price = Amount::from_pair(inner.next().expect("no amount in price directive"));
+        Self {
+            commodity,
+            price,
+            date,
+            comment: None,
+        }
     }
 }
 
