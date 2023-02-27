@@ -1,11 +1,6 @@
 {
   "extends": [
-    "config:base", ":automergePatch", "schedule:weekends", ":semanticCommitTypeAll(chore)"
+    "config:base", ":automergePatch", "schedule:weekends"
   ],
-  "packageRules": [
-    {
-      "matchDepTypes": ["dev-dependencies"],
-      "automerge": true
-    }
-  ]
+  "lockFileMaintenance": { "enabled": true }
 }
