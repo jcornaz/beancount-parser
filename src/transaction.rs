@@ -19,12 +19,15 @@ pub use posting::{Posting, PriceType};
 
 #[cfg(feature = "unstable")]
 use crate::metadata::Metadata;
-#[cfg(all(test, feature = "unstable"))]
-use crate::pest_parser::{Pair, Rule};
 use crate::{
     date::date,
     string::{comment, string},
     Date,
+};
+#[cfg(all(test, feature = "unstable"))]
+use crate::{
+    pest_parser::{Pair, Rule},
+    string,
 };
 
 pub(crate) mod posting;
@@ -41,15 +44,15 @@ pub(crate) mod posting;
 /// ```
 #[derive(Debug, Clone)]
 pub struct Transaction<'a> {
-    pub(crate) date: Date,
-    pub(crate) flag: Option<Flag>,
-    pub(crate) payee: Option<String>,
-    pub(crate) narration: Option<String>,
-    pub(crate) tags: Vec<&'a str>,
-    pub(crate) comment: Option<&'a str>,
+    date: Date,
+    flag: Option<Flag>,
+    payee: Option<String>,
+    narration: Option<String>,
+    tags: Vec<&'a str>,
+    comment: Option<&'a str>,
     #[cfg(feature = "unstable")]
-    pub(crate) metadata: Metadata<'a>,
-    pub(crate) postings: Vec<Posting<'a>>,
+    metadata: Metadata<'a>,
+    postings: Vec<Posting<'a>>,
 }
 
 /// The transaction flag
@@ -140,8 +143,20 @@ impl<'a> Transaction<'a> {
         for pair in inner {
             match pair.as_rule() {
                 Rule::transaction_flag => flag = Some(Flag::from_pair(pair)),
-                Rule::payee => payee = pair.into_inner().next().map(|p| p.as_str().into()),
-                Rule::narration => narration = pair.into_inner().next().map(|p| p.as_str().into()),
+                Rule::payee => {
+                    payee = Some(
+                        string::from_pair(pair.into_inner().next().expect("no string in payee"))
+                            .into(),
+                    );
+                }
+                Rule::narration => {
+                    narration = Some(
+                        string::from_pair(
+                            pair.into_inner().next().expect("no string in narration"),
+                        )
+                        .into(),
+                    );
+                }
                 Rule::postings => postings = pair.into_inner().map(Posting::from_pair).collect(),
                 Rule::tags => {
                     tags = pair

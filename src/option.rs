@@ -1,6 +1,7 @@
 #![cfg(all(test, feature = "unstable"))]
 
 use crate::pest_parser::Pair;
+use crate::string;
 
 /// beancount option
 ///
@@ -24,8 +25,8 @@ impl<'a> Option<'a> {
 
     pub(crate) fn from_pair(pair: Pair<'a>) -> Self {
         let mut inner = pair.into_inner();
-        let name = inner.next().expect("no name in option").as_str();
-        let value = inner.next().expect("no name in option").as_str();
+        let name = string::from_pair(inner.next().expect("no name in option"));
+        let value = string::from_pair(inner.next().expect("no name in option"));
         Self { name, value }
     }
 }

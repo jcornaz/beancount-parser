@@ -1,7 +1,7 @@
 #![cfg(all(test, feature = "unstable"))]
 
 use crate::pest_parser::Pair;
-use crate::Date;
+use crate::{string, Date};
 
 #[derive(Debug, Clone)]
 pub struct Event<'a> {
@@ -29,8 +29,8 @@ impl<'a> Event<'a> {
     pub(crate) fn from_pair(pair: Pair<'a>) -> Self {
         let mut inner = pair.into_inner();
         let date = Date::from_pair(inner.next().expect("no date in event"));
-        let name = inner.next().expect("no name in event").as_str();
-        let value = inner.next().expect("no value in event").as_str();
+        let name = string::from_pair(inner.next().expect("no name in event"));
+        let value = string::from_pair(inner.next().expect("no value in event"));
         Self { date, name, value }
     }
 }

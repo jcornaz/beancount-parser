@@ -7,6 +7,17 @@ use nom::{
     IResult,
 };
 
+#[cfg(all(test, feature = "unstable"))]
+use crate::pest_parser::Pair;
+
+#[cfg(all(test, feature = "unstable"))]
+pub(crate) fn from_pair(pair: Pair<'_>) -> &str {
+    pair.into_inner()
+        .next()
+        .expect("no string content")
+        .as_str()
+}
+
 pub(crate) fn string(input: &str) -> IResult<&str, String> {
     delimited(
         char('"'),
