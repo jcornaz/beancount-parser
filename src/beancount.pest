@@ -24,7 +24,7 @@ narration = { string }
 string = _{ "\"" ~ string_content ~  "\"" }
 string_content = { (!"\"" ~ ANY)* }
 tags = { tag ~ (space+ ~ tag)* }
-tag = { "#" ~ (!(space | "#") ~ ANY)* }
+tag = { "#" ~ (!(space | "#") ~ ANY)+ }
 
 postings = { (NEWLINE ~ posting)* }
 posting = { space* ~ (transaction_flag ~ space*)? ~ account ~ (space+ ~ amount)? ~ space* ~ inline_comment? }
