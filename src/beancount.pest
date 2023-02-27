@@ -31,11 +31,13 @@ posting =
     { space*
     ~ (transaction_flag ~ space*)?
     ~ account
-    ~ (space+ ~ amount ~ (space+ ~ lot)?)?
+    ~ (space+ ~ amount ~ (space+ ~ lot)? ~ (space* ~ price)?)?
     ~ space*
     ~ inline_comment?
     }
 lot = { "{" ~ space* ~ ((amount ~ (space* ~ "," ~ space* ~ date)? | date))? ~ space* ~ "}" }
+price = { price_type ~ space* ~ amount }
+price_type = { "@@" | "@" }
 
 amount = { expression ~ space+ ~ currency }
 

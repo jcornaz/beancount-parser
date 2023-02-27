@@ -93,6 +93,7 @@ impl<'a> Posting<'a> {
         let mut amount = None;
         let mut comment = None;
         let mut lot = None;
+        let mut price = None;
         for pair in pair.into_inner() {
             match pair.as_rule() {
                 Rule::account => account = Some(Account::from_pair(pair)),
@@ -100,18 +101,31 @@ impl<'a> Posting<'a> {
                 Rule::transaction_flag => flag = Some(Flag::from_pair(pair)),
                 Rule::comment => comment = Some(pair.as_str()),
                 Rule::lot => lot = Some(LotAttributes::from_pair(pair)),
+                Rule::price => price = Some(price_from_pair(pair)),
                 _ => (),
             }
         }
         Posting {
             flag,
             account: account.expect("no account in posting"),
-            price: None,
+            price,
             lot,
             comment,
             amount,
         }
     }
+}
+
+#[cfg(all(test, feature = "unstable"))]
+fn price_from_pair(pair: Pair<'_>) -> (PriceType, Amount<'_>) {
+    let mut inner = pair.into_inner();
+    let type_ = match inner.next().expect("not price type").as_str() {
+        "@" => PriceType::Unit,
+        "@@" => PriceType::Total,
+        _ => unreachable!("invalid price type"),
+    };
+    let amount = Amount::from_pair(inner.next().expect("no amount in price"));
+    (type_, amount)
 }
 
 /// A price type

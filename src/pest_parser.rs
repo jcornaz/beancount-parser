@@ -26,7 +26,7 @@ mod tests {
 
     use crate::amount::Expression;
     use crate::transaction::posting::LotAttributes;
-    use crate::transaction::{Flag, Posting};
+    use crate::transaction::{Flag, Posting, PriceType};
     use crate::{account, Amount, Date};
 
     use super::*;
@@ -219,6 +219,26 @@ mod tests {
             posting.lot().and_then(LotAttributes::cost),
             expected.as_ref()
         );
+    }
+
+    #[rstest]
+    #[case("2023-02-27 txn\n  Assets:A 10 CHF", None)]
+    #[case(
+        "2023-02-27 txn\n  Assets:A 10 CHF@19 EUR",
+        Some((PriceType::Unit, Amount::new(19, "EUR")))
+    )]
+    #[case(
+        "2023-02-27 txn\n  Assets:A 10 CHF  @  2 EUR",
+        Some((PriceType::Unit, Amount::new(2, "EUR")))
+    )]
+    #[case(
+        "2023-02-27 txn\n  Assets:A 10 CHF  @@  20 EUR",
+        Some((PriceType::Total, Amount::new(20, "EUR")))
+    )]
+    fn parse_price(#[case] input: &str, #[case] expected: Option<(PriceType, Amount<'_>)>) {
+        let transaction = parse_single_directive(input).into_transaction().unwrap();
+        let posting = &transaction.postings()[0];
+        assert_eq!(posting.price().map(|(t, a)| (t, a.clone())), expected);
     }
 
     #[rstest]
@@ -474,6 +494,9 @@ mod tests {
             "2022-02-12 txn\n  Assets:Hello 1 CHF {,}",
             "2022-02-12 txn\n  Assets:Hello 1 CHF {1 CHF,}",
             "2022-02-12 txn\n  Assets:Hello 1 CHF {,1 CHF}",
+            "2022-02-12 txn\n  Assets:Hello 1 CHF @",
+            "2022-02-12 txn\n  Assets:Hello 1 CHF @ ",
+            "2022-02-12 txn\n  Assets:Hello 1 CHF @@",
             "2022-02-12 txnAssets:Hello 1 /  CHF",
             "2022-02-12 txn oops",
             r#"2022-02-12 txn "hello""world""#,
