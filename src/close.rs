@@ -8,7 +8,7 @@ use nom::{
 
 use crate::{account::account, date::date, Account, Date};
 
-#[cfg(all(test, feature = "unstable"))]
+#[cfg(feature = "unstable")]
 use crate::pest_parser::Pair;
 
 /// The close account directive
@@ -31,7 +31,7 @@ impl<'a> Close<'a> {
         &self.account
     }
 
-    #[cfg(all(test, feature = "unstable"))]
+    #[cfg(feature = "unstable")]
     pub(crate) fn from_pair(pair: Pair<'_>) -> Close<'_> {
         let mut inner = pair.into_inner();
         let date = Date::from_pair(inner.next().expect("no date in close directive"));

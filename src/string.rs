@@ -7,10 +7,10 @@ use nom::{
     IResult,
 };
 
-#[cfg(all(test, feature = "unstable"))]
+#[cfg(feature = "unstable")]
 use crate::pest_parser::Pair;
 
-#[cfg(all(test, feature = "unstable"))]
+#[cfg(feature = "unstable")]
 pub(crate) fn from_pair(pair: Pair<'_>) -> &str {
     pair.into_inner()
         .next()

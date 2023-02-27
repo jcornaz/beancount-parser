@@ -8,7 +8,7 @@ use nom::{
 
 use crate::account::{account, Account};
 use crate::date::date;
-#[cfg(all(test, feature = "unstable"))]
+#[cfg(feature = "unstable")]
 use crate::pest_parser::Pair;
 use crate::Date;
 use crate::{amount::amount, Amount};
@@ -40,7 +40,7 @@ impl<'a> Assertion<'a> {
         &self.amount
     }
 
-    #[cfg(all(test, feature = "unstable"))]
+    #[cfg(feature = "unstable")]
     pub(crate) fn from_pair(pair: Pair<'a>) -> Self {
         let mut inner = pair.into_inner();
         let date = Date::from_pair(inner.next().expect("no date in balance assertion"));

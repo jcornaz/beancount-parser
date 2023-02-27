@@ -4,7 +4,7 @@ use crate::include::{include, Include};
 use crate::open::open;
 use crate::pad::{pad, Pad};
 use crate::price::{price, Price};
-#[cfg(all(test, feature = "unstable"))]
+#[cfg(feature = "unstable")]
 use crate::{
     pest_parser::{Pair, Rule},
     {Commodity, Event},
@@ -38,13 +38,13 @@ pub enum Directive<'a> {
     /// The [`Pad`](crate::Pad) directive
     Pad(Pad<'a>),
     /// The [`Commodity`](crate::Commodity) directive
-    #[cfg(all(test, feature = "unstable"))]
+    #[cfg(feature = "unstable")]
     Commodity(Commodity<'a>),
     /// The [`Option`](crate::Option) directive
-    #[cfg(all(test, feature = "unstable"))]
+    #[cfg(feature = "unstable")]
     Option(crate::Option<'a>),
     /// The [`Event`](crate::Event) directive
-    #[cfg(all(test, feature = "unstable"))]
+    #[cfg(feature = "unstable")]
     Event(Event<'a>),
 }
 
@@ -82,12 +82,12 @@ impl<'a> Directive<'a> {
             Directive::Assertion(a) => Some(a.date()),
             Directive::Pad(p) => Some(p.date()),
             Directive::Include(_) => None,
-            #[cfg(all(test, feature = "unstable"))]
+            #[cfg(feature = "unstable")]
             Directive::Commodity(_) | Directive::Option(_) | Directive::Event(_) => None,
         }
     }
 
-    #[cfg(all(test, feature = "unstable"))]
+    #[cfg(feature = "unstable")]
     pub(crate) fn from_pair(pair: Pair<'a>) -> Self {
         match pair.as_rule() {
             Rule::transaction => Directive::Transaction(Transaction::from_pair(pair)),

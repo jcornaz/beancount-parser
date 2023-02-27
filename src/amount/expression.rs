@@ -9,7 +9,7 @@ use nom::{
 use rust_decimal::{prelude::ToPrimitive, Decimal};
 use thiserror::Error;
 
-#[cfg(all(test, feature = "unstable"))]
+#[cfg(feature = "unstable")]
 use crate::pest_parser::{Pair, Rule};
 
 /// An expression
@@ -126,7 +126,7 @@ impl Expression {
         }
     }
 
-    #[cfg(all(test, feature = "unstable"))]
+    #[cfg(feature = "unstable")]
     pub(crate) fn from_pair(pair: Pair<'_>) -> Self {
         let mut inner = pair.into_inner();
         let mut exp = Self::from_exp_p1_pair(inner.next().expect("no value in expression"));
@@ -145,7 +145,7 @@ impl Expression {
         exp
     }
 
-    #[cfg(all(test, feature = "unstable"))]
+    #[cfg(feature = "unstable")]
     fn from_exp_p1_pair(pair: Pair<'_>) -> Self {
         let mut inner = pair.into_inner();
         let mut exp = Self::from_exp_p0_pair(inner.next().expect("no value in expression"));
@@ -164,7 +164,7 @@ impl Expression {
         exp
     }
 
-    #[cfg(all(test, feature = "unstable"))]
+    #[cfg(feature = "unstable")]
     fn from_exp_p0_pair(pair: Pair<'_>) -> Self {
         let pair = pair.into_inner().next().expect("no inner expression");
         match pair.as_rule() {
@@ -205,7 +205,7 @@ impl Value {
         self.try_into()
     }
 
-    #[cfg(all(test, feature = "unstable"))]
+    #[cfg(feature = "unstable")]
     fn from_pair(pair: Pair<'_>) -> Self {
         Value(pair.as_str().parse().expect("invalid number"))
     }

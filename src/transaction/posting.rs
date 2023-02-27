@@ -8,7 +8,7 @@ use nom::{
     IResult,
 };
 
-#[cfg(all(test, feature = "unstable"))]
+#[cfg(feature = "unstable")]
 use crate::pest_parser::{Pair, Rule};
 use crate::{
     account::{account, Account},
@@ -86,7 +86,7 @@ impl<'a> Posting<'a> {
         self.comment
     }
 
-    #[cfg(all(test, feature = "unstable"))]
+    #[cfg(feature = "unstable")]
     pub(super) fn from_pair(pair: Pair<'a>) -> Self {
         let mut flag = None;
         let mut account = None;
@@ -116,7 +116,7 @@ impl<'a> Posting<'a> {
     }
 }
 
-#[cfg(all(test, feature = "unstable"))]
+#[cfg(feature = "unstable")]
 fn price_from_pair(pair: Pair<'_>) -> (PriceType, Amount<'_>) {
     let mut inner = pair.into_inner();
     let type_ = match inner.next().expect("not price type").as_str() {
@@ -163,7 +163,7 @@ impl<'a> LotAttributes<'a> {
         self.date
     }
 
-    #[cfg(all(test, feature = "unstable"))]
+    #[cfg(feature = "unstable")]
     fn from_pair(pair: Pair<'a>) -> Self {
         let mut cost = None;
         let mut date = None;

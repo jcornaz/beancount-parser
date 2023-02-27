@@ -1,4 +1,4 @@
-#![cfg(all(test, feature = "unstable"))]
+#![cfg(feature = "unstable")]
 
 use crate::pest_parser::Pair;
 use crate::string;

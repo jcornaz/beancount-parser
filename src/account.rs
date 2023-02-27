@@ -2,7 +2,7 @@
 
 use std::fmt::Display;
 
-#[cfg(all(test, feature = "unstable"))]
+#[cfg(feature = "unstable")]
 use crate::pest_parser::Pair;
 use nom::{
     branch::alt,
@@ -80,7 +80,7 @@ impl<'a> Account<'a> {
         self.components.as_ref()
     }
 
-    #[cfg(all(test, feature = "unstable"))]
+    #[cfg(feature = "unstable")]
     pub(crate) fn from_pair(pair: Pair<'a>) -> Self {
         let mut inner = pair.into_inner();
         let type_ = match inner.next().expect("no account type in account").as_str() {

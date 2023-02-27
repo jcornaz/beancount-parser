@@ -5,7 +5,7 @@ use nom::{
     IResult,
 };
 
-#[cfg(all(test, feature = "unstable"))]
+#[cfg(feature = "unstable")]
 use crate::pest_parser::Pair;
 
 /// A date
@@ -54,7 +54,7 @@ impl Date {
         self.day_of_month
     }
 
-    #[cfg(all(test, feature = "unstable"))]
+    #[cfg(feature = "unstable")]
     pub(crate) fn from_pair(pair: Pair<'_>) -> Date {
         let mut inner = pair.into_inner();
         let year = inner

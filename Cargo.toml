@@ -14,17 +14,17 @@ keywords = ["parsing", "beancount", "accounting"]
 all-features = true
 
 [features]
-unstable = []
+unstable = ["pest", "pest_derive"]
 rust_decimal = []
 
 [dependencies]
 nom = "7.1"
 rust_decimal = { version = "1.28", default-features = false }
 thiserror = "1.0"
+pest = { version = "2.5", default-features = false, features = ["std"], optional = true }
+pest_derive = { version = "2.5", default-features = false, features = ["std"], optional = true }
 
 [dev-dependencies]
-pest = "2.5"
-pest_derive = "2.5"
 rstest = { version = "0.16.0", default-features = false }
 
 [build-dependencies]

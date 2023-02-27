@@ -9,7 +9,7 @@ use nom::{
     IResult,
 };
 
-#[cfg(all(test, feature = "unstable"))]
+#[cfg(feature = "unstable")]
 use crate::pest_parser::Pair;
 
 pub use self::expression::{ConversionError, Expression, Value};
@@ -52,7 +52,7 @@ impl<'a> Amount<'a> {
         self.currency
     }
 
-    #[cfg(all(test, feature = "unstable"))]
+    #[cfg(feature = "unstable")]
     pub(crate) fn from_pair(pair: Pair<'_>) -> Amount<'_> {
         let mut inner = pair.into_inner();
         let expression = Expression::from_pair(inner.next().expect("no value in amount"));

@@ -1,6 +1,6 @@
 //! Types for representing an [`Transaction`]
 
-#[cfg(all(test, feature = "unstable"))]
+#[cfg(feature = "unstable")]
 use std::collections::HashMap;
 use std::str;
 
@@ -24,7 +24,7 @@ use crate::{
     string::{comment, string},
     Date,
 };
-#[cfg(all(test, feature = "unstable"))]
+#[cfg(feature = "unstable")]
 use crate::{
     pest_parser::{Pair, Rule},
     string,
@@ -67,7 +67,7 @@ pub enum Flag {
 }
 
 impl Flag {
-    #[cfg(all(test, feature = "unstable"))]
+    #[cfg(feature = "unstable")]
     fn from_pair(pair: Pair<'_>) -> Flag {
         match pair.as_str() {
             "*" => Flag::Cleared,
@@ -131,7 +131,7 @@ impl<'a> Transaction<'a> {
         self.tags.extend(tags);
     }
 
-    #[cfg(all(test, feature = "unstable"))]
+    #[cfg(feature = "unstable")]
     pub(crate) fn from_pair(pair: Pair<'_>) -> Transaction<'_> {
         let mut inner = pair.into_inner();
         let date = Date::from_pair(inner.next().expect("no date in transaction"));

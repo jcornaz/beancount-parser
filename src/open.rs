@@ -8,7 +8,7 @@ use nom::{
 };
 
 use crate::amount;
-#[cfg(all(test, feature = "unstable"))]
+#[cfg(feature = "unstable")]
 use crate::pest_parser::Pair;
 use crate::{account, date::date, Account, Date};
 
@@ -39,7 +39,7 @@ impl<'a> Open<'a> {
         &self.currencies
     }
 
-    #[cfg(all(test, feature = "unstable"))]
+    #[cfg(feature = "unstable")]
     pub(crate) fn from_pair(pair: Pair<'a>) -> Self {
         let mut inner = pair.into_inner();
         let date = Date::from_pair(inner.next().expect("no date in open directive"));

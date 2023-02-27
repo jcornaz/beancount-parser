@@ -7,7 +7,7 @@ use nom::IResult;
 
 use crate::amount::{amount, currency};
 use crate::date::date;
-#[cfg(all(test, feature = "unstable"))]
+#[cfg(feature = "unstable")]
 use crate::pest_parser::Pair;
 use crate::string::comment;
 use crate::{Amount, Date};
@@ -51,7 +51,7 @@ impl<'a> Price<'a> {
         self.comment
     }
 
-    #[cfg(all(test, feature = "unstable"))]
+    #[cfg(feature = "unstable")]
     pub(crate) fn from_pair(pair: Pair<'a>) -> Self {
         let mut inner = pair.into_inner();
         let date = Date::from_pair(inner.next().expect("no date in price directive"));

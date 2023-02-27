@@ -1,4 +1,4 @@
-#![cfg(all(test, feature = "unstable"))]
+#![cfg(feature = "unstable")]
 
 use pest::Parser as Parse;
 use pest_derive::Parser;
@@ -11,7 +11,14 @@ struct Parser;
 
 pub(crate) type Pair<'a> = pest::iterators::Pair<'a, Rule>;
 
-fn parse(input: &str) -> Result<impl Iterator<Item = Directive<'_>>, Box<dyn std::error::Error>> {
+/// Parse a beancount document, in case of success returns an iterator over the directives found
+///
+/// # Errors
+///
+/// Returns an error if the input contains invalid beancount syntax, or syntax that is not yet supported by the parser.
+pub fn parse(
+    input: &str,
+) -> Result<impl Iterator<Item = Directive<'_>>, Box<dyn std::error::Error>> {
     Ok(Parser::parse(Rule::beancount_file, input)?
         .next()
         .expect("no root rule")

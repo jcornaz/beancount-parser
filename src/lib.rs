@@ -8,7 +8,7 @@
     missing_docs
 )]
 #![warn(rust_2018_idioms, clippy::pedantic)]
-#![cfg_attr(test, allow(clippy::needless_pass_by_value))]
+#![allow(clippy::needless_pass_by_value)]
 #![cfg_attr(
     not(test),
     warn(
@@ -18,6 +18,7 @@
         clippy::unwrap_used
     )
 )]
+#![cfg_attr(feature = "unstable", allow(missing_docs))]
 #![cfg_attr(nightly, feature(doc_auto_cfg))]
 
 //! A rust parsing library for [beancount](https://beancount.github.io/docs/) files
@@ -66,14 +67,8 @@ pub use crate::{
     transaction::Transaction,
 };
 
-#[cfg(all(test, feature = "unstable"))]
-pub use crate::commodity::Commodity;
-
-#[cfg(all(test, feature = "unstable"))]
-pub use crate::option::Option;
-
-#[cfg(all(test, feature = "unstable"))]
-pub use crate::event::Event;
+#[cfg(feature = "unstable")]
+pub use crate::{commodity::Commodity, event::Event, option::Option, pest_parser::parse};
 
 pub mod account;
 pub mod amount;
