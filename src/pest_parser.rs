@@ -25,6 +25,7 @@ mod tests {
     use rust_decimal::Decimal;
 
     use crate::amount::Expression;
+    use crate::transaction::posting::LotAttributes;
     use crate::transaction::{Flag, Posting};
     use crate::{account, Amount, Date};
 
@@ -200,15 +201,34 @@ mod tests {
         Some(Amount::new(40, "PLN"))
     )]
     #[case(
-        "2023-02-27 txn\n  Assets:A 10 CHF { 40 PLN }",
+        "2023-02-27 txn\n  Assets:A 10 CHF {  40  PLN  }",
         Some(Amount::new(40, "PLN"))
     )]
     #[case("2023-02-27 txn\n  Assets:A 10 CHF {}", None)]
     #[case("2023-02-27 txn\n  Assets:A 10 CHF { }", None)]
+    #[case("2023-02-27 txn\n  Assets:A 10 CHF {\t}", None)]
     fn parse_cost(#[case] input: &str, #[case] expected: Option<Amount<'_>>) {
         let transaction = parse_single_directive(input).into_transaction().unwrap();
         let posting = &transaction.postings()[0];
         assert_eq!(posting.cost(), expected.as_ref());
+        assert_eq!(
+            posting.lot().and_then(LotAttributes::cost),
+            expected.as_ref()
+        );
+    }
+
+    #[rstest]
+    #[case("2023-02-27 txn\n  Assets:A  10 CHF", None)]
+    #[case("2023-02-27 txn\n  Assets:A  10 CHF {}", None)]
+    #[case("2023-02-27 txn\n  Assets:A  10 CHF {40 PLN}", None)]
+    #[case(
+        "2023-02-27 txn\n  Assets:A  10 CHF {2000-01-02}",
+        Some(Date::new(2000, 1, 2))
+    )]
+    fn parse_lot_date(#[case] input: &str, #[case] expected: Option<Date>) {
+        let transaction = parse_single_directive(input).into_transaction().unwrap();
+        let posting = &transaction.postings()[0];
+        assert_eq!(posting.lot().and_then(LotAttributes::date), expected);
     }
 
     #[rstest]

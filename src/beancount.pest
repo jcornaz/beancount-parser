@@ -35,8 +35,7 @@ posting =
     ~ space*
     ~ inline_comment?
     }
-lot = { "{" ~ space* ~ cost? ~ space* ~ "}" }
-cost = _{ amount }
+lot = { "{" ~ space* ~ (amount | date)? ~ space* ~ "}" }
 
 amount = { expression ~ space+ ~ currency }
 

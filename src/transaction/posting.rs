@@ -61,6 +61,13 @@ impl<'a> Posting<'a> {
         self.amount.as_ref()
     }
 
+    /// Returns the lot identifier (declared within '{' and '}')
+    #[must_use]
+    #[cfg(all(test, feature = "unstable"))]
+    pub(crate) fn lot(&self) -> Option<&LotAttributes<'a>> {
+        self.lot.as_ref()
+    }
+
     /// Returns a tuple of price-type and the price (if a price was defined)
     #[must_use]
     pub fn price(&self) -> Option<(PriceType, &Amount<'a>)> {
@@ -80,7 +87,7 @@ impl<'a> Posting<'a> {
     }
 
     #[cfg(all(test, feature = "unstable"))]
-    pub(super) fn from_pair(pair: Pair<'_>) -> Posting<'_> {
+    pub(super) fn from_pair(pair: Pair<'a>) -> Self {
         let mut flag = None;
         let mut account = None;
         let mut amount = None;
@@ -133,12 +140,28 @@ enum LotAttribute<'a> {
 
 impl<'a> LotAttributes<'a> {
     #[cfg(all(test, feature = "unstable"))]
+    pub(crate) fn cost(&self) -> Option<&Amount<'a>> {
+        self.cost.as_ref()
+    }
+
+    #[cfg(all(test, feature = "unstable"))]
+    pub(crate) fn date(&self) -> Option<Date> {
+        self.date
+    }
+
+    #[cfg(all(test, feature = "unstable"))]
     fn from_pair(pair: Pair<'a>) -> Self {
-        Self {
-            cost: pair.into_inner().next().map(Amount::from_pair),
-            date: None,
-            label: None,
+        let mut cost = None;
+        let mut date = None;
+        let label = None;
+        for pair in pair.into_inner() {
+            match pair.as_rule() {
+                Rule::amount => cost = Some(Amount::from_pair(pair)),
+                Rule::date => date = Some(Date::from_pair(pair)),
+                _ => unreachable!("unexpected token in lot attributes"),
+            }
         }
+        Self { cost, date, label }
     }
 }
 
@@ -195,12 +218,12 @@ pub fn posting(input: &str) -> IResult<&str, Posting<'_>> {
             opt(preceded(space1, price)),
             opt(preceded(space0, comment)),
         )),
-        |(flag, account, amount, lot_attributes, price, comment)| Posting {
+        |(flag, account, amount, lot, price, comment)| Posting {
             flag,
             account,
             amount,
             price,
-            lot: lot_attributes,
+            lot,
             comment,
         },
     )(input)
