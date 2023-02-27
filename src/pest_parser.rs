@@ -100,10 +100,14 @@ mod tests {
 
     #[rstest]
     #[case("2022-02-12 txn", None, None)]
+    #[case("2022-02-12  txn", None, None)]
     #[case("2022-02-12 *", None, None)]
+    #[case("2022-02-12  *  ", None, None)]
     #[case("2022-02-12 txn \"Hello\"", None, Some("Hello"))]
+    #[case("2022-02-12   txn  \"Hello\"", None, Some("Hello"))]
     #[case("2022-02-12 * \"Hello\"", None, Some("Hello"))]
     #[case("2022-02-12 txn \"Hello\" \"World\"", Some("Hello"), Some("World"))]
+    #[case("2022-02-12 txn \"Hello\" \t \"World\"", Some("Hello"), Some("World"))]
     #[case("2022-02-12 ! \"Hello\" \"World\"", Some("Hello"), Some("World"))]
     fn parse_transaction_payee_and_description(
         #[case] input: &str,
@@ -129,6 +133,10 @@ mod tests {
     #[rstest]
     #[case("2022-02-12 txn", &[])]
     #[case("2022-02-12 txn\n  Assets:Hello\n\tExpenses:Test \nLiabilities:Other", &["Assets:Hello", "Expenses:Test", "Liabilities:Other"])]
+    #[case("2022-02-12 txn ; Hello\n  Assets:Hello\n\tExpenses:Test \nLiabilities:Other", &["Assets:Hello", "Expenses:Test", "Liabilities:Other"])]
+    #[case("2022-02-12 txn; Hello\n  Assets:Hello\n\tExpenses:Test \nLiabilities:Other", &["Assets:Hello", "Expenses:Test", "Liabilities:Other"])]
+    #[case("2022-02-12 txn ; Hello\nAssets:Hello\n\tExpenses:Test \nLiabilities:Other", &["Assets:Hello", "Expenses:Test", "Liabilities:Other"])]
+    #[case("2022-02-12 txn\nAssets:Hello\n\tExpenses:Test \nLiabilities:Other", &["Assets:Hello", "Expenses:Test", "Liabilities:Other"])]
     #[case("2020-11-24 * \"Legal Seafood\" \"\" #trip-boston-2020\n  Liabilities:US:Chase:Slate  -40.15 USD\n  Expenses:Food:Restaurant  40.15 USD", &["Liabilities:US:Chase:Slate", "Expenses:Food:Restaurant"])]
     fn parse_posting_accounts(#[case] input: &str, #[case] expected: &[&str]) {
         let expected: Vec<String> = expected.iter().map(ToString::to_string).collect();
@@ -147,8 +155,10 @@ mod tests {
     #[case("  Assets:Hello", None)]
     #[case("* Assets:Hello", Some(Flag::Cleared))]
     #[case("  * Assets:Hello", Some(Flag::Cleared))]
+    #[case("  *  Assets:Hello", Some(Flag::Cleared))]
     #[case("! Assets:Hello", Some(Flag::Pending))]
     #[case("  ! Assets:Hello", Some(Flag::Pending))]
+    #[case("  !  Assets:Hello", Some(Flag::Pending))]
     fn parse_posting_flag(#[case] input: &str, #[case] expected: Option<Flag>) {
         let input = format!("2022-02-23 txn\n{input}");
         let transaction = parse_single_directive(&input).into_transaction().unwrap();
@@ -160,6 +170,7 @@ mod tests {
     #[case("Assets:Hello", None)]
     #[case("Assets:Hello ; Hello", Some("Hello"))]
     #[case("Assets:Hello 10 CHF ; World", Some("World"))]
+    #[case("Assets:Hello  10 CHF ; World", Some("World"))]
     #[case("Assets:Hello 10 CHF ;;;  World", Some("World"))]
     #[case("Assets:Hello 10 CHF; Tadaa", Some("Tadaa"))]
     fn parse_posting_comment(#[case] input: &str, #[case] expected: Option<&str>) {
@@ -171,6 +182,7 @@ mod tests {
 
     #[rstest]
     #[case("2022-02-12 txn\n  Assets:Hello", None)]
+    #[case("2022-02-12  txn \nAssets:Hello", None)]
     #[case("2022-02-12 txn\n  Assets:Hello  10 CHF", Some(Amount::new(10, "CHF")))]
     #[case(
         "2022-02-12 txn\n  Assets:Hello  10  \tCHF",
@@ -289,7 +301,12 @@ mod tests {
     )]
     #[case("2*3", Expression::mul(Expression::value(2), Expression::value(3)))]
     #[case("2 * 3", Expression::mul(Expression::value(2), Expression::value(3)))]
+    #[case("2  *  3", Expression::mul(Expression::value(2), Expression::value(3)))]
     #[case("2 / 3", Expression::div(Expression::value(2), Expression::value(3)))]
+    #[case(
+        "2  / \t3",
+        Expression::div(Expression::value(2), Expression::value(3))
+    )]
     #[case(
         "1 + 2 * 3",
         Expression::plus(
@@ -340,7 +357,7 @@ mod tests {
         )
     )]
     #[case(
-        "3+4 *5/( 6* 2 ) --71",
+        "3+4   *5/(  6* 2  )  --71",
         Expression::minus(
             Expression::plus(
                 Expression::value(3),
@@ -372,6 +389,8 @@ mod tests {
     #[case("2016-11-28 close Equity:Hello; Foo bar", account::Type::Equity)]
     #[case("2016-11-28 close Equity:Hello;Foo bar", account::Type::Equity)]
     #[case("2016-11-28 close Equity:Hello;", account::Type::Equity)]
+    #[case("2016-11-28  close  Equity:Hello;", account::Type::Equity)]
+    #[case("2016-11-28\tclose\tEquity:Hello;", account::Type::Equity)]
     fn parse_close_directive_account_type(
         #[case] input: &str,
         #[case] expected_account_type: account::Type,
@@ -383,6 +402,7 @@ mod tests {
 
     #[rstest]
     #[case("2016-11-28 open Assets:Hello", account::Type::Assets)]
+    #[case("2016-11-28  open  Assets:Hello", account::Type::Assets)]
     #[case("2016-11-28 open Liabilities:Hello", account::Type::Liabilities)]
     fn parse_open_directive_account_type(
         #[case] input: &str,
@@ -426,6 +446,8 @@ mod tests {
     #[rstest]
     #[case("2016-11-28 open Assets", &[])]
     #[case("2016-11-28 open Assets CHF", &["CHF"])]
+    #[case("2016-11-28  open  Assets CHF", &["CHF"])]
+    #[case("2016-11-28\topen\tAssets CHF", &["CHF"])]
     #[case("2016-11-28 open Assets CHF,EUR", &["CHF", "EUR"])]
     #[case("2016-11-28 open Assets CHF , EUR", &["CHF", "EUR"])]
     #[case("2016-11-28 open Assets AB-CD, A_2B, A.B, A'B", &["AB-CD", "A_2B", "A.B", "A'B"])]
@@ -436,16 +458,28 @@ mod tests {
     }
 
     #[rstest]
-    #[case("1792-01-01 commodity USD", "USD")]
-    fn parse_commodity_currency(#[case] input: &str, #[case] expected: &str) {
+    fn parse_commodity_currency(
+        #[values(
+            "1792-01-01 commodity USD",
+            "1792-01-01  commodity  USD",
+            "1792-01-01\tcommodity\tUSD"
+        )]
+        input: &str,
+    ) {
         let directive = parse_single_directive(input);
         let Directive::Commodity(commodity) = directive else { panic!("expected commodity but was {directive:?}") };
-        assert_eq!(commodity.currency(), expected);
+        assert_eq!(commodity.currency(), "USD");
     }
 
-    #[test]
-    fn parse_price() {
-        let input = "2020-01-03 price VBMPX 186 USD";
+    #[rstest]
+    fn parse_price(
+        #[values(
+            "2020-01-03 price VBMPX 186 USD",
+            "2020-01-03  price  VBMPX  186  USD",
+            "2020-01-03\tprice\tVBMPX\t186\tUSD"
+        )]
+        input: &str,
+    ) {
         let directive = parse_single_directive(input);
         let Directive::Price(price) = directive else { panic!("expected price but was {directive:?}") };
         assert_eq!(price.date(), Date::new(2020, 1, 3));
@@ -453,9 +487,15 @@ mod tests {
         assert_eq!(price.price(), &Amount::new(186, "USD"));
     }
 
-    #[test]
-    fn parse_balance_assertion() {
-        let input = "2020-01-02 balance Assets:US:BofA:Checking        1.2 USD";
+    #[rstest]
+    fn parse_balance_assertion(
+        #[values(
+            "2020-01-02 balance Assets:US:BofA:Checking 1.2 USD",
+            "2020-01-02  balance  Assets:US:BofA:Checking  1.2  USD",
+            "2020-01-02\tbalance\tAssets:US:BofA:Checking\t1.2\tUSD"
+        )]
+        input: &str,
+    ) {
         let directive = parse_single_directive(input);
         let Directive::Assertion(assertion) = directive else { panic!("expected balance assertion but was {directive:?}") };
         assert_eq!(assertion.date(), Date::new(2020, 1, 2));
@@ -463,9 +503,15 @@ mod tests {
         assert_eq!(assertion.amount(), &Amount::new(Decimal::new(12, 1), "USD"));
     }
 
-    #[test]
-    fn parse_option() {
-        let input = r#"option "operating_currency" "USD""#;
+    #[rstest]
+    fn parse_option(
+        #[values(
+            r#"option "operating_currency" "USD""#,
+            r#"option  "operating_currency"  "USD""#,
+            "option\t\"operating_currency\"\t\"USD\""
+        )]
+        input: &str,
+    ) {
         let directive = parse_single_directive(input);
         let Directive::Option(option) = directive else { panic!("expected option but was {directive:?}") };
         assert_eq!(option.name(), "operating_currency");
@@ -474,7 +520,7 @@ mod tests {
 
     #[test]
     fn parse_event() {
-        let input = r#"2020-11-23 event "location" "Boston""#;
+        let input = r#"2020-11-23  event  "location"  "Boston""#;
         let directive = parse_single_directive(input);
         let Directive::Event(event) = directive else { panic!("expected event but was {directive:?}") };
         assert_eq!(event.date(), Date::new(2020, 11, 23));
