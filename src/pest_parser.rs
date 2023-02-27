@@ -207,6 +207,10 @@ mod tests {
     #[case("2023-02-27 txn\n  Assets:A 10 CHF {}", None)]
     #[case("2023-02-27 txn\n  Assets:A 10 CHF { }", None)]
     #[case("2023-02-27 txn\n  Assets:A 10 CHF {\t}", None)]
+    #[case(
+        "2023-02-27 txn\n  Assets:A  10 CHF {42 PLN,2001-02-03}",
+        Some(Amount::new(42, "PLN"))
+    )]
     fn parse_cost(#[case] input: &str, #[case] expected: Option<Amount<'_>>) {
         let transaction = parse_single_directive(input).into_transaction().unwrap();
         let posting = &transaction.postings()[0];
@@ -224,6 +228,18 @@ mod tests {
     #[case(
         "2023-02-27 txn\n  Assets:A  10 CHF {2000-01-02}",
         Some(Date::new(2000, 1, 2))
+    )]
+    #[case(
+        "2023-02-27 txn\n  Assets:A  10 CHF {40 PLN,2001-02-03}",
+        Some(Date::new(2001, 2, 3))
+    )]
+    #[case(
+        "2023-02-27 txn\n  Assets:A  10 CHF {40 PLN, 2001-02-03}",
+        Some(Date::new(2001, 2, 3))
+    )]
+    #[case(
+        "2023-02-27 txn\n  Assets:A  10 CHF {  40 PLN  , 2001-02-03  }",
+        Some(Date::new(2001, 2, 3))
     )]
     fn parse_lot_date(#[case] input: &str, #[case] expected: Option<Date>) {
         let transaction = parse_single_directive(input).into_transaction().unwrap();
@@ -455,6 +471,9 @@ mod tests {
             "2022-02-12 txn\n  Assets:Hello 1 /  CHF",
             "2022-02-12 txn\n  Assets:Hello 1 CHF {",
             "2022-02-12 txn\n  Assets:Hello 1 CHF }",
+            "2022-02-12 txn\n  Assets:Hello 1 CHF {,}",
+            "2022-02-12 txn\n  Assets:Hello 1 CHF {1 CHF,}",
+            "2022-02-12 txn\n  Assets:Hello 1 CHF {,1 CHF}",
             "2022-02-12 txnAssets:Hello 1 /  CHF",
             "2022-02-12 txn oops",
             r#"2022-02-12 txn "hello""world""#,
