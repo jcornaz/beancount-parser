@@ -117,6 +117,7 @@ mod tests {
     #[case(r#"2022-02-12 txn #hello"#, &["hello"])]
     #[case(r#"2022-02-12 txn "Payee" "Narration" #hello"#, &["hello"])]
     #[case(r#"2022-02-12 txn "Payee" "Narration" #Hello #world"#, &["Hello", "world"])]
+    #[case(r#"2020-11-24 * "Legal Seafood" "" #trip-boston-2020"#, &["trip-boston-2020"])]
     fn parse_transaction_tags(#[case] input: &str, #[case] expected: &[&str]) {
         let transaction = parse_single_directive(input).into_transaction().unwrap();
         assert_eq!(transaction.tags(), expected);
@@ -125,6 +126,7 @@ mod tests {
     #[rstest]
     #[case("2022-02-12 txn", &[])]
     #[case("2022-02-12 txn\n  Assets:Hello\n\tExpenses:Test \nLiabilities:Other", &["Assets:Hello", "Expenses:Test", "Liabilities:Other"])]
+    #[case("2020-11-24 * \"Legal Seafood\" \"\" #trip-boston-2020\n  Liabilities:US:Chase:Slate  -40.15 USD\n  Expenses:Food:Restaurant  40.15 USD", &["Liabilities:US:Chase:Slate", "Expenses:Food:Restaurant"])]
     fn parse_posting_accounts(#[case] input: &str, #[case] expected: &[&str]) {
         let expected: Vec<String> = expected.iter().map(ToString::to_string).collect();
         let transaction = parse_single_directive(input).into_transaction().unwrap();
