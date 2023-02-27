@@ -18,9 +18,9 @@ unstable = ["pest", "pest_derive"]
 rust_decimal = []
 
 [dependencies]
-nom = "7.1"
+nom = { version = "7.1", default-features = false, features = ["std"] }
 rust_decimal = { version = "1.28", default-features = false }
-thiserror = "1.0"
+thiserror = { version = "1.0", default-features = false }
 pest = { version = "2.5", default-features = false, features = ["std"], optional = true }
 pest_derive = { version = "2.5", default-features = false, features = ["std"], optional = true }
 
