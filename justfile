@@ -7,6 +7,12 @@ set dotenv-load
 verify: test lint doc check-msrv
 	cargo deny check licenses
 
+# Verify that everything is ready for realease (incl. secrets required for the release process)
+verify-for-release: verify
+	cargo publish --dry-run
+	test $GITHUB_TOKEN
+	test $CARGO_REGISTRY_TOKEN
+
 # Watch the source files and run `just verify` when source changes
 watch:
 	cargo watch --delay 0.1 --clear --why -- just verify
@@ -57,5 +63,5 @@ release-dry-run: (release "--dry-run")
 
 # Run the release process (requires `npm`, a `GITHUB_TOKEN` and a `CARGO_REGISTRY_TOKEN`)
 release *args:
-	npm install --no-save conventional-changelog-conventionalcommits@5 @semantic-release/exec@6 @semantic-release/changelog@6 @semantic-release/git@10
-	npx semantic-release@20 {{args}}
+	npm install --no-save @release-it/keep-a-changelog@3 @release-it/bumper@4
+	release-it {{args}}

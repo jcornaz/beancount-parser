@@ -1,3 +1,19 @@
+# Changelog
+
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
+and this project *loosely* follows [Semantic Versioning v2](https://semver.org/spec/v2.0.0.html).
+
+
+## [Unreleased]
+
+
+### Documentation
+
+* **readme**: Warning about unsupported feature flags
+
+
 ## [1.14.0](https://github.com/jcornaz/beancount-parser/compare/v1.13.0...v1.14.0) (2023-02-24)
 
 

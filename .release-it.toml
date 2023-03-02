@@ -1,0 +1,17 @@
+[hooks]
+"before:release" = "just verify-for-release"
+
+[git]
+requireBranch = "main"
+
+[github]
+release = true
+
+[plugins."@release-it/keep-a-changelog"]
+filename = "CHANGELOG.md"
+strictLatest = false
+addUnreleased = true
+addVersionUrl = true
+
+[plugins."@release-it/bumper"]
+out = { file = "Cargo.toml", path = "package.version" }
