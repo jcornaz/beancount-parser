@@ -1,5 +1,6 @@
 [hooks]
 "before:release" = "just verify-for-release"
+"before:git:release" = "cargo publish"
 
 [git]
 requireBranch = "main"
