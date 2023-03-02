@@ -28,7 +28,10 @@ Do not provide any "business" logic to analyze or manipulate the ledger. No bala
 | `rust_decimal` | Add conversion from `Value` into `Decimal`                                           |
 | `unstable`     | New, unfinished and unstable API. <br /> **Unstable API is not considered as part of the public API. It may be broken or removed in a minor or patch release!** |
 
-*Any feature or optional dependency not mentionned in the table above is not considered part of the public API and may be removed at any time*
+> **Warning**
+> 
+> Features and optional dependencies not mentionned in the table above are not considered part of the public API and may be removed at any time.
+
 
 ## MSRV
 
