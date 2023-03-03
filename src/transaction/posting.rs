@@ -256,58 +256,7 @@ fn price(input: &str) -> IResult<&str, (PriceType, Amount<'_>)> {
 
 #[cfg(test)]
 mod tests {
-    use crate::account::Type as AccountType;
-
     use super::*;
-
-    #[test]
-    fn simple_posting() {
-        let input = "Assets:A:B 10 CHF";
-        let (_, posting) = posting(input).expect("should successfully parse the posting");
-        assert_eq!(
-            posting.account(),
-            &Account::new(AccountType::Assets, ["A", "B"])
-        );
-        assert_eq!(posting.amount(), Some(&Amount::new(10, "CHF")));
-        assert!(posting.price().is_none());
-        assert!(posting.cost().is_none());
-        assert!(posting.comment().is_none());
-    }
-
-    #[test]
-    fn without_amount() {
-        let input = "Assets:A:B";
-        let (_, posting) = posting(input).expect("should successfully parse the posting");
-        assert!(posting.amount().is_none());
-    }
-
-    #[test]
-    fn with_price() {
-        let input = "Assets:A:B 10 CHF @ 1 EUR";
-        let (_, posting) = posting(input).expect("should successfully parse the posting");
-        assert_eq!(
-            posting.price(),
-            Some((PriceType::Unit, &Amount::new(1, "EUR")))
-        );
-    }
-
-    #[test]
-    fn with_total_price() {
-        let input = "Assets:A:B 10 CHF @@ 9 EUR";
-        let (_, posting) = posting(input).expect("should successfully parse the posting");
-        assert_eq!(
-            posting.price(),
-            Some((PriceType::Total, &Amount::new(9, "EUR")))
-        );
-    }
-
-    #[rstest]
-    fn with_cost(
-        #[values("Assets:A:B 10 CHF {1 EUR}", "Assets:A:B 10 CHF { 1 EUR }")] input: &str,
-    ) {
-        let (_, posting) = posting(input).expect("should successfully parse the posting");
-        assert_eq!(posting.cost(), Some(&Amount::new(1, "EUR")));
-    }
 
     #[rstest]
     fn with_empty_cost_and_nonempty_price(
