@@ -8,6 +8,16 @@ and this project *loosely* follows [Semantic Versioning v2](https://semver.org/s
 
 ## [Unreleased]
 
+### Added
+
+* `AccountType` alias for `account::Type`
+
+### Deprecated
+
+* `Type`
+
+    It has been made public by mistake. Use `AccountType` or `account::Type` instead.
+
 
 ### Documentation
 

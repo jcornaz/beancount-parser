@@ -51,10 +51,12 @@
 #[macro_use]
 extern crate rstest;
 
+#[deprecated = "Use `AccountType` or `account::Type` instead"]
+pub use crate::account::Type;
 pub use crate::include::Include;
 pub use crate::nom_parser::Parser;
 pub use crate::{
-    account::{Account, Type},
+    account::{Account, Type as AccountType},
     amount::Amount,
     assertion::Assertion,
     close::Close,

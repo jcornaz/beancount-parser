@@ -1,3 +1,5 @@
+mod postings;
+
 use rstest::rstest;
 
 use beancount_parser::{Date, Directive, Parser, Transaction};
