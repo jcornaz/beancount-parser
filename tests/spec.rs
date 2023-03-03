@@ -1,5 +1,6 @@
-use beancount_parser::{Date, Directive, Parser};
 use rstest::rstest;
+
+use beancount_parser::{Date, Directive, Parser, Transaction};
 
 const SIMPLE: &str = include_str!("samples/simple.beancount");
 const COMMENTS: &str = include_str!("samples/comments.beancount");
@@ -55,40 +56,28 @@ fn invalid_examples_return_an_error(#[values("2022-09-10 txn Oops...")] input: &
 #[test]
 fn pushtags_adds_tag_to_next_transaction() {
     let input = "pushtag #hello\n2022-10-20 txn";
-    let transaction = Parser::new(input)
-        .assert_single_directive()
-        .into_transaction()
-        .expect("should be a transaction");
+    let transaction = assert_single_transaction(input);
     assert_eq!(transaction.tags(), &["hello"]);
 }
 
 #[test]
 fn multiple_pushtags_add_tags_to_next_transaction() {
     let input = "pushtag #hello\npushtag #world\n2022-10-20 txn";
-    let transaction = Parser::new(input)
-        .assert_single_directive()
-        .into_transaction()
-        .expect("should be a transaction");
+    let transaction = assert_single_transaction(input);
     assert_eq!(transaction.tags(), &["hello", "world"]);
 }
 
 #[test]
 fn poptag_removes_tag_from_stack() {
     let input = "pushtag #hello\npoptag #hello\n2022-10-20 txn";
-    let transaction = Parser::new(input)
-        .assert_single_directive()
-        .into_transaction()
-        .expect("should be a transaction");
+    let transaction = assert_single_transaction(input);
     assert!(transaction.tags().is_empty());
 }
 
 #[test]
 fn poptag_removes_only_concerned_tag_from_stack() {
     let input = "pushtag #hello\npushtag #world\npoptag #hello\n2022-10-20 txn";
-    let transaction = Parser::new(input)
-        .assert_single_directive()
-        .into_transaction()
-        .expect("should be a transaction");
+    let transaction = assert_single_transaction(input);
     assert_eq!(transaction.tags(), &["world"]);
 }
 
@@ -114,8 +103,7 @@ fn comment_line(
 
 #[test]
 fn close_directive() {
-    let directive =
-        Parser::new("2016-11-28 close Liabilities:CreditCard:CapitalOne").assert_single_directive();
+    let directive = assert_single_directive("2016-11-28 close Liabilities:CreditCard:CapitalOne");
     let Directive::Close(directive) = directive else {
         panic!("Expected a close directive but was: {directive:?}")
     };
@@ -126,23 +114,24 @@ fn close_directive() {
     );
 }
 
-trait DirectiveList<'a> {
-    fn assert_single_directive(self) -> Directive<'a>;
+fn assert_single_transaction(input: &str) -> Transaction<'_> {
+    assert_single_directive(input)
+        .into_transaction()
+        .expect("was not a transaction")
 }
 
-impl<'a> DirectiveList<'a> for Parser<'a> {
-    fn assert_single_directive(mut self) -> Directive<'a> {
-        let directive = self
-            .next()
-            .expect("Exactly one element is expected, but none was found")
-            .expect("should successfully parse the input");
-        let rest = self.count();
-        assert_eq!(
-            rest,
-            0,
-            "Exactly one element is expected, but {} than one was found",
-            rest + 1
-        );
-        directive
-    }
+fn assert_single_directive(input: &str) -> Directive<'_> {
+    let mut parser = Parser::new(input);
+    let directive = parser
+        .next()
+        .expect("Exactly one element is expected, but none was found")
+        .expect("should successfully parse the input");
+    let rest = parser.count();
+    assert_eq!(
+        rest,
+        0,
+        "Exactly one element is expected, but {} than one was found",
+        rest + 1
+    );
+    directive
 }

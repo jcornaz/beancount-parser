@@ -4,11 +4,11 @@ set dotenv-load
 	just --choose --unsorted
 
 # Perform all verifications (compile, test, lint, etc.)
-verify: test lint doc check-msrv
+verify: test lint doc
 	cargo deny check licenses
 
 # Verify that everything is ready for realease (incl. secrets required for the release process)
-verify-for-release: verify
+verify-for-release: verify check-msrv
 	cargo publish --dry-run
 	test $GITHUB_TOKEN
 	test $CARGO_REGISTRY_TOKEN
