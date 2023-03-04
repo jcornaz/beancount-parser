@@ -258,18 +258,6 @@ fn price(input: &str) -> IResult<&str, (PriceType, Amount<'_>)> {
 mod tests {
     use super::*;
 
-    #[rstest]
-    fn with_empty_cost_and_nonempty_price(
-        #[values("Assets:A:B -10 CHF {} @ 1 EUR", "Assets:A:B -10 CHF { } @ 1 EUR")] input: &str,
-    ) {
-        let (_, posting) = posting(input).expect("should successfully parse the posting");
-        assert!(posting.cost().is_none());
-        assert_eq!(
-            posting.price(),
-            Some((PriceType::Unit, &Amount::new(1, "EUR")))
-        );
-    }
-
     #[test]
     fn with_cost_and_date() {
         let input = "Assets:A:B 10 CHF {1 EUR , 2022-10-14}";

@@ -54,6 +54,19 @@ fn with_cost(#[values("Assets:A:B 10 CHF {1 EUR}", "Assets:A:B 10 CHF { 1 EUR }"
     assert_eq!(cost.currency(), "EUR");
 }
 
+#[rstest]
+fn with_empty_cost_and_nonempty_price(
+    #[values("Assets:A:B -10 CHF {} @ 1 EUR", "Assets:A:B -10 CHF { } @ 1 EUR")] input: &str,
+) {
+    let input = make_transaction_from_posting(input);
+    let posting = assert_posting(&input);
+    assert!(posting.cost().is_none());
+    let (price, amount) = posting.price().unwrap();
+    assert_eq!(price, PriceType::Unit);
+    assert_eq!(amount.value().try_into_f64().unwrap(), 1.0);
+    assert_eq!(amount.currency(), "EUR");
+}
+
 fn make_transaction_from_posting(posting_input: &str) -> String {
     format!("2022-03-03 txn \"\"\n  {posting_input}")
 }
