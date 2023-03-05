@@ -29,7 +29,10 @@ and this project *loosely* follows [Semantic Versioning v2](https://semver.org/s
 
 ### Features
 
-* provide `AccountType` from root module (equivalent of `account::Type`) ([7602beb](https://github.com/jcornaz/beancount-parser/commit/7602beb03cac02a60b141cbda5c8e67078bc1561))
+* ~~provide `AccountType` from root module (equivalent of `account::Type`)~~ ([7602beb](https://github.com/jcornaz/beancount-parser/commit/7602beb03cac02a60b141cbda5c8e67078bc1561))
+
+  By mistake this change re-exported `account::Type` as `Type` instead of `AccountType`.
+
 
 ## [1.13.0](https://github.com/jcornaz/beancount-parser/compare/v1.12.0...v1.13.0) (2023-02-17)
 
