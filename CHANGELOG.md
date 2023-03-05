@@ -24,7 +24,7 @@ and this project *loosely* follows [Semantic Versioning v2](https://semver.org/s
 * **readme**: Warning about unsupported feature flags
 
 
-## [1.14.0](https://github.com/jcornaz/beancount-parser/compare/v1.13.0...v1.14.0) (2023-02-24)
+## [1.14.0] - 2023-02-24
 
 
 ### Features
@@ -34,7 +34,7 @@ and this project *loosely* follows [Semantic Versioning v2](https://semver.org/s
   By mistake this change re-exported `account::Type` as `Type` instead of `AccountType`.
 
 
-## [1.13.0](https://github.com/jcornaz/beancount-parser/compare/v1.12.0...v1.13.0) (2023-02-17)
+## [1.13.0] - 2023-02-17
 
 
 ### Features
@@ -46,7 +46,7 @@ and this project *loosely* follows [Semantic Versioning v2](https://semver.org/s
 
 * fix a broken link ([b943bd7](https://github.com/jcornaz/beancount-parser/commit/b943bd74e48915c397a9fe876cbc799848fda441))
 
-## [1.12.0](https://github.com/jcornaz/beancount-parser/compare/v1.11.1...v1.12.0) (2023-02-05)
+## [1.12.0] - 2023-02-05
 
 
 ### Features
@@ -55,7 +55,7 @@ and this project *loosely* follows [Semantic Versioning v2](https://semver.org/s
 * implement `Display` for `Account` ([b890620](https://github.com/jcornaz/beancount-parser/commit/b8906201fad79730604a98ead887f4cd95bba0fc))
 * stabilize include directive ([60c7a2b](https://github.com/jcornaz/beancount-parser/commit/60c7a2bb191215d2d98e0f57ab1ca5c23f26fee9))
 
-## [1.11.1](https://github.com/jcornaz/beancount-parser/compare/v1.11.0...v1.11.1) (2023-02-03)
+## [1.11.1] - 2023-02-03
 
 
 ### Features
@@ -63,7 +63,7 @@ and this project *loosely* follows [Semantic Versioning v2](https://semver.org/s
 * **unstable:** Add support for `include` directives ([#24](https://github.com/jcornaz/beancount-parser/issues/24)) ([e39c414](https://github.com/jcornaz/beancount-parser/commit/e39c414dc146ebf075ff1c4bdcfba8e43aaa4556))
 * **unstable:** Make the include direcvie return a `&Path` ([480061a](https://github.com/jcornaz/beancount-parser/commit/480061a6a72bbd0eb5f86d3383ac26e331540ec8))
 
-## [1.11.0](https://github.com/jcornaz/beancount-parser/compare/v1.10.1...v1.11.0) (2023-01-27)
+## [1.11.0] - 2023-01-27
 
 
 ### Features
@@ -82,7 +82,7 @@ and this project *loosely* follows [Semantic Versioning v2](https://semver.org/s
 * **readme:** fix typo ([04b8693](https://github.com/jcornaz/beancount-parser/commit/04b86939f69899522d8233c07a2fe20e6de2c476))
 * **readme:** link to beancount doc and typo fixes ([74872a6](https://github.com/jcornaz/beancount-parser/commit/74872a63ebdfe6bc43c3f669258eb2e074769721))
 
-## [1.10.1](https://github.com/jcornaz/beancount-parser/compare/v1.10.0...v1.10.1) (2023-01-23)
+## [1.10.1] - 2023-01-23
 
 
 ### Bug Fixes
@@ -103,7 +103,7 @@ and this project *loosely* follows [Semantic Versioning v2](https://semver.org/s
 
 * **unstable:** Remove transaction balancing and amount sum logic ([a6fb067](https://github.com/jcornaz/beancount-parser/commit/a6fb0678df8ea4cb0fff1581b00970f6d525c3d2))
 
-## [1.9.1](https://github.com/jcornaz/beancount-parser/compare/v1.9.0...v1.9.1) (2023-01-09)
+## [1.9.1] - 2023-01-09
 
 
 ### Documentation
@@ -113,14 +113,14 @@ and this project *loosely* follows [Semantic Versioning v2](https://semver.org/s
 * **readme:** remove build badge ([7df7d5a](https://github.com/jcornaz/beancount-parser/commit/7df7d5acd97970f53eb1023c31cacbe4d16b0ddd))
 * **readme:** update rustc badge ([4a9a6c3](https://github.com/jcornaz/beancount-parser/commit/4a9a6c337b2bc31f3c7d69467fcbda8d14eb0edd))
 
-## [1.9.0](https://github.com/jcornaz/beancount-parser/compare/v1.8.5...v1.9.0) (2022-12-13)
+## [1.9.0] - 2022-12-13
 
 
 ### Features
 
 * Implement `Hash` for `Account` and `account::Type` ([#17](https://github.com/jcornaz/beancount-parser/issues/17)) ([84b3df0](https://github.com/jcornaz/beancount-parser/commit/84b3df007303e30cbc944dced683773d89c13581))
 
-## [1.8.5](https://github.com/jcornaz/beancount-parser/compare/v1.8.4...v1.8.5) (2022-11-21)
+## [1.8.5 - 2022-11-21
 
 
 ### Features
@@ -128,14 +128,14 @@ and this project *loosely* follows [Semantic Versioning v2](https://semver.org/s
 * **unstable:** Amount sum ([dc68b38](https://github.com/jcornaz/beancount-parser/commit/dc68b38afae71cfc6a15956187c0f080aa88afe9))
 * **unstable:** introduce `BalancedTransaction` type ([988f801](https://github.com/jcornaz/beancount-parser/commit/988f8017254028972949b2c3789c2c28b86011f5))
 
-## [1.8.4](https://github.com/jcornaz/beancount-parser/compare/v1.8.3...v1.8.4) (2022-11-20)
+## [1.8.4] - 2022-11-20
 
 
 ### Bug Fixes
 
 * **unstable:** fix error line-number after a multiline transaction ([93625ba](https://github.com/jcornaz/beancount-parser/commit/93625ba615b56512d9e906788774d83fb388ec6d))
 
-## [1.8.3](https://github.com/jcornaz/beancount-parser/compare/v1.8.2...v1.8.3) (2022-11-19)
+## [1.8.3] - 2022-11-19
 
 
 ### Features
@@ -148,45 +148,43 @@ and this project *loosely* follows [Semantic Versioning v2](https://semver.org/s
 * **changelog:** add changelog file ([83b2800](https://github.com/jcornaz/beancount-parser/commit/83b28004bd10df2ad4b44d3a94e8f2b9f21e9807))
 * **readme:** update MSRV ([257a6f2](https://github.com/jcornaz/beancount-parser/commit/257a6f2a048179a29c9c5cc5ec7faec81e99f60f))
 
-# Changelog
-
-## v1.8.2 (2022-11-13)
+## [1.8.2] - 2022-11-13
 
 ### Documentation
 
  - Show API behind feature flags on docs.rs
 
-## v1.8.1 (2022-11-10)
+## [1.8.1] - 2022-11-10
 
 ### Documentation
 
  - Fix typos
 
-## v1.8.0 (2022-11-08)
+## [1.8.0] - 2022-11-08
 
 ### New Features
 
  - `Date::new` constructor
 
-## v1.7.0 (2022-11-06)
+## [1.7.0] - 2022-11-06
 
 ### New Features
 
  - `date` getter on `Directive`
 
-## v1.6.0 (2022-11-06)
+## [1.6.0] - 2022-11-06
 
 ### New Features
 
  - Implement `Ord` for `Date` (fix #8)
 
-## v1.5.0 (2022-11-06)
+## [1.5.0] - 2022-11-06
 
 ### New Features
 
  - Close directive (fix #7)
 
-## v1.4.0 (2022-11-05)
+## [1.4.0] - 2022-11-05
 
 ### New Features
 
@@ -194,20 +192,20 @@ and this project *loosely* follows [Semantic Versioning v2](https://semver.org/s
  - Currency constraint on open directive
  - Unstable feature flag
 
-## v1.3.1 (2022-10-20)
+## [1.3.1] - 2022-10-20
 
 ### Bug Fixes
 
  - Poptag being ignored
  - Pushtag being ignored
 
-## v1.3.0 (2022-10-15)
+## [1.3.0] - 2022-10-15
 
 ### New Features
 
  - Make the `Price` type public
 
-## v1.2.0 (2022-10-14)
+## [1.2.0] - 2022-10-14
 
 ### New Features
 
@@ -217,7 +215,7 @@ and this project *loosely* follows [Semantic Versioning v2](https://semver.org/s
 
  - Failure when parsing cost with date
 
-## v1.1.0 (2022-10-13)
+## [1.1.0] - 2022-10-13
 
 ### Documentation
 
@@ -230,7 +228,7 @@ and this project *loosely* follows [Semantic Versioning v2](https://semver.org/s
  - Parse comment on price directive
  - Parse price directive
 
-## v1.0.0 (2022-10-11)
+## [1.0.0] - 2022-10-11
 
 ### Documentation
 
@@ -256,7 +254,7 @@ and this project *loosely* follows [Semantic Versioning v2](https://semver.org/s
 
  - Make `Transaction::postings` return a slice instead of a `Vec`
 
-## v1.0.0-alpha.3 (2022-09-16)
+## [1.0.0-alpha.3] - 2022-09-16
 
 ### Documentation
 
@@ -273,7 +271,7 @@ and this project *loosely* follows [Semantic Versioning v2](https://semver.org/s
 
  - Iterate directives instead of tuples (date, directive)
 
-## v1.0.0-alpha.2 (2022-09-15)
+## [1.0.0-alpha.2] - 2022-09-15
 
 ### Documentation
 
@@ -287,7 +285,7 @@ and this project *loosely* follows [Semantic Versioning v2](https://semver.org/s
  - Conversion of `Value` into `f32`
  - Conversion of `Value` into `f64`
 
-## v1.0.0-alpha.1 (2022-09-14)
+## [1.0.0-alpha.1] - 2022-09-14
 
 ### Documentation
 
@@ -301,3 +299,29 @@ and this project *loosely* follows [Semantic Versioning v2](https://semver.org/s
  - Ignore comment lines
  - Parse directives
  - `Parser` iterator type
+
+[unreleased]: https://github.com/jcornaz/beancount-parser/compare/v1.15.0...HEAD
+[1.14.0]: https://github.com/jcornaz/beancount-parser/compare/v1.13.0...v1.14.0
+[1.13.0]: https://github.com/jcornaz/beancount-parser/compare/v1.12.0...v1.13.0
+[1.12.0]: https://github.com/jcornaz/beancount-parser/compare/v1.11.1...v1.12.0
+[1.11.1]: https://github.com/jcornaz/beancount-parser/compare/v1.11.0...v1.11.1
+[1.11.0]: https://github.com/jcornaz/beancount-parser/compare/v1.10.1...v1.11.0
+[1.10.1]: https://github.com/jcornaz/beancount-parser/compare/v1.10.0...v1.10.1
+[1.10.0]: https://github.com/jcornaz/beancount-parser/compare/v1.9.1...v1.10.0
+[1.9.1]: https://github.com/jcornaz/beancount-parser/compare/v1.9.0...v1.9.1
+[1.9.0]: https://github.com/jcornaz/beancount-parser/compare/v1.8.5...v1.9.0
+[1.8.5]: https://github.com/jcornaz/beancount-parser/compare/v1.8.4...v1.8.5
+[1.8.4]: https://github.com/jcornaz/beancount-parser/compare/v1.8.3...v1.8.4
+[1.8.3]: https://github.com/jcornaz/beancount-parser/compare/v1.8.2...v1.8.3
+[1.8.2]: https://github.com/jcornaz/beancount-parser/compare/v1.8.1...v1.8.2
+[1.8.1]: https://github.com/jcornaz/beancount-parser/compare/v1.8.0...v1.8.1
+[1.8.0]: https://github.com/jcornaz/beancount-parser/compare/v1.7.0...v1.8.0
+[1.7.0]: https://github.com/jcornaz/beancount-parser/compare/v1.6.0...v1.7.0
+[1.6.0]: https://github.com/jcornaz/beancount-parser/compare/v1.5.0...v1.6.0
+[1.5.0]: https://github.com/jcornaz/beancount-parser/compare/v1.4.0...v1.5.0
+[1.4.0]: https://github.com/jcornaz/beancount-parser/compare/v1.3.1...v1.4.0
+[1.3.1]: https://github.com/jcornaz/beancount-parser/compare/v1.3.0...v1.3.1
+[1.3.0]: https://github.com/jcornaz/beancount-parser/compare/v1.2.0...v1.3.0
+[1.2.0]: https://github.com/jcornaz/beancount-parser/compare/v1.1.0...v1.2.0
+[1.1.0]: https://github.com/jcornaz/beancount-parser/compare/v1.0.0...v1.1.0
+[1.0.0]: https://github.com/jcornaz/beancount-parser/tree/v1.0.0
