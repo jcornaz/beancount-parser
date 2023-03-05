@@ -63,5 +63,8 @@ release-dry-run: (release "--dry-run")
 
 # Run the release process (requires `npm`, a `GITHUB_TOKEN` and a `CARGO_REGISTRY_TOKEN`)
 release *args:
-	npm install --no-save @release-it/keep-a-changelog@3 @release-it/bumper@4
+	npm install --no-save @release-it/keep-a-changelog@3 @release-it/bumper@4 @j-ulrich/release-it-regex-bumper@4
 	release-it {{args}}
+
+publish:
+    cat Cargo.toml

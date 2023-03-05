@@ -8,7 +8,7 @@
     missing_docs
 )]
 #![warn(rust_2018_idioms, clippy::pedantic)]
-#![allow(clippy::needless_pass_by_value)]
+#![allow(clippy::needless_pass_by_value, clippy::deprecated_semver)]
 #![cfg_attr(
     not(test),
     warn(
@@ -72,7 +72,10 @@ mod string;
 pub mod transaction;
 
 /// Type of account
-#[deprecated = "Use `AccountType` or `account::Type` instead"]
+#[deprecated(
+    since = "<NEXT>",
+    note = "Use `AccountType` or `account::Type` instead"
+)]
 pub type Type = account::Type;
 
 pub use crate::include::Include;

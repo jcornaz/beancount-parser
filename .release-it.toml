@@ -1,6 +1,7 @@
 [hooks]
-"before:release" = "just verify-for-release"
-"before:git:release" = "cargo publish"
+"before:init" = "just verify-for-release"
+"before:git:bump" = "just verify"
+"before:release" = "just publish"
 
 [git]
 requireBranch = "main"
@@ -15,4 +16,10 @@ addUnreleased = true
 addVersionUrl = true
 
 [plugins."@release-it/bumper"]
-out = { file = "Cargo.toml", path = "package.version" }
+in = { file = "Cargo.toml", path = "package.version" }
+
+[plugins."@j-ulrich/release-it-regex-bumper"]
+out = [
+    { file = "src/**/*.rs", search = "since = \"<NEXT>\"", replace = "since = \"{{version}}\"" },
+    { file = "Cargo.toml", search = "version = \"\\d+\\.\\d+\\.\\d+(-.+)?\" # auto-update", replace = "version = \"{{version}}\" # auto-update" },
+]
