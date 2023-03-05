@@ -1,6 +1,7 @@
-use beancount_parser::transaction::{Posting, PriceType};
+use beancount_parser::transaction::{Flag, Posting, PriceType};
 
 use crate::assert_single_transaction;
+use beancount_parser::Amount;
 use rstest::rstest;
 
 #[test]
@@ -65,6 +66,67 @@ fn with_empty_cost_and_nonempty_price(
     assert_eq!(price, PriceType::Unit);
     assert_eq!(amount.value().try_into_f64().unwrap(), 1.0);
     assert_eq!(amount.currency(), "EUR");
+}
+
+#[test]
+fn with_cost_and_date() {
+    let input = make_transaction_from_posting("Assets:A:B 10 CHF {1 EUR , 2022-10-14}");
+    let posting = assert_posting(&input);
+    assert_eq!(
+        posting.cost().and_then(|a| a.value().try_into_f64().ok()),
+        Some(1.0)
+    );
+    assert_eq!(posting.cost().map(Amount::currency), Some("EUR"));
+}
+
+#[test]
+fn with_cost_and_date_and_label() {
+    let input = make_transaction_from_posting("Assets:A:B 10 CHF {1 EUR, 2022-10-14, \"label\"}");
+    let posting = assert_posting(&input);
+    assert_eq!(
+        posting.cost().and_then(|a| a.value().try_into_f64().ok()),
+        Some(1.0)
+    );
+    assert_eq!(posting.cost().map(Amount::currency), Some("EUR"));
+}
+
+#[test]
+fn with_cost_and_no_date_and_label() {
+    let input = make_transaction_from_posting("Assets:A:B 10 CHF {1 EUR, \"label\"}");
+    let posting = assert_posting(&input);
+    assert_eq!(
+        posting.cost().and_then(|a| a.value().try_into_f64().ok()),
+        Some(1.0)
+    );
+    assert_eq!(posting.cost().map(Amount::currency), Some("EUR"));
+}
+
+#[test]
+fn with_cost_and_price() {
+    let input = make_transaction_from_posting("Assets:A:B 10 CHF {2 USD} @ 1 EUR");
+    let posting = assert_posting(&input);
+    assert_eq!(
+        posting.cost().and_then(|a| a.value().try_into_f64().ok()),
+        Some(2.0)
+    );
+    assert_eq!(posting.cost().map(Amount::currency), Some("USD"));
+    let Some((PriceType::Unit, price)) = posting.price() else { panic!("unexpected price in {posting:?}") };
+    assert_eq!(price.value().try_into_f64(), Ok(1.0));
+    assert_eq!(price.currency(), "EUR");
+}
+
+#[test]
+fn with_flag() {
+    let input = make_transaction_from_posting("! Assets:A 1 EUR");
+    let posting = assert_posting(&input);
+    assert_eq!(posting.flag(), Some(Flag::Pending));
+}
+
+#[test]
+fn with_comment() {
+    let input = make_transaction_from_posting("Assets:A:B 10 CHF ; Cool!");
+    let posting = assert_posting(&input);
+    assert_eq!(posting.comment(), Some("Cool!"));
 }
 
 fn make_transaction_from_posting(posting_input: &str) -> String {
