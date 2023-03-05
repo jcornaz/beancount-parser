@@ -51,6 +51,26 @@
 #[macro_use]
 extern crate rstest;
 
+pub mod account;
+pub mod amount;
+mod assertion;
+mod close;
+mod commodity;
+mod date;
+mod directive;
+mod error;
+mod event;
+mod include;
+mod metadata;
+mod nom_parser;
+mod open;
+mod option;
+mod pad;
+mod pest_parser;
+mod price;
+mod string;
+pub mod transaction;
+
 /// Type of account
 #[deprecated = "Use `AccountType` or `account::Type` instead"]
 pub type Type = account::Type;
@@ -73,23 +93,3 @@ pub use crate::{
 
 #[cfg(feature = "unstable")]
 pub use crate::{commodity::Commodity, event::Event, option::Option, pest_parser::parse};
-
-pub mod account;
-pub mod amount;
-mod assertion;
-mod close;
-mod commodity;
-mod date;
-mod directive;
-mod error;
-mod event;
-mod include;
-mod metadata;
-mod nom_parser;
-mod open;
-mod option;
-mod pad;
-mod pest_parser;
-mod price;
-mod string;
-pub mod transaction;
