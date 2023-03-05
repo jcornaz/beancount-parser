@@ -2,5 +2,5 @@
   "extends": [
     "config:base", ":automergePatch", "schedule:weekends"
   ],
-  "lockFileMaintenance": { "enabled": true }
+  "lockFileMaintenance": { "enabled": true, "automerge": true }
 }
