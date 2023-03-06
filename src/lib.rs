@@ -73,7 +73,7 @@ pub mod transaction;
 
 /// Type of account
 #[deprecated(
-    since = "<NEXT>",
+    since = "next-version",
     note = "Use `AccountType` or `account::Type` instead"
 )]
 pub type Type = account::Type;
