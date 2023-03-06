@@ -21,5 +21,5 @@ in = { file = "Cargo.toml", path = "package.version" }
 [plugins."@j-ulrich/release-it-regex-bumper"]
 out = [
     { file = "src/**/*.rs", search = "since\\s*=\\s*\"next-version\"", replace = "since = \"{{version}}\"" },
-    { file = "Cargo.toml", search = "version = \"\\d+\\.\\d+\\.\\d+(-.+)?\" # auto-update", replace = "version = \"{{version}}\" # auto-update" },
+    { file = "Cargo.toml", search = "version = \"\\d+\\.\\d+\\.\\d+(-.+)?\" # bump", replace = "version = \"{{version}}\" # bump" },
 ]
