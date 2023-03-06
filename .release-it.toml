@@ -1,7 +1,7 @@
 [hooks]
 "before:init" = "just verify-for-release"
 "before:git:bump" = "just verify"
-"before:release" = "just publish"
+"after:git:release" = "just publish"
 
 [git]
 requireBranch = "main"

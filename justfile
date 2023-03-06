@@ -67,4 +67,4 @@ release *args:
 	release-it {{args}}
 
 publish:
-    cat Cargo.toml
+    cargo publish
