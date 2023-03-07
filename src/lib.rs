@@ -61,6 +61,9 @@ mod directive;
 mod error;
 mod event;
 mod include;
+#[cfg(feature = "unstable")]
+pub mod metadata;
+#[cfg(not(feature = "unstable"))]
 mod metadata;
 mod nom_parser;
 mod open;

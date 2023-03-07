@@ -11,6 +11,9 @@ and this project *loosely* follows [Semantic Versioning v2](https://semver.org/s
 ### Added
 
 * `AccountType` alias for `account::Type`
+* `metadata` module
+
+   which makes possible to pattern match the result of `Transaction::metadata`.
 
 ### Deprecated
 

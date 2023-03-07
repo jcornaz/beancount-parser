@@ -1,10 +1,4 @@
-use beancount_parser::{Directive, Parser, Transaction};
-
-pub fn assert_single_transaction(input: &str) -> Transaction<'_> {
-    assert_single_directive(input)
-        .into_transaction()
-        .expect("was not a transaction")
-}
+use beancount_parser::{Directive, Parser};
 
 pub fn assert_single_directive(input: &str) -> Directive<'_> {
     let mut parser = Parser::new(input);

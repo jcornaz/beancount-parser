@@ -1,10 +1,150 @@
-mod utils;
+use rstest::rstest;
 
 use beancount_parser::transaction::{Flag, Posting, PriceType};
+use beancount_parser::{Amount, Date, Transaction};
 
-use beancount_parser::Amount;
-use rstest::rstest;
-use utils::assert_single_transaction;
+use crate::utils::assert_single_directive;
+
+mod utils;
+
+#[rstest]
+fn simple_transaction() {
+    let input = r#"2022-09-16 * "Hello \"world\""
+            Expenses:A    10 CHF
+            Assets:B     -10 CHF
+        "#;
+    let transaction = assert_single_transaction(input);
+    assert_eq!(transaction.date(), Date::new(2022, 9, 16));
+    assert_eq!(transaction.narration(), Some(r#"Hello "world""#));
+    assert_eq!(transaction.postings().len(), 2);
+    assert_eq!(transaction.flag(), Some(Flag::Cleared));
+    assert_eq!(transaction.payee(), None);
+    assert_eq!(transaction.comment(), None);
+    assert_eq!(transaction.tags().len(), 0);
+}
+
+#[test]
+fn transaction_without_posting() {
+    let input = r#"2022-01-01 * "Hello \"world\"""#;
+    let transaction = assert_single_transaction(input);
+    assert!(transaction.postings().is_empty());
+}
+
+#[test]
+fn transaction_without_description() {
+    let input = r#"2022-01-01 *
+            Expenses:A    10 CHF
+            Assets:B     -10 CHF
+        "#;
+    let transaction = assert_single_transaction(input);
+    assert!(transaction.narration().is_none());
+}
+
+#[test]
+#[cfg(feature = "unstable")]
+fn should_parse_metadata() {
+    use beancount_parser::metadata;
+    let input = r#"2022-01-01 *
+            abc: Assets:Unknown
+            def: 3 USD
+            Expenses:A    10 CHF
+            Assets:B     -10 CHF
+        "#;
+    let transaction = assert_single_transaction(input);
+    let Some(metadata::Value::Account(account)) = transaction.metadata().get(&String::from("abc")) else { panic!("unexpected metadata") };
+    assert_eq!(&account.to_string(), "Assets:Unknown");
+}
+
+#[test]
+fn should_succeed_with_metadata() {
+    let input = r#"2022-01-01 *
+            abc: Assets:Unknown
+            def: 3 USD
+            Expenses:A    10 CHF
+            Assets:B     -10 CHF
+        "#;
+    let transaction = assert_single_transaction(input);
+    assert_eq!(transaction.postings().len(), 2, "{transaction:?}");
+}
+
+#[test]
+fn transaction_with_payee() {
+    let input = r#"2022-01-01 * "me" "Hello \"world\""
+            Expenses:A    10 CHF
+            Assets:B     -10 CHF
+        "#;
+    let transaction = assert_single_transaction(input);
+    assert_eq!(transaction.payee(), Some("me"));
+}
+
+#[test]
+fn transaction_with_exclamation_mark() {
+    let input = r#"2022-01-01 ! "Hello \"world\""
+            Expenses:A    10 CHF
+            Assets:B     -10 CHF
+        "#;
+    let transaction = assert_single_transaction(input);
+    assert_eq!(transaction.flag(), Some(Flag::Pending));
+}
+
+#[test]
+fn transaction_without_flag() {
+    let input = r#"2022-01-01 txn "Hello \"world\""
+            Expenses:A    10 CHF
+            Assets:B     -10 CHF
+        "#;
+    let transaction = assert_single_transaction(input);
+    assert!(transaction.flag().is_none());
+}
+
+#[test]
+fn transaction_with_one_tag() {
+    let input = r#"2022-01-01 txn "Hello \"world\"" #hello-world"#;
+    let transaction = assert_single_transaction(input);
+    assert_eq!(transaction.tags(), ["hello-world"]);
+}
+
+#[test]
+fn transaction_with_multiple_tags() {
+    let input = r#"2022-01-01 txn "Hello \"world\"" #that #is #cool"#;
+    let transaction = assert_single_transaction(input);
+    assert_eq!(transaction.tags(), ["that", "is", "cool"]);
+}
+
+#[test]
+fn transaction_with_comment() {
+    let input = r#"2022-01-01 txn "Hello \"world\"" ; And a comment!"#;
+    let transaction = assert_single_transaction(input);
+    assert_eq!(transaction.comment(), Some("And a comment!"));
+}
+
+#[test]
+fn pushtags_adds_tag_to_next_transaction() {
+    let input = "pushtag #hello\n2022-10-20 txn";
+    let transaction = assert_single_transaction(input);
+    assert_eq!(transaction.tags(), &["hello"]);
+}
+
+#[test]
+fn multiple_pushtags_add_tags_to_next_transaction() {
+    let input = "pushtag #hello\npushtag #world\n2022-10-20 txn";
+    let transaction = assert_single_transaction(input);
+    assert_eq!(transaction.tags(), &["hello", "world"]);
+}
+
+#[test]
+fn poptag_removes_tag_from_stack() {
+    let input = "pushtag #hello\npoptag #hello\n2022-10-20 txn";
+    let transaction = assert_single_transaction(input);
+    assert!(transaction.tags().is_empty());
+}
+
+#[test]
+fn poptag_removes_only_concerned_tag_from_stack() {
+    let input = "pushtag #hello\npushtag #world\npoptag #hello\n2022-10-20 txn";
+    let transaction = assert_single_transaction(input);
+    assert_eq!(transaction.tags(), &["world"]);
+}
 
 #[test]
 fn simple_posting() {
@@ -129,6 +269,12 @@ fn with_comment() {
     let input = make_transaction_from_posting("Assets:A:B 10 CHF ; Cool!");
     let posting = assert_posting(&input);
     assert_eq!(posting.comment(), Some("Cool!"));
+}
+
+fn assert_single_transaction(input: &str) -> Transaction<'_> {
+    assert_single_directive(input)
+        .into_transaction()
+        .expect("was not a transaction")
 }
 
 fn make_transaction_from_posting(posting_input: &str) -> String {

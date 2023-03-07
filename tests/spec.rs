@@ -2,7 +2,7 @@ use rstest::rstest;
 
 use beancount_parser::{Date, Directive, Parser};
 use samples::{COMMENTS, OFFICIAL, SIMPLE};
-use utils::{assert_single_directive, assert_single_transaction};
+use utils::assert_single_directive;
 
 mod samples;
 mod utils;
@@ -52,34 +52,6 @@ fn examples_have_expected_number_of_postings(#[case] input: &str, #[case] expect
 fn invalid_examples_return_an_error(#[values("2022-09-10 txn Oops...")] input: &str) {
     let items = Parser::new(input).collect::<Vec<Result<_, _>>>();
     assert!(items[0].is_err());
-}
-
-#[test]
-fn pushtags_adds_tag_to_next_transaction() {
-    let input = "pushtag #hello\n2022-10-20 txn";
-    let transaction = assert_single_transaction(input);
-    assert_eq!(transaction.tags(), &["hello"]);
-}
-
-#[test]
-fn multiple_pushtags_add_tags_to_next_transaction() {
-    let input = "pushtag #hello\npushtag #world\n2022-10-20 txn";
-    let transaction = assert_single_transaction(input);
-    assert_eq!(transaction.tags(), &["hello", "world"]);
-}
-
-#[test]
-fn poptag_removes_tag_from_stack() {
-    let input = "pushtag #hello\npoptag #hello\n2022-10-20 txn";
-    let transaction = assert_single_transaction(input);
-    assert!(transaction.tags().is_empty());
-}
-
-#[test]
-fn poptag_removes_only_concerned_tag_from_stack() {
-    let input = "pushtag #hello\npushtag #world\npoptag #hello\n2022-10-20 txn";
-    let transaction = assert_single_transaction(input);
-    assert_eq!(transaction.tags(), &["world"]);
 }
 
 #[rstest]
