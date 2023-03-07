@@ -8,6 +8,8 @@ and this project *loosely* follows [Semantic Versioning v2](https://semver.org/s
 
 ## [Unreleased]
 
+## [1.15.0] - 2023-03-07
+
 ### Added
 
 * `AccountType` alias for `account::Type`
@@ -303,7 +305,8 @@ and this project *loosely* follows [Semantic Versioning v2](https://semver.org/s
  - Parse directives
  - `Parser` iterator type
 
-[unreleased]: https://github.com/jcornaz/beancount-parser/compare/v1.14.0...HEAD
+[unreleased]: https://github.com/jcornaz/beancount-parser/compare/v1.15.0...HEAD
+[1.15.0]: https://github.com/jcornaz/beancount-parser/compare/v1.14.0...v1.15.0
 [1.14.0]: https://github.com/jcornaz/beancount-parser/compare/v1.13.0...v1.14.0
 [1.13.0]: https://github.com/jcornaz/beancount-parser/compare/v1.12.0...v1.13.0
 [1.12.0]: https://github.com/jcornaz/beancount-parser/compare/v1.11.1...v1.12.0

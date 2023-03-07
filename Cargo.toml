@@ -1,6 +1,6 @@
 [package]
 name = "beancount-parser"
-version = "1.14.0" # bump
+version = "1.15.0" # bump
 license = "Unlicense"
 authors = ["Jonathan Cornaz"]
 edition = "2021"
