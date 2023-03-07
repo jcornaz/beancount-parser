@@ -1,8 +1,10 @@
+mod utils;
+
 use beancount_parser::transaction::{Flag, Posting, PriceType};
 
-use crate::assert_single_transaction;
 use beancount_parser::Amount;
 use rstest::rstest;
+use utils::assert_single_transaction;
 
 #[test]
 fn simple_posting() {

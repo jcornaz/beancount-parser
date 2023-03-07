@@ -1,12 +1,11 @@
-mod postings;
-
 use rstest::rstest;
 
-use beancount_parser::{Date, Directive, Parser, Transaction};
+use beancount_parser::{Date, Directive, Parser};
+use samples::{COMMENTS, OFFICIAL, SIMPLE};
+use utils::{assert_single_directive, assert_single_transaction};
 
-const SIMPLE: &str = include_str!("samples/simple.beancount");
-const COMMENTS: &str = include_str!("samples/comments.beancount");
-const OFFICIAL: &str = include_str!("samples/official.beancount");
+mod samples;
+mod utils;
 
 #[rstest]
 fn valid_examples_do_not_return_an_error(
@@ -114,26 +113,4 @@ fn close_directive() {
         directive.account().components(),
         &["CreditCard", "CapitalOne"]
     );
-}
-
-fn assert_single_transaction(input: &str) -> Transaction<'_> {
-    assert_single_directive(input)
-        .into_transaction()
-        .expect("was not a transaction")
-}
-
-fn assert_single_directive(input: &str) -> Directive<'_> {
-    let mut parser = Parser::new(input);
-    let directive = parser
-        .next()
-        .expect("Exactly one element is expected, but none was found")
-        .expect("should successfully parse the input");
-    let rest = parser.count();
-    assert_eq!(
-        rest,
-        0,
-        "Exactly one element is expected, but {} than one was found",
-        rest + 1
-    );
-    directive
 }
