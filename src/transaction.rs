@@ -232,27 +232,3 @@ fn flag(input: &str) -> IResult<&str, Flag> {
         map(char('!'), |_| Flag::Pending),
     ))(input)
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[rstest]
-    fn errors(#[values("2022-01-01 open Assets:US:BofA:Checking")] input: &str) {
-        let result = transaction(input);
-        assert!(matches!(result, Err(nom::Err::Error(_))), "{result:?}");
-    }
-
-    #[rstest]
-    fn failures(
-        #[values(
-            r#"2022-01-01 *"hello""#,
-            r#"2022-01-01 * "hello" Assets:A 10 CHF"#,
-            "2022-01-01 ! test"
-        )]
-        input: &str,
-    ) {
-        let result = transaction(input);
-        assert!(matches!(result, Err(nom::Err::Failure(_))), "{result:?}");
-    }
-}

@@ -1,7 +1,7 @@
 use rstest::rstest;
 
 use beancount_parser::transaction::{Flag, Posting, PriceType};
-use beancount_parser::{Amount, Date, Transaction};
+use beancount_parser::{Amount, Date, Parser, Transaction};
 
 use crate::utils::assert_single_directive;
 
@@ -269,6 +269,19 @@ fn with_comment() {
     let input = make_transaction_from_posting("Assets:A:B 10 CHF ; Cool!");
     let posting = assert_posting(&input);
     assert_eq!(posting.comment(), Some("Cool!"));
+}
+
+#[rstest]
+fn failures(
+    #[values(
+        r#"2022-01-01 *"hello""#,
+        r#"2022-01-01 * "hello" Assets:A 10 CHF"#,
+        "2022-01-01 ! test"
+    )]
+    input: &str,
+) {
+    let item = Parser::new(input).next().expect("nothing found");
+    assert!(item.is_err(), "{item:?}");
 }
 
 fn assert_single_transaction(input: &str) -> Transaction<'_> {
