@@ -26,7 +26,7 @@ pest_derive = { version = "2.5", default-features = false, features = ["std"], o
 
 [dev-dependencies]
 criterion = "0.4.0"
-rstest = { version = "0.16.0", default-features = false }
+rstest = { version = "0.17.0", default-features = false }
 
 [build-dependencies]
 rustc_version = "0.4.0"
