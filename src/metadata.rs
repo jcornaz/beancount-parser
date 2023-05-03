@@ -85,7 +85,7 @@ pub(crate) fn metadata(input: &str) -> IResult<&str, Metadata<'_>> {
         |mut acc: HashMap<_, _>, (k, v)| {
             // Only the first entry is kept per Beancount documentation
             let k = k.to_string();
-            let _ = acc.entry(k).or_insert(v);
+            let _: &mut Value<'_> = acc.entry(k).or_insert(v);
             acc
         },
     )(input)
