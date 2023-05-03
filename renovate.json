@@ -2,5 +2,11 @@
   "extends": [
     "config:base", ":automergePatch", "schedule:weekends"
   ],
-  "lockFileMaintenance": { "enabled": true, "automerge": true }
+  "lockFileMaintenance": { "enabled": true, "automerge": true },
+  "packageRules": [
+    {
+      "matchPackagePatterns": ["pest", "pest_derive"],
+      "groupName": "pest"
+    }
+  ]
 }
