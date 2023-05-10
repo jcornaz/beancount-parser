@@ -8,6 +8,11 @@ and this project *loosely* follows [Semantic Versioning v2](https://semver.org/s
 
 ## [Unreleased]
 
+### Added
+
+* implement `Default` for `transaction::Flag` (The default value is `transaction::Flag::Cleared`)
+
+
 ## [1.15.0] - 2023-03-07
 
 ### Added

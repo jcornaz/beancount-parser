@@ -1,6 +1,6 @@
 use rstest::rstest;
 
-use beancount_parser::{Date, Directive, Parser};
+use beancount_parser::{transaction, Date, Directive, Parser};
 use samples::{COMMENTS, OFFICIAL, SIMPLE};
 use utils::assert_single_directive;
 
@@ -85,4 +85,10 @@ fn close_directive() {
         directive.account().components(),
         &["CreditCard", "CapitalOne"]
     );
+}
+
+#[test]
+fn default_flag_is_cleared() {
+    use transaction::Flag;
+    assert_eq!(Flag::default(), Flag::Cleared);
 }

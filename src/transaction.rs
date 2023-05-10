@@ -58,9 +58,10 @@ pub struct Transaction<'a> {
 /// The transaction flag
 ///
 /// It is eithe cleared (`*`) of pending (`!`)
-#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash, Default)]
 pub enum Flag {
     /// Cleared flag (the `*` character)
+    #[default]
     Cleared,
     /// Pending flag (the `!` character)
     Pending,
