@@ -71,6 +71,7 @@ mod option;
 mod pad;
 mod pest_parser;
 mod price;
+mod span;
 mod string;
 pub mod transaction;
 

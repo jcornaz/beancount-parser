@@ -15,6 +15,7 @@ all-features = true
 
 [features]
 unstable = ["pest", "pest_derive"]
+unstable-span = []
 rust_decimal = []
 
 [dependencies]
