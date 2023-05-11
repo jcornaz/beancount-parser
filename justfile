@@ -1,7 +1,7 @@
 set dotenv-load
 
 @_choose:
-	just --choose --unsorted
+	just --list --unsorted
 
 # Perform all verifications (compile, test, lint, etc.)
 verify: test lint doc check-msrv
