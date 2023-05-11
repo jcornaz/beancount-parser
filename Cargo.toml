@@ -14,7 +14,7 @@ keywords = ["parsing", "beancount", "accounting"]
 all-features = true
 
 [features]
-unstable = ["pest", "pest_derive"]
+unstable = ["nom_locate", "pest", "pest_derive"]
 rust_decimal = []
 
 [dependencies]
@@ -23,6 +23,8 @@ rust_decimal = { version = "1.29", default-features = false }
 thiserror = { version = "1.0", default-features = false }
 pest = { version = "2.6", default-features = false, features = ["std"], optional = true }
 pest_derive = { version = "2.6", default-features = false, features = ["std"], optional = true }
+nom_locate = { version = "4.1", optional = true }
+
 
 [dev-dependencies]
 criterion = "0.4.0"
