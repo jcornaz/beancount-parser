@@ -4,7 +4,7 @@ set dotenv-load
 	just --choose --unsorted
 
 # Perform all verifications (compile, test, lint, etc.)
-verify: test lint doc
+verify: test lint doc check-msrv
 	cargo deny check licenses
 
 # Verify that everything is ready for realease (incl. secrets required for the release process)
