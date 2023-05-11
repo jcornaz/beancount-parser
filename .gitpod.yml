@@ -8,6 +8,8 @@ tasks:
 vscode:
   extensions:
     - rust-lang.rust-analyzer
+    - bungcip.better-toml
+    - serayuzgur.crates
 
 github:
   prebuilds:
