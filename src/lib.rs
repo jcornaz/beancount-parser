@@ -19,7 +19,7 @@
     )
 )]
 #![cfg_attr(feature = "unstable", allow(missing_docs))]
-#![cfg_attr(nightly, feature(doc_auto_cfg))]
+#![cfg_attr(has_doc_auto_cfg, feature(doc_auto_cfg))]
 
 //! A rust parsing library for [beancount](https://beancount.github.io/docs/) files
 //!
