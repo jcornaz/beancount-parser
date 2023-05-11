@@ -1,4 +1,4 @@
-#![cfg(feature = "unstable-span")]
+#![cfg(feature = "unstable")]
 #![allow(unused)]
 
 pub struct Spanned<T> {

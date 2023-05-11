@@ -23,24 +23,14 @@ Do not provide any "business" logic to analyze or manipulate the ledger. No bala
 
 ## Cargo features
 
-| Feature         | Description                                |
-|-----------------|--------------------------------------------|
-| `rust_decimal`  | Add conversion from `Value` into `Decimal` |
+| Feature        | Description                                                                          |
+|----------------|--------------------------------------------------------------------------------------|
+| `rust_decimal` | Add conversion from `Value` into `Decimal`                                           |
+| `unstable`     | New, unfinished and unstable API. <br /> **Unstable API is not considered as part of the public API. It may be broken or removed in a minor or patch release!** |
 
 > **Warning**
 > 
 > Features and optional dependencies not mentionned in the table above are not considered part of the public API and may be removed at any time.
-
-### Unstable features
-
-> **Warning**
-> 
-> Features in the table bellow are not considered part of the public API and may receive breacking changes or be removed at any time.
-
-| Unstable Feature | Description                                                                                               |
-|------------------|-----------------------------------------------------------------------------------------------------------|
-| `unstable-span`  | API for locating results in the source input (see: https://github.com/jcornaz/beancount-parser/issues/11) |
-| `unstable`       | Other new, unfinished and unstable APIs                                                                   |
 
 
 ## MSRV

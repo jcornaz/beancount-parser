@@ -11,7 +11,7 @@ and this project *loosely* follows [Semantic Versioning v2](https://semver.org/s
 ### Added
 
 * implement `Default` for `transaction::Flag` (The default value is `transaction::Flag::Cleared`)
-* `unstable-span` feature flag (**api gated behind that flag is unstable**)
+
 
 ## [1.15.0] - 2023-03-07
 
