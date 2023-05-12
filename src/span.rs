@@ -1,5 +1,4 @@
-#![cfg(feature = "unstable")]
-#![allow(unused)]
+#![cfg(all(test, feature = "unstable"))]
 
 #[derive(Debug)]
 pub struct Spanned<T> {
