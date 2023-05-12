@@ -3,20 +3,13 @@
 
 #[derive(Debug)]
 pub struct Spanned<T> {
-    span: Span,
     inner: T,
 }
 
-#[derive(Debug)]
-struct Span {
-    from: Location,
-    to: Location,
-}
-
-#[derive(Debug)]
-struct Location {
-    line: usize,
-    col: usize,
+impl<T> Spanned<T> {
+    pub(crate) fn new(inner: T) -> Self {
+        Self { inner }
+    }
 }
 
 impl<T> Spanned<T> {

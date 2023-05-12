@@ -112,9 +112,14 @@ mod tests {
 
 #[cfg(all(test, feature = "unstable"))]
 fn parse(
-    _input: &str,
+    input: &str,
 ) -> Result<Vec<crate::span::Spanned<Directive<'_>>>, crate::span::Spanned<Error>> {
-    todo!()
+    use crate::span::Spanned;
+    use nom::{multi::many0, Parser};
+    match many0(directive.map(Spanned::new))(input) {
+        Ok((_, directives)) => Ok(directives),
+        Err(_) => todo!(),
+    }
 }
 
 #[cfg(all(test, feature = "unstable"))]
@@ -145,7 +150,6 @@ mod acceptance_tests {
     }
 
     #[rstest]
-    #[ignore = "not implemented"]
     fn comments(
         #[values(
             "",
@@ -180,7 +184,6 @@ mod acceptance_tests {
         "2020-01-02 balance Assets:US:BofA:Checking        3467.65 USD",
         Date::new(2020, 1, 2)
     )]
-    #[ignore = "not implemented"]
     fn parse_date(#[case] input: &str, #[case] expected: Date) {
         let directive = parse_single_directive(input);
         assert_eq!(directive.date(), Some(expected));
@@ -193,7 +196,6 @@ mod acceptance_tests {
     #[case("2000-01-01 * \"Store\"", Some(Flag::Cleared))]
     #[case("2000-01-01 !", Some(Flag::Pending))]
     #[case("2000-01-01 ! \"Store\"", Some(Flag::Pending))]
-    #[ignore = "not implemented"]
     fn parse_transaction_flag(#[case] input: &str, #[case] expected: Option<Flag>) {
         let transaction = parse_single_directive(input).into_transaction().unwrap();
         assert_eq!(transaction.flag(), expected);
@@ -203,6 +205,7 @@ mod acceptance_tests {
     #[case("2022-02-12 txn", None, None)]
     #[case("2022-02-12  txn", None, None)]
     #[case("2022-02-12 *", None, None)]
+    #[ignore = "not implemented"]
     #[case("2022-02-12  *  ", None, None)]
     #[case("2022-02-12 txn \"Hello\"", None, Some("Hello"))]
     #[case("2022-02-12   txn  \"Hello\"", None, Some("Hello"))]
@@ -210,7 +213,6 @@ mod acceptance_tests {
     #[case("2022-02-12 txn \"Hello\" \"World\"", Some("Hello"), Some("World"))]
     #[case("2022-02-12 txn \"Hello\" \t \"World\"", Some("Hello"), Some("World"))]
     #[case("2022-02-12 ! \"Hello\" \"World\"", Some("Hello"), Some("World"))]
-    #[ignore = "not implemented"]
     fn parse_transaction_payee_and_description(
         #[case] input: &str,
         #[case] expected_payee: Option<&str>,
@@ -227,7 +229,6 @@ mod acceptance_tests {
     #[case(r#"2022-02-12 txn "Payee" "Narration" #hello"#, &["hello"])]
     #[case(r#"2022-02-12 txn "Payee" "Narration" #Hello #world"#, &["Hello", "world"])]
     #[case(r#"2020-11-24 * "Legal Seafood" "" #trip-boston-2020"#, &["trip-boston-2020"])]
-    #[ignore = "not implemented"]
     fn parse_transaction_tags(#[case] input: &str, #[case] expected: &[&str]) {
         let transaction = parse_single_directive(input).into_transaction().unwrap();
         assert_eq!(transaction.tags(), expected);
@@ -332,7 +333,6 @@ mod acceptance_tests {
         "2023-02-27 txn\n  Assets:A  10 CHF {42 PLN,2001-02-03}",
         Some(Amount::new(42, "PLN"))
     )]
-    #[ignore = "not implemented"]
     fn parse_posting_cost(#[case] input: &str, #[case] expected: Option<Amount<'_>>) {
         let transaction = parse_single_directive(input).into_transaction().unwrap();
         let posting = &transaction.postings()[0];
@@ -363,7 +363,6 @@ mod acceptance_tests {
         "2023-02-27 txn\n  Assets:A  10 CHF {  40 PLN  , 2001-02-03  }",
         Some(Date::new(2001, 2, 3))
     )]
-    #[ignore = "not implemented"]
     fn parse_posting_lot_date(#[case] input: &str, #[case] expected: Option<Date>) {
         let transaction = parse_single_directive(input).into_transaction().unwrap();
         let posting = &transaction.postings()[0];
@@ -372,6 +371,7 @@ mod acceptance_tests {
 
     #[rstest]
     #[case("2023-02-27 txn\n  Assets:A 10 CHF", None)]
+    #[ignore = "not implemented"]
     #[case(
         "2023-02-27 txn\n  Assets:A 10 CHF@19 EUR",
         Some((PriceType::Unit, Amount::new(19, "EUR")))
@@ -384,7 +384,6 @@ mod acceptance_tests {
         "2023-02-27 txn\n  Assets:A 10 CHF  @@  20 EUR",
         Some((PriceType::Total, Amount::new(20, "EUR")))
     )]
-    #[ignore = "not implemented"]
     fn parse_posting_price(#[case] input: &str, #[case] expected: Option<(PriceType, Amount<'_>)>) {
         let transaction = parse_single_directive(input).into_transaction().unwrap();
         let posting = &transaction.postings()[0];
@@ -479,7 +478,6 @@ mod acceptance_tests {
             Expression::value(-71),
         )
     )]
-    #[ignore = "not implemented"]
     fn parse_expression(#[case] input: &str, #[case] expected: Expression) {
         let input = format!("2022-02-20 txn\n  Assets:A  {input} CHF");
         let transaction = parse_single_directive(&input).into_transaction().unwrap();
@@ -502,7 +500,6 @@ mod acceptance_tests {
     #[case("2016-11-28 close Equity:Hello;", account::Type::Equity)]
     #[case("2016-11-28  close  Equity:Hello;", account::Type::Equity)]
     #[case("2016-11-28\tclose\tEquity:Hello;", account::Type::Equity)]
-    #[ignore = "not implemented"]
     fn parse_close_directive_account_type(
         #[case] input: &str,
         #[case] expected_account_type: account::Type,
@@ -516,7 +513,6 @@ mod acceptance_tests {
     #[case("2016-11-28 open Assets:Hello", account::Type::Assets)]
     #[case("2016-11-28  open  Assets:Hello", account::Type::Assets)]
     #[case("2016-11-28 open Liabilities:Hello", account::Type::Liabilities)]
-    #[ignore = "not implemented"]
     fn parse_open_directive_account_type(
         #[case] input: &str,
         #[case] expected_account_type: account::Type,
@@ -529,10 +525,10 @@ mod acceptance_tests {
     #[rstest]
     #[case("2016-11-28 close Liabilities:CreditCard:CapitalOne", &["CreditCard", "CapitalOne"])]
     #[case("2016-11-28 close Assets:Hello", &["Hello"])]
+    #[ignore = "not implemented"]
     #[case("2016-11-28 close Assets", &[])]
     #[case("2016-11-28 close Assets:Hello-World:123", &["Hello-World", "123"])]
     #[case("2016-11-28  close\tLiabilities:CreditCard:CapitalOne", &["CreditCard", "CapitalOne"])]
-    #[ignore = "not implemented"]
     fn parse_close_directive_account_components(
         #[case] input: &str,
         #[case] expected_account_components: &[&str],
@@ -545,10 +541,10 @@ mod acceptance_tests {
     #[rstest]
     #[case("2016-11-28 open Liabilities:CreditCard:CapitalOne", &["CreditCard", "CapitalOne"])]
     #[case("2016-11-28 open Assets:Hello", &["Hello"])]
+    #[ignore = "not implemented"]
     #[case("2016-11-28 open Assets", &[])]
     #[case("2016-11-28 open Assets:Hello-World:123", &["Hello-World", "123"])]
     #[case("2016-11-28  open\t\tLiabilities:CreditCard:CapitalOne", &["CreditCard", "CapitalOne"])]
-    #[ignore = "not implemented"]
     fn parse_open_directive_account_components(
         #[case] input: &str,
         #[case] expected_account_components: &[&str],
@@ -589,7 +585,6 @@ mod acceptance_tests {
     }
 
     #[rstest]
-    #[ignore = "not implemented"]
     fn parse_price(
         #[values(
             "2020-01-03 price VBMPX 186 USD",
@@ -606,7 +601,6 @@ mod acceptance_tests {
     }
 
     #[rstest]
-    #[ignore = "not implemented"]
     fn parse_balance_assertion(
         #[values(
             "2020-01-02 balance Assets:US:BofA:Checking 1.2 USD",
