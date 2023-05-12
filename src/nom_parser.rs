@@ -59,7 +59,7 @@ impl<'a> Iterator for Parser<'a> {
                 }
             } else {
                 self.rest = "";
-                return Some(Err(Error::from_parsing(self.line)));
+                return Some(Err(Error::from_parsing()));
             }
         }
         None
@@ -118,7 +118,7 @@ fn parse(
     use nom::{multi::many0, Parser};
     match many0(directive.map(Spanned::new))(input) {
         Ok((_, directives)) => Ok(directives),
-        Err(_) => todo!(),
+        Err(_) => Err(Spanned::new(Error::from_parsing())),
     }
 }
 

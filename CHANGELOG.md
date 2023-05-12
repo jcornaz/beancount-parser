@@ -8,6 +8,14 @@ and this project *loosely* follows [Semantic Versioning v2](https://semver.org/s
 
 ## [Unreleased]
 
+### Breaking changes *(in unstable API)*
+
+* remove `Error::line_number`
+
+  (I am working a wrapper struct containing source file location instead, so that
+  that one could locate both errors, but also valid directives)
+
+
 ### Added
 
 * implement `Default` for `transaction::Flag` (The default value is `transaction::Flag::Cleared`)
