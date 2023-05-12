@@ -4,6 +4,7 @@ use std::fmt::Display;
 
 #[cfg(feature = "unstable")]
 use crate::pest_parser::Pair;
+use crate::IResult;
 use nom::{
     branch::alt,
     bytes::complete::{tag, take_while1},
@@ -11,7 +12,6 @@ use nom::{
     combinator::map,
     multi::separated_list1,
     sequence::separated_pair,
-    IResult,
 };
 
 /// Account
@@ -96,7 +96,7 @@ impl<'a> Account<'a> {
     }
 }
 
-pub(crate) fn account(input: &str) -> IResult<&str, Account<'_>> {
+pub(crate) fn account(input: &str) -> IResult<'_, Account<'_>> {
     map(
         separated_pair(
             type_,
@@ -110,7 +110,7 @@ pub(crate) fn account(input: &str) -> IResult<&str, Account<'_>> {
     )(input)
 }
 
-fn type_(input: &str) -> IResult<&str, Type> {
+fn type_(input: &str) -> IResult<'_, Type> {
     alt((
         map(tag("Assets"), |_| Type::Assets),
         map(tag("Liabilities"), |_| Type::Liabilities),

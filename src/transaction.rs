@@ -11,7 +11,6 @@ use nom::{
     combinator::{cut, eof, map, opt},
     multi::many0,
     sequence::{preceded, separated_pair, terminated, tuple},
-    IResult,
 };
 
 use posting::posting;
@@ -19,6 +18,7 @@ pub use posting::{Posting, PriceType};
 
 #[cfg(feature = "unstable")]
 use crate::metadata::Metadata;
+use crate::IResult;
 use crate::{
     date::date,
     string::{comment, string},
@@ -186,7 +186,7 @@ impl<'a> Transaction<'a> {
     }
 }
 
-pub(crate) fn transaction(input: &str) -> IResult<&str, Transaction<'_>> {
+pub(crate) fn transaction(input: &str) -> IResult<'_, Transaction<'_>> {
     let payee_and_narration = alt((
         separated_pair(map(string, Some), space1, string),
         map(string, |n| (None, n)),
@@ -225,14 +225,14 @@ pub(crate) fn transaction(input: &str) -> IResult<&str, Transaction<'_>> {
     )(input)
 }
 
-pub(crate) fn tag(input: &str) -> IResult<&str, &str> {
+pub(crate) fn tag(input: &str) -> IResult<'_, &str> {
     preceded(
         char('#'),
         take_till(|c: char| c.is_whitespace() || c == '#'),
     )(input)
 }
 
-fn flag(input: &str) -> IResult<&str, Flag> {
+fn flag(input: &str) -> IResult<'_, Flag> {
     alt((
         map(char('*'), |_| Flag::Cleared),
         map(char('!'), |_| Flag::Pending),

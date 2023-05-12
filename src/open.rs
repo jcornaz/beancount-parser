@@ -4,13 +4,12 @@ use nom::{
     combinator::map,
     multi::separated_list0,
     sequence::{preceded, separated_pair, tuple},
-    IResult,
 };
 
-use crate::amount;
 #[cfg(feature = "unstable")]
 use crate::pest_parser::Pair;
 use crate::{account, date::date, Account, Date};
+use crate::{amount, IResult};
 
 /// Open account directive
 #[derive(Debug, Clone)]
@@ -53,7 +52,7 @@ impl<'a> Open<'a> {
     }
 }
 
-pub(crate) fn open(input: &str) -> IResult<&str, Open<'_>> {
+pub(crate) fn open(input: &str) -> IResult<'_, Open<'_>> {
     map(
         separated_pair(
             date,

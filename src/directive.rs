@@ -9,9 +9,9 @@ use crate::{
     pest_parser::{Pair, Rule},
     {Commodity, Event},
 };
-use crate::{Assertion, Close, Date, Open};
+use crate::{Assertion, Close, Date, IResult, Open};
 use nom::branch::alt;
-use nom::{combinator::map, IResult};
+use nom::combinator::map;
 
 use crate::transaction::{transaction, Transaction};
 
@@ -103,7 +103,7 @@ impl<'a> Directive<'a> {
     }
 }
 
-pub(crate) fn directive(input: &str) -> IResult<&str, Directive<'_>> {
+pub(crate) fn directive(input: &str) -> IResult<'_, Directive<'_>> {
     alt((
         map(transaction, Directive::Transaction),
         map(price, Directive::Price),

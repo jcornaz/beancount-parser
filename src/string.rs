@@ -4,11 +4,11 @@ use nom::{
     character::complete::{char, not_line_ending},
     combinator::{map, value},
     sequence::{delimited, preceded},
-    IResult,
 };
 
 #[cfg(feature = "unstable")]
 use crate::pest_parser::Pair;
+use crate::IResult;
 
 #[cfg(feature = "unstable")]
 pub(crate) fn from_pair(pair: Pair<'_>) -> &str {
@@ -18,7 +18,7 @@ pub(crate) fn from_pair(pair: Pair<'_>) -> &str {
         .as_str()
 }
 
-pub(crate) fn string(input: &str) -> IResult<&str, String> {
+pub(crate) fn string(input: &str) -> IResult<'_, String> {
     delimited(
         char('"'),
         alt((
@@ -38,7 +38,7 @@ pub(crate) fn string(input: &str) -> IResult<&str, String> {
     )(input)
 }
 
-pub(crate) fn comment(input: &str) -> IResult<&str, &str> {
+pub(crate) fn comment(input: &str) -> IResult<'_, &str> {
     preceded(take_while1(|c| c == ';'), map(not_line_ending, str::trim))(input)
 }
 

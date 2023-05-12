@@ -5,10 +5,9 @@ use nom::{
     character::complete::space1,
     combinator::map,
     sequence::{preceded, tuple},
-    IResult,
 };
 
-use crate::string::string;
+use crate::{string::string, IResult};
 
 /// Include directive
 #[derive(Clone, Debug)]
@@ -24,7 +23,7 @@ impl Include {
     }
 }
 
-pub(crate) fn include(input: &str) -> IResult<&str, Include> {
+pub(crate) fn include(input: &str) -> IResult<'_, Include> {
     map(preceded(tuple((tag("include"), space1)), string), |path| {
         Include { path: path.into() }
     })(input)

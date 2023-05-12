@@ -1,4 +1,4 @@
-use crate::{transaction, Directive, Error};
+use crate::{transaction, Directive, Error, IResult};
 use nom::{
     branch::alt,
     bytes::complete::tag,
@@ -8,7 +8,6 @@ use nom::{
     },
     combinator::{map, opt, value},
     sequence::{preceded, tuple},
-    IResult,
 };
 
 use crate::directive::directive;
@@ -66,7 +65,7 @@ impl<'a> Iterator for Parser<'a> {
     }
 }
 
-fn chunk(input: &str) -> IResult<&str, Chunk<'_>> {
+fn chunk(input: &str) -> IResult<'_, Chunk<'_>> {
     alt((
         map(directive, Chunk::Directive),
         map(pushtag, Chunk::PushTag),
@@ -75,11 +74,11 @@ fn chunk(input: &str) -> IResult<&str, Chunk<'_>> {
     ))(input)
 }
 
-fn pushtag(input: &str) -> IResult<&str, &str> {
+fn pushtag(input: &str) -> IResult<'_, &str> {
     preceded(tuple((tag("pushtag"), space1)), transaction::tag)(input)
 }
 
-fn poptag(input: &str) -> IResult<&str, &str> {
+fn poptag(input: &str) -> IResult<'_, &str> {
     preceded(tuple((tag("poptag"), space1)), transaction::tag)(input)
 }
 

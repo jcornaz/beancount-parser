@@ -3,10 +3,9 @@ use nom::{
     character::complete::space1,
     combinator::map,
     sequence::{separated_pair, tuple},
-    IResult,
 };
 
-use crate::{account::account, date::date, Account, Date};
+use crate::{account::account, date::date, Account, Date, IResult};
 
 #[cfg(feature = "unstable")]
 use crate::pest_parser::Pair;
@@ -40,7 +39,7 @@ impl<'a> Close<'a> {
     }
 }
 
-pub(crate) fn close(input: &str) -> IResult<&str, Close<'_>> {
+pub(crate) fn close(input: &str) -> IResult<'_, Close<'_>> {
     map(
         separated_pair(date, tuple((space1, tag("close"), space1)), account),
         |(date, account)| Close { date, account },

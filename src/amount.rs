@@ -6,11 +6,11 @@ use nom::{
     combinator::{map, not, opt, peek, recognize},
     multi::many_till,
     sequence::{pair, separated_pair},
-    IResult,
 };
 
 #[cfg(feature = "unstable")]
 use crate::pest_parser::Pair;
+use crate::IResult;
 
 pub use self::expression::{ConversionError, Expression, Value};
 
@@ -64,7 +64,7 @@ impl<'a> Amount<'a> {
     }
 }
 
-pub(crate) fn amount(input: &str) -> IResult<&str, Amount<'_>> {
+pub(crate) fn amount(input: &str) -> IResult<'_, Amount<'_>> {
     map(
         separated_pair(expression::parse, space1, currency),
         |(expression, currency)| Amount {
@@ -74,11 +74,11 @@ pub(crate) fn amount(input: &str) -> IResult<&str, Amount<'_>> {
     )(input)
 }
 
-fn current_first_char(input: &str) -> IResult<&str, char> {
+fn current_first_char(input: &str) -> IResult<'_, char> {
     satisfy(|c: char| c.is_ascii_uppercase() && c.is_ascii_alphabetic())(input)
 }
 
-fn current_middle_char(input: &str) -> IResult<&str, char> {
+fn current_middle_char(input: &str) -> IResult<'_, char> {
     alt((
         satisfy(|c: char| c.is_ascii_uppercase() && c.is_ascii_alphabetic()),
         satisfy(char::is_numeric),
@@ -86,14 +86,14 @@ fn current_middle_char(input: &str) -> IResult<&str, char> {
     ))(input)
 }
 
-fn current_last_char(input: &str) -> IResult<&str, char> {
+fn current_last_char(input: &str) -> IResult<'_, char> {
     alt((
         satisfy(|c: char| c.is_ascii_uppercase() && c.is_ascii_alphabetic()),
         satisfy(char::is_numeric),
     ))(input)
 }
 
-pub(crate) fn currency(input: &str) -> IResult<&str, &str> {
+pub(crate) fn currency(input: &str) -> IResult<'_, &str> {
     recognize(pair(
         current_first_char,
         opt(pair(

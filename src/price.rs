@@ -3,14 +3,13 @@ use nom::character::complete::space0;
 use nom::character::streaming::space1;
 use nom::combinator::{map, opt};
 use nom::sequence::{preceded, terminated, tuple};
-use nom::IResult;
 
 use crate::amount::{amount, currency};
 use crate::date::date;
 #[cfg(feature = "unstable")]
 use crate::pest_parser::Pair;
 use crate::string::comment;
-use crate::{Amount, Date};
+use crate::{Amount, Date, IResult};
 
 /// A price directive
 ///
@@ -69,7 +68,7 @@ impl<'a> Price<'a> {
     }
 }
 
-pub(crate) fn price(input: &str) -> IResult<&str, Price<'_>> {
+pub(crate) fn price(input: &str) -> IResult<'_, Price<'_>> {
     map(
         tuple((
             terminated(date, tuple((space1, tag("price"), space1))),

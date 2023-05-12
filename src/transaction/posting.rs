@@ -5,7 +5,6 @@ use nom::{
     combinator::{map, opt},
     multi::separated_list0,
     sequence::{delimited, preceded, separated_pair, terminated, tuple},
-    IResult,
 };
 
 #[cfg(feature = "unstable")]
@@ -14,6 +13,7 @@ use crate::{
     account::{account, Account},
     amount::{amount, Amount},
     string::{comment, string},
+    IResult,
 };
 
 use super::{date, flag, Date, Flag};
@@ -179,7 +179,7 @@ impl<'a> LotAttributes<'a> {
     }
 }
 
-fn lot_attributes(input: &str) -> IResult<&str, LotAttributes<'_>> {
+fn lot_attributes(input: &str) -> IResult<'_, LotAttributes<'_>> {
     let (input, attrs) = separated_list0(
         tuple((space0, char(','), space0)),
         alt((
@@ -215,7 +215,7 @@ fn lot_attributes(input: &str) -> IResult<&str, LotAttributes<'_>> {
     ))
 }
 
-pub fn posting(input: &str) -> IResult<&str, Posting<'_>> {
+pub fn posting(input: &str) -> IResult<'_, Posting<'_>> {
     map(
         tuple((
             opt(terminated(flag, space1)),
@@ -243,7 +243,7 @@ pub fn posting(input: &str) -> IResult<&str, Posting<'_>> {
     )(input)
 }
 
-fn price(input: &str) -> IResult<&str, (PriceType, Amount<'_>)> {
+fn price(input: &str) -> IResult<'_, (PriceType, Amount<'_>)> {
     separated_pair(
         alt((
             map(tag("@@"), |_| PriceType::Total),

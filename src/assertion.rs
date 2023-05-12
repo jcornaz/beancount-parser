@@ -3,14 +3,16 @@ use nom::{
     character::streaming::space1,
     combinator::map,
     sequence::{terminated, tuple},
-    IResult,
 };
 
-use crate::account::{account, Account};
 use crate::date::date;
 #[cfg(feature = "unstable")]
 use crate::pest_parser::Pair;
 use crate::Date;
+use crate::{
+    account::{account, Account},
+    IResult,
+};
 use crate::{amount::amount, Amount};
 
 /// Account balance assertion directive
@@ -54,7 +56,7 @@ impl<'a> Assertion<'a> {
     }
 }
 
-pub(crate) fn assertion(input: &str) -> IResult<&str, Assertion<'_>> {
+pub(crate) fn assertion(input: &str) -> IResult<'_, Assertion<'_>> {
     map(
         tuple((
             terminated(date, tuple((space1, tag("balance"), space1))),

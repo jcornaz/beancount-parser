@@ -3,10 +3,9 @@ use nom::{
     character::complete::space1,
     combinator::{cut, map},
     sequence::{preceded, terminated, tuple},
-    IResult,
 };
 
-use crate::{account::account, date::date, Account, Date};
+use crate::{account::account, date::date, Account, Date, IResult};
 
 /// Padding directive
 ///
@@ -47,7 +46,7 @@ impl<'a> Pad<'a> {
     }
 }
 
-pub(crate) fn pad(input: &str) -> IResult<&str, Pad<'_>> {
+pub(crate) fn pad(input: &str) -> IResult<'_, Pad<'_>> {
     map(
         tuple((
             terminated(date, tuple((space1, tag("pad")))),
