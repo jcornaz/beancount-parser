@@ -23,7 +23,7 @@ rust_decimal = { version = "1.29", default-features = false }
 thiserror = { version = "1.0", default-features = false }
 pest = { version = "2.6", default-features = false, features = ["std"], optional = true }
 pest_derive = { version = "2.6", default-features = false, features = ["std"], optional = true }
-nom_locate = { version = "4.1", optional = true }
+nom_locate = { version = "4.1", default-features = false, optional = true }
 
 
 [dev-dependencies]
