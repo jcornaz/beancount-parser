@@ -56,7 +56,7 @@ impl<'a> Assertion<'a> {
     }
 }
 
-pub(crate) fn assertion(input: crate::Input<'_>) -> IResult<'_, Assertion<'_>> {
+pub(crate) fn assertion(input: &str) -> IResult<'_, Assertion<'_>> {
     map(
         tuple((
             terminated(date, tuple((space1, tag("balance"), space1))),

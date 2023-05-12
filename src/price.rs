@@ -68,7 +68,7 @@ impl<'a> Price<'a> {
     }
 }
 
-pub(crate) fn price(input: crate::Input<'_>) -> IResult<'_, Price<'_>> {
+pub(crate) fn price(input: &str) -> IResult<'_, Price<'_>> {
     map(
         tuple((
             terminated(date, tuple((space1, tag("price"), space1))),

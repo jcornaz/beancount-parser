@@ -247,11 +247,11 @@ impl From<ConversionError> for crate::Error {
     }
 }
 
-pub(super) fn parse(input: crate::Input<'_>) -> IResult<'_, Expression> {
+pub(super) fn parse(input: &str) -> IResult<'_, Expression> {
     exp_p2(input)
 }
 
-fn exp_p0(input: crate::Input<'_>) -> IResult<'_, Expression> {
+fn exp_p0(input: &str) -> IResult<'_, Expression> {
     alt((
         delimited(
             tuple((char('('), space0)),
@@ -262,7 +262,7 @@ fn exp_p0(input: crate::Input<'_>) -> IResult<'_, Expression> {
     ))(input)
 }
 
-fn exp_p1(input: crate::Input<'_>) -> IResult<'_, Expression> {
+fn exp_p1(input: &str) -> IResult<'_, Expression> {
     let operator = alt((
         map(char('*'), |_| Operator::Multiply),
         map(char('/'), |_| Operator::Divide),
@@ -276,7 +276,7 @@ fn exp_p1(input: crate::Input<'_>) -> IResult<'_, Expression> {
     )(input)
 }
 
-fn exp_p2(input: crate::Input<'_>) -> IResult<'_, Expression> {
+fn exp_p2(input: &str) -> IResult<'_, Expression> {
     let operator = alt((
         map(char('+'), |_| Operator::Add),
         map(char('-'), |_| Operator::Subtract),
@@ -290,7 +290,7 @@ fn exp_p2(input: crate::Input<'_>) -> IResult<'_, Expression> {
     )(input)
 }
 
-fn value(input: crate::Input<'_>) -> IResult<'_, Value> {
+fn value(input: &str) -> IResult<'_, Value> {
     let value_string = recognize(tuple((opt(char('-')), digit0, opt(char('.')), opt(digit1))));
     map(map_res(value_string, str::parse), Value)(input)
 }

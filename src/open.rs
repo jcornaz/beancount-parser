@@ -52,7 +52,7 @@ impl<'a> Open<'a> {
     }
 }
 
-pub(crate) fn open(input: crate::Input<'_>) -> IResult<'_, Open<'_>> {
+pub(crate) fn open(input: &str) -> IResult<'_, Open<'_>> {
     map(
         separated_pair(
             date,

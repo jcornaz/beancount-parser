@@ -96,7 +96,7 @@ impl<'a> Account<'a> {
     }
 }
 
-pub(crate) fn account(input: crate::Input<'_>) -> IResult<'_, Account<'_>> {
+pub(crate) fn account(input: &str) -> IResult<'_, Account<'_>> {
     map(
         separated_pair(
             type_,
@@ -110,7 +110,7 @@ pub(crate) fn account(input: crate::Input<'_>) -> IResult<'_, Account<'_>> {
     )(input)
 }
 
-fn type_(input: crate::Input<'_>) -> IResult<'_, Type> {
+fn type_(input: &str) -> IResult<'_, Type> {
     alt((
         map(tag("Assets"), |_| Type::Assets),
         map(tag("Liabilities"), |_| Type::Liabilities),

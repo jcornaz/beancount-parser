@@ -88,7 +88,7 @@ impl Ord for Date {
     }
 }
 
-pub(super) fn date(input: crate::Input<'_>) -> IResult<'_, Date> {
+pub(super) fn date(input: &str) -> IResult<'_, Date> {
     let (input, year) = year(input)?;
     let (input, month_of_year) = preceded(char('-'), month)(input)?;
     let (input, day_of_month) = preceded(char('-'), day)(input)?;
@@ -102,15 +102,15 @@ pub(super) fn date(input: crate::Input<'_>) -> IResult<'_, Date> {
     ))
 }
 
-fn year(input: crate::Input<'_>) -> IResult<'_, u16> {
+fn year(input: &str) -> IResult<'_, u16> {
     verify(map_res(digit1, str::parse), |y| *y > 0)(input)
 }
 
-fn month(input: crate::Input<'_>) -> IResult<'_, u8> {
+fn month(input: &str) -> IResult<'_, u8> {
     verify(map_res(digit1, str::parse), |m| *m > 0 && *m <= 12)(input)
 }
 
-fn day(input: crate::Input<'_>) -> IResult<'_, u8> {
+fn day(input: &str) -> IResult<'_, u8> {
     verify(map_res(digit1, str::parse), |d| *d > 0 && *d <= 31)(input)
 }
 
