@@ -49,7 +49,7 @@ pub(crate) enum Value<'a> {
     String(String),
 }
 
-fn metadata_key(input: &str) -> IResult<'_, &str> {
+fn metadata_key(input: crate::Input<'_>) -> IResult<'_, &str> {
     recognize(pair(
         satisfy(|c: char| c.is_ascii_lowercase() && c.is_ascii_alphabetic()),
         many0(alt((
@@ -60,7 +60,7 @@ fn metadata_key(input: &str) -> IResult<'_, &str> {
     ))(input)
 }
 
-fn metadata_value(input: &str) -> IResult<'_, Value<'_>> {
+fn metadata_value(input: crate::Input<'_>) -> IResult<'_, Value<'_>> {
     alt((
         map(account, Value::Account),
         map(amount, Value::Amount),
@@ -70,7 +70,7 @@ fn metadata_value(input: &str) -> IResult<'_, Value<'_>> {
     ))(input)
 }
 
-fn metadata_line(input: &str) -> IResult<'_, (&str, Value<'_>)> {
+fn metadata_line(input: crate::Input<'_>) -> IResult<'_, (&str, Value<'_>)> {
     separated_pair(
         metadata_key,
         tuple((space0, tag(":"), space0)),
@@ -78,7 +78,7 @@ fn metadata_line(input: &str) -> IResult<'_, (&str, Value<'_>)> {
     )(input)
 }
 
-pub(crate) fn metadata(input: &str) -> IResult<'_, Metadata<'_>> {
+pub(crate) fn metadata(input: crate::Input<'_>) -> IResult<'_, Metadata<'_>> {
     fold_many0(
         preceded(tuple((space0, line_ending, space1)), metadata_line),
         HashMap::new,

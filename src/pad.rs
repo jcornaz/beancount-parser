@@ -46,7 +46,7 @@ impl<'a> Pad<'a> {
     }
 }
 
-pub(crate) fn pad(input: &str) -> IResult<'_, Pad<'_>> {
+pub(crate) fn pad(input: crate::Input<'_>) -> IResult<'_, Pad<'_>> {
     map(
         tuple((
             terminated(date, tuple((space1, tag("pad")))),

@@ -65,7 +65,7 @@ impl<'a> Iterator for Parser<'a> {
     }
 }
 
-fn chunk(input: &str) -> IResult<'_, Chunk<'_>> {
+fn chunk(input: crate::Input<'_>) -> IResult<'_, Chunk<'_>> {
     alt((
         map(directive, Chunk::Directive),
         map(pushtag, Chunk::PushTag),
@@ -74,11 +74,11 @@ fn chunk(input: &str) -> IResult<'_, Chunk<'_>> {
     ))(input)
 }
 
-fn pushtag(input: &str) -> IResult<'_, &str> {
+fn pushtag(input: crate::Input<'_>) -> IResult<'_, &str> {
     preceded(tuple((tag("pushtag"), space1)), transaction::tag)(input)
 }
 
-fn poptag(input: &str) -> IResult<'_, &str> {
+fn poptag(input: crate::Input<'_>) -> IResult<'_, &str> {
     preceded(tuple((tag("poptag"), space1)), transaction::tag)(input)
 }
 

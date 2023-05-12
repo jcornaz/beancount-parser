@@ -64,7 +64,7 @@ impl<'a> Amount<'a> {
     }
 }
 
-pub(crate) fn amount(input: &str) -> IResult<'_, Amount<'_>> {
+pub(crate) fn amount(input: crate::Input<'_>) -> IResult<'_, Amount<'_>> {
     map(
         separated_pair(expression::parse, space1, currency),
         |(expression, currency)| Amount {
@@ -74,11 +74,11 @@ pub(crate) fn amount(input: &str) -> IResult<'_, Amount<'_>> {
     )(input)
 }
 
-fn current_first_char(input: &str) -> IResult<'_, char> {
+fn current_first_char(input: crate::Input<'_>) -> IResult<'_, char> {
     satisfy(|c: char| c.is_ascii_uppercase() && c.is_ascii_alphabetic())(input)
 }
 
-fn current_middle_char(input: &str) -> IResult<'_, char> {
+fn current_middle_char(input: crate::Input<'_>) -> IResult<'_, char> {
     alt((
         satisfy(|c: char| c.is_ascii_uppercase() && c.is_ascii_alphabetic()),
         satisfy(char::is_numeric),
@@ -86,14 +86,14 @@ fn current_middle_char(input: &str) -> IResult<'_, char> {
     ))(input)
 }
 
-fn current_last_char(input: &str) -> IResult<'_, char> {
+fn current_last_char(input: crate::Input<'_>) -> IResult<'_, char> {
     alt((
         satisfy(|c: char| c.is_ascii_uppercase() && c.is_ascii_alphabetic()),
         satisfy(char::is_numeric),
     ))(input)
 }
 
-pub(crate) fn currency(input: &str) -> IResult<'_, &str> {
+pub(crate) fn currency(input: crate::Input<'_>) -> IResult<'_, &str> {
     recognize(pair(
         current_first_char,
         opt(pair(

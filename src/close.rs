@@ -39,7 +39,7 @@ impl<'a> Close<'a> {
     }
 }
 
-pub(crate) fn close(input: &str) -> IResult<'_, Close<'_>> {
+pub(crate) fn close(input: crate::Input<'_>) -> IResult<'_, Close<'_>> {
     map(
         separated_pair(date, tuple((space1, tag("close"), space1)), account),
         |(date, account)| Close { date, account },

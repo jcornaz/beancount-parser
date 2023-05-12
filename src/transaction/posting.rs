@@ -179,7 +179,7 @@ impl<'a> LotAttributes<'a> {
     }
 }
 
-fn lot_attributes(input: &str) -> IResult<'_, LotAttributes<'_>> {
+fn lot_attributes(input: crate::Input<'_>) -> IResult<'_, LotAttributes<'_>> {
     let (input, attrs) = separated_list0(
         tuple((space0, char(','), space0)),
         alt((
@@ -215,7 +215,7 @@ fn lot_attributes(input: &str) -> IResult<'_, LotAttributes<'_>> {
     ))
 }
 
-pub fn posting(input: &str) -> IResult<'_, Posting<'_>> {
+pub(crate) fn posting(input: crate::Input<'_>) -> IResult<'_, Posting<'_>> {
     map(
         tuple((
             opt(terminated(flag, space1)),
@@ -243,7 +243,7 @@ pub fn posting(input: &str) -> IResult<'_, Posting<'_>> {
     )(input)
 }
 
-fn price(input: &str) -> IResult<'_, (PriceType, Amount<'_>)> {
+fn price(input: crate::Input<'_>) -> IResult<'_, (PriceType, Amount<'_>)> {
     separated_pair(
         alt((
             map(tag("@@"), |_| PriceType::Total),

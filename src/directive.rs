@@ -103,7 +103,7 @@ impl<'a> Directive<'a> {
     }
 }
 
-pub(crate) fn directive(input: &str) -> IResult<'_, Directive<'_>> {
+pub(crate) fn directive(input: crate::Input<'_>) -> IResult<'_, Directive<'_>> {
     alt((
         map(transaction, Directive::Transaction),
         map(price, Directive::Price),

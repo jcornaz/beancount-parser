@@ -23,7 +23,7 @@ impl Include {
     }
 }
 
-pub(crate) fn include(input: &str) -> IResult<'_, Include> {
+pub(crate) fn include(input: crate::Input<'_>) -> IResult<'_, Include> {
     map(preceded(tuple((tag("include"), space1)), string), |path| {
         Include { path: path.into() }
     })(input)

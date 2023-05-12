@@ -18,7 +18,7 @@ pub(crate) fn from_pair(pair: Pair<'_>) -> &str {
         .as_str()
 }
 
-pub(crate) fn string(input: &str) -> IResult<'_, String> {
+pub(crate) fn string(input: crate::Input<'_>) -> IResult<'_, String> {
     delimited(
         char('"'),
         alt((
@@ -38,7 +38,7 @@ pub(crate) fn string(input: &str) -> IResult<'_, String> {
     )(input)
 }
 
-pub(crate) fn comment(input: &str) -> IResult<'_, &str> {
+pub(crate) fn comment(input: crate::Input<'_>) -> IResult<'_, &str> {
     preceded(take_while1(|c| c == ';'), map(not_line_ending, str::trim))(input)
 }
 
