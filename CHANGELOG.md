@@ -26,6 +26,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 * Ignore spaces after transaction/posting declarations
 * Accept unindented postings
 * Accept amount values with the unary operator `+` (e.g. `+42`)
+* Make the space between amount and price optional in postings
 
 
 ## [1.15.0] - 2023-03-07
