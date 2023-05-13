@@ -11,8 +11,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 * remove `Error::line_number`
 
-  (I am working a wrapper struct containing source file location instead, so that
-  that one could locate both errors, but also valid directives)
+  (Instead, I am working on a wrapper type which would work for locating both errors and successfuly parsed directives)
 
 
 ### Added
