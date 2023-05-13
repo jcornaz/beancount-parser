@@ -1,7 +1,11 @@
 #![cfg(feature = "unstable")]
 
 use crate::pest_parser::Pair;
-use crate::string;
+use crate::{string, IResult, Span};
+use nom::bytes::streaming::take_till;
+use nom::character::complete::space0;
+use nom::sequence::delimited;
+use nom::{bytes::complete::tag, character::complete::char, sequence::terminated};
 
 /// beancount option
 ///
@@ -29,4 +33,18 @@ impl<'a> Option<'a> {
         let value = string::from_pair(inner.next().expect("no name in option"));
         Self { name, value }
     }
+}
+
+pub(crate) fn option(input: Span<'_>) -> IResult<'_, Option<'_>> {
+    let (input, _) = terminated(tag("option"), space0)(input)?;
+    let (input, name) = delimited(char('"'), take_till(|c| c == '"'), char('"'))(input)?;
+    let (input, _) = space0(input)?;
+    let (input, value) = delimited(char('"'), take_till(|c| c == '"'), char('"'))(input)?;
+    Ok((
+        input,
+        Option {
+            name: name.fragment(),
+            value: value.fragment(),
+        },
+    ))
 }

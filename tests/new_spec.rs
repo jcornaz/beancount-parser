@@ -236,6 +236,38 @@ fn parse_open_directive_currencies(#[case] input: &str, #[case] expected: &[&str
 }
 
 #[rstest]
+#[case(r#"option "operating_currency" "USD""#, "operating_currency", "USD")]
+#[case(r#"option "operating_currency" "USD""#, "operating_currency", "USD")]
+#[case(r#"option"operating_currency" "USD""#, "operating_currency", "USD")]
+#[case(r#"option "operating_currency""USD""#, "operating_currency", "USD")]
+#[case(r#"option  "operating_currency"  "USD""#, "operating_currency", "USD")]
+#[case("option\t\"operating_currency\"\t\"USD\"", "operating_currency", "USD")]
+#[case(
+    r#"option "Can you say hello?" "Hello world!""#,
+    "Can you say hello?",
+    "Hello world!"
+)]
+#[cfg(feature = "unstable")]
+fn parse_option(#[case] input: &str, #[case] expected_name: &str, #[case] expected_value: &str) {
+    let directive = parse_single_directive(input);
+    let Directive::Option(option) = directive else { panic!("expected option but was {directive:?}") };
+    assert_eq!(option.name(), expected_name);
+    assert_eq!(option.value(), expected_value);
+}
+
+#[test]
+#[ignore = "not implemented"]
+#[cfg(feature = "unstable")]
+fn parse_event() {
+    let input = r#"2020-11-23  event  "location"  "Boston""#;
+    let directive = parse_single_directive(input);
+    let Directive::Event(event) = directive else { panic!("expected event but was {directive:?}") };
+    assert_eq!(event.date(), Date::new(2020, 11, 23));
+    assert_eq!(event.name(), "location");
+    assert_eq!(event.value(), "Boston");
+}
+
+#[rstest]
 #[ignore = "not implemented"]
 fn error_case(
     #[values(

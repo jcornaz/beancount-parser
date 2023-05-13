@@ -103,6 +103,7 @@ impl<'a> Directive<'a> {
     }
 }
 
+#[cfg(not(feature = "unstable"))]
 pub(crate) fn directive(input: Span<'_>) -> IResult<'_, Directive<'_>> {
     alt((
         map(transaction, Directive::Transaction),
@@ -112,6 +113,20 @@ pub(crate) fn directive(input: Span<'_>) -> IResult<'_, Directive<'_>> {
         map(assertion, Directive::Assertion),
         map(pad, Directive::Pad),
         map(include, Directive::Include),
+    ))(input)
+}
+
+#[cfg(feature = "unstable")]
+pub(crate) fn directive(input: Span<'_>) -> IResult<'_, Directive<'_>> {
+    alt((
+        map(transaction, Directive::Transaction),
+        map(price, Directive::Price),
+        map(open, Directive::Open),
+        map(close, Directive::Close),
+        map(assertion, Directive::Assertion),
+        map(pad, Directive::Pad),
+        map(include, Directive::Include),
+        map(crate::option::option, Directive::Option),
     ))(input)
 }
 

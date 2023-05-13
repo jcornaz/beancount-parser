@@ -20,6 +20,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 * implement `Default` for `transaction::Flag` (The default value is `transaction::Flag::Cleared`)
 
 
+
 ### Changed
 
 * Accept account types without more components. (e.g. `2023-05-13 open Assets` is now valid)
@@ -28,6 +29,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 * Accept amount values with the unary operator `+` (e.g. `+42`)
 * Make the space between amount and price optional in postings
 * Accept spaces before comma in currency list of open directive
+
+### Unstable API added
+
+> **Warning**
+>
+> The unstable API require the `unstable` feature flag. It is not considered part of the public API
+> and is subject to breaking changes.
+
+* Parse `option` directive
 
 
 ## [1.15.0] - 2023-03-07

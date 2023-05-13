@@ -384,33 +384,6 @@ mod acceptance_tests {
         assert_eq!(assertion.amount(), &Amount::new(Decimal::new(12, 1), "USD"));
     }
 
-    #[rstest]
-    #[ignore = "not implemented"]
-    fn parse_option(
-        #[values(
-            r#"option "operating_currency" "USD""#,
-            r#"option  "operating_currency"  "USD""#,
-            "option\t\"operating_currency\"\t\"USD\""
-        )]
-        input: &str,
-    ) {
-        let directive = parse_single_directive(input);
-        let Directive::Option(option) = directive else { panic!("expected option but was {directive:?}") };
-        assert_eq!(option.name(), "operating_currency");
-        assert_eq!(option.value(), "USD");
-    }
-
-    #[test]
-    #[ignore = "not implemented"]
-    fn parse_event() {
-        let input = r#"2020-11-23  event  "location"  "Boston""#;
-        let directive = parse_single_directive(input);
-        let Directive::Event(event) = directive else { panic!("expected event but was {directive:?}") };
-        assert_eq!(event.date(), Date::new(2020, 11, 23));
-        assert_eq!(event.name(), "location");
-        assert_eq!(event.value(), "Boston");
-    }
-
     fn parse_single_directive(input: &str) -> Directive<'_> {
         let directives = parse(input).expect("failed to parse input");
         assert_eq!(directives.len(), 1, "unexpected number of directives");
