@@ -5,6 +5,8 @@ use std::collections::HashMap;
 use std::str;
 
 use nom::bytes::complete::{self, take_till};
+
+use nom::Parser;
 use nom::{
     branch::alt,
     character::complete::{char, line_ending, space0, space1},
@@ -187,42 +189,40 @@ impl<'a> Transaction<'a> {
 }
 
 pub(crate) fn transaction(input: &str) -> IResult<'_, Transaction<'_>> {
-    let payee_and_narration = alt((
-        separated_pair(map(string, Some), space1, string),
-        map(string, |n| (None, n)),
-    ));
-    map(
-        terminated(
-            tuple((
-                terminated(date, space1),
-                alt((map(complete::tag("txn"), |_| None), map(flag, Some))),
-                opt(preceded(space1, payee_and_narration)),
-                many0(preceded(space0, tag)),
-                opt(preceded(space0, comment)),
-                crate::metadata::metadata,
-                many0(preceded(tuple((line_ending, space1)), posting)),
-            )),
-            cut(alt((line_ending, eof))),
-        ),
-        #[allow(unused_variables)]
-        |(date, flag, payee_and_narration, tags, comment, metadata, postings)| {
-            let (payee, narration) = match payee_and_narration {
-                Some((p, n)) => (p, Some(n)),
-                None => (None, None),
-            };
-            Transaction {
-                date,
-                flag,
-                payee,
-                narration,
-                tags,
-                comment,
-                #[cfg(feature = "unstable")]
-                metadata,
-                postings,
-            }
+    let (input, date) = terminated(date, space1)(input)?;
+    let (input, flag) = alt((map(flag, Some), map(complete::tag("txn"), |_| None)))(input)?;
+    let (input, (payee, narration)) = payee_and_narration(input)?;
+    let (input, tags) = many0(preceded(space0, tag))(input)?;
+    let (input, comment) = opt(preceded(space0, comment))(input)?;
+    #[cfg_attr(not(feature = "unstable"), allow(unused_variables))]
+    let (input, metadata) = crate::metadata::metadata(input)?;
+    let (input, postings) = many0(preceded(tuple((line_ending, space1)), posting))(input)?;
+    let (input, _) = cut(alt((line_ending, eof)))(input)?;
+    Ok((
+        input,
+        Transaction {
+            date,
+            flag,
+            payee,
+            narration,
+            tags,
+            comment,
+            #[cfg(feature = "unstable")]
+            metadata,
+            postings,
         },
-    )(input)
+    ))
+}
+
+fn payee_and_narration(input: &str) -> IResult<'_, (Option<String>, Option<String>)> {
+    let (input, opt) = opt(preceded(
+        space1,
+        alt((
+            separated_pair(string.map(Some), space1, string.map(Some)),
+            string.map(|n| (None, Some(n))),
+        )),
+    ))(input)?;
+    Ok((input, opt.unwrap_or((None, None))))
 }
 
 pub(crate) fn tag(input: &str) -> IResult<'_, &str> {
