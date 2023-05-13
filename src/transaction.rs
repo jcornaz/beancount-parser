@@ -20,7 +20,6 @@ pub use posting::{Posting, PriceType};
 
 #[cfg(feature = "unstable")]
 use crate::metadata::Metadata;
-use crate::IResult;
 use crate::{
     date::date,
     string::{comment, string},
@@ -31,6 +30,7 @@ use crate::{
     pest_parser::{Pair, Rule},
     string,
 };
+use crate::{IResult, Span};
 
 pub(crate) mod posting;
 
@@ -188,7 +188,7 @@ impl<'a> Transaction<'a> {
     }
 }
 
-pub(crate) fn transaction(input: &str) -> IResult<'_, Transaction<'_>> {
+pub(crate) fn transaction(input: Span<'_>) -> IResult<'_, Transaction<'_>> {
     let (input, date) = terminated(date, space1)(input)?;
     let (input, flag) = alt((map(flag, Some), map(complete::tag("txn"), |_| None)))(input)?;
     let (input, (payee, narration)) = payee_and_narration(input)?;
@@ -214,7 +214,7 @@ pub(crate) fn transaction(input: &str) -> IResult<'_, Transaction<'_>> {
     ))
 }
 
-fn payee_and_narration(input: &str) -> IResult<'_, (Option<String>, Option<String>)> {
+fn payee_and_narration(input: Span<'_>) -> IResult<'_, (Option<String>, Option<String>)> {
     let (input, opt) = opt(preceded(
         space1,
         alt((
@@ -225,14 +225,14 @@ fn payee_and_narration(input: &str) -> IResult<'_, (Option<String>, Option<Strin
     Ok((input, opt.unwrap_or((None, None))))
 }
 
-pub(crate) fn tag(input: &str) -> IResult<'_, &str> {
+pub(crate) fn tag(input: Span<'_>) -> IResult<'_, &str> {
     preceded(
         char('#'),
-        take_till(|c: char| c.is_whitespace() || c == '#'),
+        take_till(|c: char| c.is_whitespace() || c == '#').map(|s: Span<'_>| *s.fragment()),
     )(input)
 }
 
-fn flag(input: &str) -> IResult<'_, Flag> {
+fn flag(input: Span<'_>) -> IResult<'_, Flag> {
     alt((
         map(char('*'), |_| Flag::Cleared),
         map(char('!'), |_| Flag::Pending),

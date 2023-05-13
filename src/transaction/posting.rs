@@ -13,7 +13,7 @@ use crate::{
     account::{account, Account},
     amount::{amount, Amount},
     string::{comment, string},
-    IResult,
+    IResult, Span,
 };
 
 use super::{date, flag, Date, Flag};
@@ -179,7 +179,7 @@ impl<'a> LotAttributes<'a> {
     }
 }
 
-fn lot_attributes(input: &str) -> IResult<'_, LotAttributes<'_>> {
+fn lot_attributes(input: Span<'_>) -> IResult<'_, LotAttributes<'_>> {
     let (input, attrs) = separated_list0(
         tuple((space0, char(','), space0)),
         alt((
@@ -215,7 +215,7 @@ fn lot_attributes(input: &str) -> IResult<'_, LotAttributes<'_>> {
     ))
 }
 
-pub fn posting(input: &str) -> IResult<'_, Posting<'_>> {
+pub fn posting(input: Span<'_>) -> IResult<'_, Posting<'_>> {
     let (input, flag) = opt(terminated(flag, space1))(input)?;
     let (input, account) = account(input)?;
     let (input, amount) = opt(preceded(space1, amount))(input)?;
@@ -242,7 +242,7 @@ pub fn posting(input: &str) -> IResult<'_, Posting<'_>> {
     ))
 }
 
-fn price(input: &str) -> IResult<'_, (PriceType, Amount<'_>)> {
+fn price(input: Span<'_>) -> IResult<'_, (PriceType, Amount<'_>)> {
     separated_pair(
         alt((
             map(tag("@@"), |_| PriceType::Total),

@@ -1,4 +1,4 @@
-use crate::{transaction, Directive, Error, IResult};
+use crate::{transaction, Directive, Error, IResult, Span};
 use nom::{
     branch::alt,
     bytes::complete::tag,
@@ -19,7 +19,7 @@ use crate::directive::directive;
 /// See the crate documentation for usage example.
 #[allow(missing_debug_implementations)]
 pub struct Parser<'a> {
-    rest: &'a str,
+    rest: Span<'a>,
     tags: Vec<&'a str>,
     line: u64,
 }
@@ -29,7 +29,7 @@ impl<'a> Parser<'a> {
     #[must_use]
     pub fn new(content: &'a str) -> Self {
         Self {
-            rest: content,
+            rest: Span::new(content),
             tags: Vec::new(),
             line: 1,
         }
@@ -57,7 +57,7 @@ impl<'a> Iterator for Parser<'a> {
                     Chunk::Comment => (),
                 }
             } else {
-                self.rest = "";
+                self.rest = Span::new("");
                 return Some(Err(Error::from_parsing()));
             }
         }
@@ -65,7 +65,7 @@ impl<'a> Iterator for Parser<'a> {
     }
 }
 
-fn chunk(input: &str) -> IResult<'_, Chunk<'_>> {
+fn chunk(input: Span<'_>) -> IResult<'_, Chunk<'_>> {
     alt((
         map(directive, Chunk::Directive),
         map(pushtag, Chunk::PushTag),
@@ -74,11 +74,11 @@ fn chunk(input: &str) -> IResult<'_, Chunk<'_>> {
     ))(input)
 }
 
-fn pushtag(input: &str) -> IResult<'_, &str> {
+fn pushtag(input: Span<'_>) -> IResult<'_, &str> {
     preceded(tuple((tag("pushtag"), space1)), transaction::tag)(input)
 }
 
-fn poptag(input: &str) -> IResult<'_, &str> {
+fn poptag(input: Span<'_>) -> IResult<'_, &str> {
     preceded(tuple((tag("poptag"), space1)), transaction::tag)(input)
 }
 
@@ -97,14 +97,14 @@ mod tests {
     #[test]
     fn pushtag() {
         let input = "pushtag #test";
-        let (_, chunk) = chunk(input).expect("should successfully parse the input");
+        let (_, chunk) = chunk(Span::new(input)).expect("should successfully parse the input");
         assert!(matches!(chunk, Chunk::PushTag("test")));
     }
 
     #[test]
     fn poptag() {
         let input = "poptag #test";
-        let (_, chunk) = chunk(input).expect("should successfully parse the input");
+        let (_, chunk) = chunk(Span::new(input)).expect("should successfully parse the input");
         assert!(matches!(chunk, Chunk::PopTag("test")));
     }
 }
@@ -115,7 +115,7 @@ fn parse(
 ) -> Result<Vec<crate::span::Spanned<Directive<'_>>>, crate::span::Spanned<Error>> {
     use crate::span::Spanned;
     use nom::{multi::many0, Parser};
-    match many0(directive.map(Spanned::new))(input) {
+    match many0(directive.map(Spanned::new))(Span::new(input)) {
         Ok((_, directives)) => Ok(directives),
         Err(_) => Err(Spanned::new(Error::from_parsing())),
     }

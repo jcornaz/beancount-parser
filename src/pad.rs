@@ -5,7 +5,7 @@ use nom::{
     sequence::{preceded, terminated, tuple},
 };
 
-use crate::{account::account, date::date, Account, Date, IResult};
+use crate::{account::account, date::date, Account, Date, IResult, Span};
 
 /// Padding directive
 ///
@@ -46,7 +46,7 @@ impl<'a> Pad<'a> {
     }
 }
 
-pub(crate) fn pad(input: &str) -> IResult<'_, Pad<'_>> {
+pub(crate) fn pad(input: Span<'_>) -> IResult<'_, Pad<'_>> {
     let (input, date) = terminated(date, tuple((space1, tag("pad"))))(input)?;
     let (input, target_account) = cut(preceded(space1, account))(input)?;
     let (input, source_account) = cut(preceded(space1, account))(input)?;
@@ -71,7 +71,7 @@ mod tests {
     #[test]
     fn valid_pad() {
         let input = "2014-06-01 pad Assets:BofA:Checking Equity:Opening-Balances";
-        let (_, pad) = all_consuming(pad)(input).unwrap();
+        let (_, pad) = all_consuming(pad)(Span::new(input)).unwrap();
         assert_eq!(pad.date(), Date::new(2014, 6, 1));
         assert_eq!(
             pad.target_account(),
@@ -93,13 +93,13 @@ mod tests {
         )]
         input: &str,
     ) {
-        let res = pad(input);
+        let res = pad(Span::new(input));
         assert!(matches!(res, Err(nom::Err::Failure(_))), "{res:?}");
     }
 
     #[rstest]
     fn not_a_pad(#[values("", "2014-06-01 txn", "hello", "; hello")] input: &str) {
-        let res = pad(input);
+        let res = pad(Span::new(input));
         assert!(matches!(res, Err(nom::Err::Error(_))), "{res:?}");
     }
 }

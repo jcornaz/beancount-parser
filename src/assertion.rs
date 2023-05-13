@@ -4,7 +4,6 @@ use nom::{
     sequence::{terminated, tuple},
 };
 
-use crate::date::date;
 #[cfg(feature = "unstable")]
 use crate::pest_parser::Pair;
 use crate::Date;
@@ -13,6 +12,7 @@ use crate::{
     IResult,
 };
 use crate::{amount::amount, Amount};
+use crate::{date::date, Span};
 
 /// Account balance assertion directive
 #[derive(Clone, Debug, PartialEq)]
@@ -55,7 +55,7 @@ impl<'a> Assertion<'a> {
     }
 }
 
-pub(crate) fn assertion(input: &str) -> IResult<'_, Assertion<'_>> {
+pub(crate) fn assertion(input: Span<'_>) -> IResult<'_, Assertion<'_>> {
     let (input, date) = terminated(date, tuple((space1, tag("balance"), space1)))(input)?;
     let (input, account) = terminated(account, space1)(input)?;
     let (input, amount) = amount(input)?;
@@ -80,24 +80,21 @@ mod tests {
     #[test]
     fn valid_assertion() {
         let input = "2014-01-01 balance Assets:Unknown 1 USD";
-        let r = all_consuming(assertion)(input);
+        let (_, r) = all_consuming(assertion)(Span::new(input)).unwrap();
         assert_eq!(
             r,
-            Ok((
-                "",
-                Assertion {
-                    date: Date::new(2014, 1, 1),
-                    account: Account::new(Type::Assets, ["Unknown"]),
-                    amount: Amount::new(1, "USD")
-                }
-            ))
+            Assertion {
+                date: Date::new(2014, 1, 1),
+                account: Account::new(Type::Assets, ["Unknown"]),
+                amount: Amount::new(1, "USD")
+            }
         );
     }
 
     #[test]
     fn invalid_assertion() {
         let input = "2014-01-01 balance";
-        let p = all_consuming(assertion)(input);
+        let p = all_consuming(assertion)(Span::new(input));
         assert!(p.is_err());
     }
 }

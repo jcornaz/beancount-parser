@@ -10,7 +10,7 @@ use thiserror::Error;
 
 #[cfg(feature = "unstable")]
 use crate::pest_parser::{Pair, Rule};
-use crate::IResult;
+use crate::{IResult, Span};
 
 /// An expression
 ///
@@ -247,11 +247,11 @@ impl From<ConversionError> for crate::Error {
     }
 }
 
-pub(super) fn parse(input: &str) -> IResult<'_, Expression> {
+pub(super) fn parse(input: Span<'_>) -> IResult<'_, Expression> {
     exp_p2(input)
 }
 
-fn exp_p0(input: &str) -> IResult<'_, Expression> {
+fn exp_p0(input: Span<'_>) -> IResult<'_, Expression> {
     alt((
         delimited(
             tuple((char('('), space0)),
@@ -262,7 +262,7 @@ fn exp_p0(input: &str) -> IResult<'_, Expression> {
     ))(input)
 }
 
-fn exp_p1(input: &str) -> IResult<'_, Expression> {
+fn exp_p1(input: Span<'_>) -> IResult<'_, Expression> {
     let operator = alt((
         map(char('*'), |_| Operator::Multiply),
         map(char('/'), |_| Operator::Divide),
@@ -276,7 +276,7 @@ fn exp_p1(input: &str) -> IResult<'_, Expression> {
     )(input)
 }
 
-fn exp_p2(input: &str) -> IResult<'_, Expression> {
+fn exp_p2(input: Span<'_>) -> IResult<'_, Expression> {
     let operator = alt((
         map(char('+'), |_| Operator::Add),
         map(char('-'), |_| Operator::Subtract),
@@ -290,9 +290,12 @@ fn exp_p2(input: &str) -> IResult<'_, Expression> {
     )(input)
 }
 
-fn value(input: &str) -> IResult<'_, Value> {
+fn value(input: Span<'_>) -> IResult<'_, Value> {
     let value_string = recognize(tuple((opt(char('-')), digit0, opt(char('.')), opt(digit1))));
-    map(map_res(value_string, str::parse), Value)(input)
+    map(
+        map_res(value_string, |s: Span<'_>| s.fragment().parse()),
+        Value,
+    )(input)
 }
 
 #[cfg(test)]
@@ -308,7 +311,8 @@ mod tests {
     #[case("-.1", -Decimal::new(1, 1))]
     #[case("-2", -Decimal::new(2, 0))]
     fn parse_value(#[case] input: &str, #[case] expected: Decimal) {
-        assert_eq!(parse(input), Ok(("", Expression::Value(Value(expected)))));
+        let (_, actual) = parse(Span::new(input)).unwrap();
+        assert_eq!(actual, Expression::Value(Value(expected)));
     }
 
     #[rstest]
@@ -379,7 +383,7 @@ mod tests {
         )
     )]
     fn parse_expression(#[case] input: &str, #[case] expected: Expression) {
-        assert_eq!(parse(input), Ok(("", expected)));
+        assert_eq!(parse(Span::new(input)).unwrap().1, expected);
     }
 
     #[rstest]

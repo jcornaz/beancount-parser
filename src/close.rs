@@ -1,6 +1,6 @@
 use nom::{bytes::complete::tag, character::complete::space1, sequence::tuple};
 
-use crate::{account::account, date::date, Account, Date, IResult};
+use crate::{account::account, date::date, Account, Date, IResult, Span};
 
 #[cfg(feature = "unstable")]
 use crate::pest_parser::Pair;
@@ -34,7 +34,7 @@ impl<'a> Close<'a> {
     }
 }
 
-pub(crate) fn close(input: &str) -> IResult<'_, Close<'_>> {
+pub(crate) fn close(input: Span<'_>) -> IResult<'_, Close<'_>> {
     let (input, date) = date(input)?;
     let (input, _) = tuple((space1, tag("close"), space1))(input)?;
     let (input, account) = account(input)?;

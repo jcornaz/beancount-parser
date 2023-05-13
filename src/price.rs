@@ -9,7 +9,7 @@ use crate::date::date;
 #[cfg(feature = "unstable")]
 use crate::pest_parser::Pair;
 use crate::string::comment;
-use crate::{Amount, Date, IResult};
+use crate::{Amount, Date, IResult, Span};
 
 /// A price directive
 ///
@@ -68,7 +68,7 @@ impl<'a> Price<'a> {
     }
 }
 
-pub(crate) fn price(input: &str) -> IResult<'_, Price<'_>> {
+pub(crate) fn price(input: Span<'_>) -> IResult<'_, Price<'_>> {
     map(
         tuple((
             terminated(date, tuple((space1, tag("price"), space1))),
@@ -92,7 +92,7 @@ mod tests {
     #[test]
     fn simple() {
         let input = "2014-07-09 price HOOL  600 USD";
-        let (_, price) = price(input).expect("should successfully parse the input");
+        let (_, price) = price(Span::new(input)).expect("should successfully parse the input");
         assert_eq!(price.date(), Date::new(2014, 7, 9));
         assert_eq!(price.commodity(), "HOOL");
         assert_eq!(price.price(), &Amount::new(600, "USD"));
@@ -102,7 +102,7 @@ mod tests {
     #[test]
     fn comment() {
         let input = "2014-07-09 price HOOL  600 USD ; with comment";
-        let (_, price) = price(input).expect("should successfully parse the input");
+        let (_, price) = price(Span::new(input)).expect("should successfully parse the input");
         assert_eq!(price.comment(), Some("with comment"));
     }
 }

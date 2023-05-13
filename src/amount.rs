@@ -10,7 +10,7 @@ use nom::{
 
 #[cfg(feature = "unstable")]
 use crate::pest_parser::Pair;
-use crate::IResult;
+use crate::{IResult, Span};
 
 pub use self::expression::{ConversionError, Expression, Value};
 
@@ -64,7 +64,7 @@ impl<'a> Amount<'a> {
     }
 }
 
-pub(crate) fn amount(input: &str) -> IResult<'_, Amount<'_>> {
+pub(crate) fn amount(input: Span<'_>) -> IResult<'_, Amount<'_>> {
     map(
         separated_pair(expression::parse, space1, currency),
         |(expression, currency)| Amount {
@@ -74,11 +74,11 @@ pub(crate) fn amount(input: &str) -> IResult<'_, Amount<'_>> {
     )(input)
 }
 
-fn current_first_char(input: &str) -> IResult<'_, char> {
+fn current_first_char(input: Span<'_>) -> IResult<'_, char> {
     satisfy(|c: char| c.is_ascii_uppercase() && c.is_ascii_alphabetic())(input)
 }
 
-fn current_middle_char(input: &str) -> IResult<'_, char> {
+fn current_middle_char(input: Span<'_>) -> IResult<'_, char> {
     alt((
         satisfy(|c: char| c.is_ascii_uppercase() && c.is_ascii_alphabetic()),
         satisfy(char::is_numeric),
@@ -86,24 +86,27 @@ fn current_middle_char(input: &str) -> IResult<'_, char> {
     ))(input)
 }
 
-fn current_last_char(input: &str) -> IResult<'_, char> {
+fn current_last_char(input: Span<'_>) -> IResult<'_, char> {
     alt((
         satisfy(|c: char| c.is_ascii_uppercase() && c.is_ascii_alphabetic()),
         satisfy(char::is_numeric),
     ))(input)
 }
 
-pub(crate) fn currency(input: &str) -> IResult<'_, &str> {
-    recognize(pair(
-        current_first_char,
-        opt(pair(
-            many_till(
-                current_middle_char,
-                peek(pair(current_last_char, not(current_middle_char))),
-            ),
-            current_last_char,
+pub(crate) fn currency(input: Span<'_>) -> IResult<'_, &str> {
+    map(
+        recognize(pair(
+            current_first_char,
+            opt(pair(
+                many_till(
+                    current_middle_char,
+                    peek(pair(current_last_char, not(current_middle_char))),
+                ),
+                current_last_char,
+            )),
         )),
-    ))(input)
+        |s: Span<'_>| *s.fragment(),
+    )(input)
 }
 
 #[cfg(test)]
@@ -115,30 +118,27 @@ mod tests {
     #[test]
     fn parse_amount() {
         assert_eq!(
-            amount("10 CHF"),
-            Ok((
-                "",
-                Amount {
-                    expression: Expression::value(10),
-                    currency: "CHF"
-                }
-            ))
+            amount(Span::new("10 CHF")).unwrap().1,
+            Amount {
+                expression: Expression::value(10),
+                currency: "CHF"
+            }
         );
     }
 
     #[test]
     fn invalid_amount() {
-        assert!(amount("10 chf").is_err());
+        assert!(amount(Span::new("10 chf")).is_err());
     }
 
     #[rstest]
     fn valid_currency(#[values("CHF", "X-A", "X_A", "X'A", "A", "AB", "A2", "R2D2")] input: &str) {
-        assert_eq!(all_consuming(currency)(input), Ok(("", input)));
+        assert_eq!(all_consuming(currency)(Span::new(input)).unwrap().1, input);
     }
 
     #[rstest]
     fn invalid_currency(#[values("CHF-", "X-a", "1A", "aA")] input: &str) {
-        let p = all_consuming(currency)(input);
+        let p = all_consuming(currency)(Span::new(input));
         assert!(p.is_err(), "Result was actually: {p:#?}");
     }
 }

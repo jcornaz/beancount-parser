@@ -4,11 +4,12 @@ use nom::{
     character::complete::{char, not_line_ending},
     combinator::{map, value},
     sequence::preceded,
+    Parser,
 };
 
 #[cfg(feature = "unstable")]
 use crate::pest_parser::Pair;
-use crate::IResult;
+use crate::{IResult, Span};
 
 #[cfg(feature = "unstable")]
 pub(crate) fn from_pair(pair: Pair<'_>) -> &str {
@@ -18,17 +19,17 @@ pub(crate) fn from_pair(pair: Pair<'_>) -> &str {
         .as_str()
 }
 
-pub(crate) fn string(input: &str) -> IResult<'_, String> {
+pub(crate) fn string(input: Span<'_>) -> IResult<'_, String> {
     let (mut input, _) = char('"')(input)?;
     let mut string = String::new();
-    while !input.starts_with('"') && !input.is_empty() {
+    while !input.fragment().starts_with('"') && !input.fragment().is_empty() {
         let (rest, s) = alt((
-            take_till1(|c| c == '\\' || c == '"'),
+            take_till1(|c| c == '\\' || c == '"').map(|s: Span<'_>| *s.fragment()),
             preceded(
                 char('\\'),
                 alt((
-                    tag("\\"),
-                    tag("\""),
+                    tag("\\").map(|s: Span<'_>| *s.fragment()),
+                    tag("\"").map(|s: Span<'_>| *s.fragment()),
                     value("\n", tag("n")),
                     value("\t", tag("t")),
                 )),
@@ -41,8 +42,11 @@ pub(crate) fn string(input: &str) -> IResult<'_, String> {
     Ok((input, string))
 }
 
-pub(crate) fn comment(input: &str) -> IResult<'_, &str> {
-    preceded(take_while1(|c| c == ';'), map(not_line_ending, str::trim))(input)
+pub(crate) fn comment(input: Span<'_>) -> IResult<'_, &str> {
+    preceded(
+        take_while1(|c| c == ';'),
+        map(not_line_ending, |s: Span<'_>| s.fragment().trim()),
+    )(input)
 }
 
 #[cfg(test)]
@@ -58,22 +62,22 @@ mod tests {
     #[case(r#""hello\\world""#, "hello\\world")]
     #[case(r#""""#, "")]
     fn parse_string(#[case] input: &str, #[case] expected: &str) {
-        let (rest, actual) = string(input).expect("should successfully parse input");
+        let (rest, actual) = string(Span::new(input)).expect("should successfully parse input");
         assert_eq!(&actual, expected);
         assert!(rest.is_empty());
     }
 
     #[rstest]
     fn simple_comment(#[values("; This is a comment", ";;; This is a comment")] input: &str) {
-        let (_, comment) = comment(input).expect("should successfully parse input");
+        let (_, comment) = comment(Span::new(input)).expect("should successfully parse input");
         assert_eq!(comment, "This is a comment");
     }
 
     #[test]
     fn comment_ends_at_end_of_line() {
         let input = "; This is a comment \n This is not a comment";
-        let (rest, comment) = comment(input).expect("should successfully parse input");
+        let (rest, comment) = comment(Span::new(input)).expect("should successfully parse input");
         assert_eq!(comment, "This is a comment");
-        assert_eq!(rest, "\n This is not a comment");
+        assert_eq!(*rest.fragment(), "\n This is not a comment");
     }
 }

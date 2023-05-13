@@ -4,13 +4,12 @@ use std::fmt::Display;
 
 #[cfg(feature = "unstable")]
 use crate::pest_parser::Pair;
-use crate::IResult;
+use crate::{IResult, Span};
 use nom::{
     branch::alt,
     bytes::complete::{tag, take_while1},
     character::complete::char,
-    combinator::map,
-    multi::many0,
+    combinator::{iterator, map},
     sequence::preceded,
 };
 
@@ -97,16 +96,21 @@ impl<'a> Account<'a> {
     }
 }
 
-pub(crate) fn account(input: &str) -> IResult<'_, Account<'_>> {
+pub(crate) fn account(input: Span<'_>) -> IResult<'_, Account<'_>> {
     let (input, type_) = type_(input)?;
-    let (input, components) = many0(preceded(
-        char(':'),
-        take_while1(|c: char| c.is_alphanumeric() || c == '-'),
-    ))(input)?;
+    let mut iter = iterator(
+        input,
+        preceded(
+            char(':'),
+            take_while1(|c: char| c.is_alphanumeric() || c == '-'),
+        ),
+    );
+    let components = iter.map(|s| *s.fragment()).collect();
+    let (input, _) = iter.finish()?;
     Ok((input, Account { type_, components }))
 }
 
-fn type_(input: &str) -> IResult<'_, Type> {
+fn type_(input: Span<'_>) -> IResult<'_, Type> {
     alt((
         map(tag("Assets"), |_| Type::Assets),
         map(tag("Liabilities"), |_| Type::Liabilities),
@@ -130,7 +134,7 @@ mod tests {
     #[case("Expenses:3Foo", Account::new(Type::Expenses, ["3Foo"]))]
     #[case("Equity:Foo-Bar", Account::new(Type::Equity, ["Foo-Bar"]))]
     fn valid_account(#[case] input: &str, #[case] expected: Account<'_>) {
-        let (_, actual) = all_consuming(account)(input).unwrap();
+        let (_, actual) = all_consuming(account)(Span::new(input)).unwrap();
         assert_eq!(actual, expected);
         let formatted = format!("{actual}");
         assert_eq!(&formatted, input);

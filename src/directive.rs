@@ -9,7 +9,7 @@ use crate::{
     pest_parser::{Pair, Rule},
     {Commodity, Event},
 };
-use crate::{Assertion, Close, Date, IResult, Open};
+use crate::{Assertion, Close, Date, IResult, Open, Span};
 use nom::branch::alt;
 use nom::combinator::map;
 
@@ -103,7 +103,7 @@ impl<'a> Directive<'a> {
     }
 }
 
-pub(crate) fn directive(input: &str) -> IResult<'_, Directive<'_>> {
+pub(crate) fn directive(input: Span<'_>) -> IResult<'_, Directive<'_>> {
     alt((
         map(transaction, Directive::Transaction),
         map(price, Directive::Price),
@@ -126,13 +126,17 @@ mod tests {
     #[test]
     fn transaction() {
         let input = r#"2022-09-10 txn "My transaction""#;
-        let transaction = directive(input).unwrap().1.into_transaction().unwrap();
+        let transaction = directive(Span::new(input))
+            .unwrap()
+            .1
+            .into_transaction()
+            .unwrap();
         assert_eq!(transaction.narration(), Some("My transaction"));
     }
 
     #[test]
     fn price() {
-        let result = directive("2014-07-09 price CHF  5 PLN");
+        let result = directive(Span::new("2014-07-09 price CHF  5 PLN"));
         let Ok((_, Directive::Price(price))) = result else {
             panic!("Expected a price directive but was: {result:?}")
         };
@@ -142,7 +146,9 @@ mod tests {
 
     #[test]
     fn simple_open_directive() {
-        let result = directive("2014-05-01 open Liabilities:CreditCard:CapitalOne");
+        let result = directive(Span::new(
+            "2014-05-01 open Liabilities:CreditCard:CapitalOne",
+        ));
         let Ok((_, Directive::Open(directive))) = result else {
           panic!("Expected an open directive but was: {result:?}")
         };
@@ -151,7 +157,8 @@ mod tests {
 
     #[test]
     fn include_directive() {
-        let (_, directive) = all_consuming(directive)(r#"include "myfile.beancount""#).unwrap();
+        let (_, directive) =
+            all_consuming(directive)(Span::new(r#"include "myfile.beancount""#)).unwrap();
         assert_eq!(directive.date(), None);
         let Directive::Include(include) = directive else {
             panic!("Expected an include directive but was: {directive:?}")
@@ -161,8 +168,10 @@ mod tests {
 
     #[test]
     fn pad_directive() {
-        let (_, directive) =
-            all_consuming(directive)("2022-02-11 pad Assets:Cash Equity:OpeningBalances").unwrap();
+        let (_, directive) = all_consuming(directive)(Span::new(
+            "2022-02-11 pad Assets:Cash Equity:OpeningBalances",
+        ))
+        .unwrap();
         assert_eq!(directive.date(), Some(Date::new(2022, 2, 11)));
         let Directive::Pad(pad) = directive else {
             panic!("Expected an include directive but was: {directive:?}")
@@ -180,12 +189,18 @@ mod tests {
         )]
         input: &str,
     ) {
-        assert!(matches!(directive(input), Err(nom::Err::Failure(_))));
+        assert!(matches!(
+            directive(Span::new(input)),
+            Err(nom::Err::Failure(_))
+        ));
     }
 
     #[rstest]
     fn not_matching(#[values(" ")] input: &str) {
-        assert!(matches!(directive(input), Err(nom::Err::Error(_))));
+        assert!(matches!(
+            directive(Span::new(input)),
+            Err(nom::Err::Error(_))
+        ));
     }
 
     #[rstest]
@@ -194,7 +209,8 @@ mod tests {
     #[case("2021-02-26 close Liabilities:Debt", Date::new(2021, 2, 26))]
     #[case("2014-07-09 price HOOL  600 USD", Date::new(2014, 7, 9))]
     fn date(#[case] input: &str, #[case] expected_date: Date) {
-        let (_, directive) = directive(input).expect("should successfully parse directive");
+        let (_, directive) =
+            directive(Span::new(input)).expect("should successfully parse directive");
         let date = directive.date().expect("directive should have a date");
         assert_eq!(date, expected_date);
     }

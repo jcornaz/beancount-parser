@@ -6,7 +6,7 @@ use nom::{
 
 #[cfg(feature = "unstable")]
 use crate::pest_parser::Pair;
-use crate::IResult;
+use crate::{IResult, Span};
 
 /// A date
 ///
@@ -88,7 +88,7 @@ impl Ord for Date {
     }
 }
 
-pub(super) fn date(input: &str) -> IResult<'_, Date> {
+pub(super) fn date(input: Span<'_>) -> IResult<'_, Date> {
     let (input, year) = year(input)?;
     let (input, month_of_year) = preceded(char('-'), month)(input)?;
     let (input, day_of_month) = preceded(char('-'), day)(input)?;
@@ -102,16 +102,22 @@ pub(super) fn date(input: &str) -> IResult<'_, Date> {
     ))
 }
 
-fn year(input: &str) -> IResult<'_, u16> {
-    verify(map_res(digit1, str::parse), |y| *y > 0)(input)
+fn year(input: Span<'_>) -> IResult<'_, u16> {
+    verify(map_res(digit1, |s: Span<'_>| s.fragment().parse()), |y| {
+        *y > 0
+    })(input)
 }
 
-fn month(input: &str) -> IResult<'_, u8> {
-    verify(map_res(digit1, str::parse), |m| *m > 0 && *m <= 12)(input)
+fn month(input: Span<'_>) -> IResult<'_, u8> {
+    verify(map_res(digit1, |s: Span<'_>| s.fragment().parse()), |m| {
+        *m > 0 && *m <= 12
+    })(input)
 }
 
-fn day(input: &str) -> IResult<'_, u8> {
-    verify(map_res(digit1, str::parse), |d| *d > 0 && *d <= 31)(input)
+fn day(input: Span<'_>) -> IResult<'_, u8> {
+    verify(map_res(digit1, |s: Span<'_>| s.fragment().parse()), |d| {
+        *d > 0 && *d <= 31
+    })(input)
 }
 
 #[cfg(test)]
@@ -121,15 +127,12 @@ mod tests {
     #[test]
     fn valid_date() {
         assert_eq!(
-            date("2022-08-15"),
-            Ok((
-                "",
-                Date {
-                    year: 2022,
-                    month_of_year: 8,
-                    day_of_month: 15
-                }
-            )),
+            date(Span::new("2022-08-15")).unwrap().1,
+            Date {
+                year: 2022,
+                month_of_year: 8,
+                day_of_month: 15
+            }
         );
     }
 
@@ -145,7 +148,7 @@ mod tests {
         )]
         input: &str,
     ) {
-        assert!(date(input).is_err());
+        assert!(date(Span::new(input)).is_err());
     }
 
     #[rstest]

@@ -101,4 +101,5 @@ pub use crate::{
 #[cfg(feature = "unstable")]
 pub use crate::{commodity::Commodity, event::Event, option::Option, pest_parser::parse};
 
-type IResult<'a, O> = nom::IResult<&'a str, O>;
+type Span<'a> = nom_locate::LocatedSpan<&'a str>;
+type IResult<'a, O> = nom::IResult<Span<'a>, O>;

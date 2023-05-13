@@ -5,7 +5,7 @@ use crate::{
     amount::{amount, currency, Amount},
     date::{date, Date},
     string::string,
-    IResult,
+    IResult, Span,
 };
 
 use nom::{
@@ -49,18 +49,21 @@ pub(crate) enum Value<'a> {
     String(String),
 }
 
-fn metadata_key(input: &str) -> IResult<'_, &str> {
-    recognize(pair(
-        satisfy(|c: char| c.is_ascii_lowercase() && c.is_ascii_alphabetic()),
-        many0(alt((
-            satisfy(|c: char| c.is_ascii_alphabetic()),
-            satisfy(char::is_numeric),
-            one_of("-_"),
-        ))),
-    ))(input)
+fn metadata_key(input: Span<'_>) -> IResult<'_, &str> {
+    map(
+        recognize(pair(
+            satisfy(|c: char| c.is_ascii_lowercase() && c.is_ascii_alphabetic()),
+            many0(alt((
+                satisfy(|c: char| c.is_ascii_alphabetic()),
+                satisfy(char::is_numeric),
+                one_of("-_"),
+            ))),
+        )),
+        |s: Span<'_>| *s.fragment(),
+    )(input)
 }
 
-fn metadata_value(input: &str) -> IResult<'_, Value<'_>> {
+fn metadata_value(input: Span<'_>) -> IResult<'_, Value<'_>> {
     alt((
         map(account, Value::Account),
         map(amount, Value::Amount),
@@ -70,7 +73,7 @@ fn metadata_value(input: &str) -> IResult<'_, Value<'_>> {
     ))(input)
 }
 
-fn metadata_line(input: &str) -> IResult<'_, (&str, Value<'_>)> {
+fn metadata_line(input: Span<'_>) -> IResult<'_, (&str, Value<'_>)> {
     separated_pair(
         metadata_key,
         tuple((space0, tag(":"), space0)),
@@ -78,7 +81,7 @@ fn metadata_line(input: &str) -> IResult<'_, (&str, Value<'_>)> {
     )(input)
 }
 
-pub(crate) fn metadata(input: &str) -> IResult<'_, Metadata<'_>> {
+pub(crate) fn metadata(input: Span<'_>) -> IResult<'_, Metadata<'_>> {
     fold_many0(
         preceded(tuple((space0, line_ending, space1)), metadata_line),
         HashMap::new,
@@ -110,7 +113,7 @@ mod tests {
             String::from("def-hij"),
             Value::Amount(Amount::new(1, "USD")),
         ));
-        assert_eq!(metadata(input), Ok(("", expected_map)));
+        assert_eq!(metadata(Span::new(input)).unwrap().1, expected_map);
     }
 
     #[test]
@@ -122,21 +125,18 @@ mod tests {
         std::mem::drop(
             expected_map.insert(String::from("abc"), Value::String(String::from("hello"))),
         );
-        assert_eq!(metadata(input), Ok(("", expected_map)));
+        assert_eq!(metadata(Span::new(input)).unwrap().1, expected_map);
     }
 
     #[test]
     fn value_is_account() {
         let input = r#"abc: Assets:Unknown"#;
         assert_eq!(
-            metadata_line(input),
-            Ok((
-                "",
-                (
-                    "abc",
-                    Value::Account(Account::new(Type::Assets, ["Unknown"]))
-                )
-            ))
+            metadata_line(Span::new(input)).unwrap().1,
+            (
+                "abc",
+                Value::Account(Account::new(Type::Assets, ["Unknown"]))
+            )
         );
     }
 
@@ -144,8 +144,8 @@ mod tests {
     fn value_is_amount() {
         let input = r#"abc: 1 USD"#;
         assert_eq!(
-            metadata_line(input),
-            Ok(("", ("abc", Value::Amount(Amount::new(1, "USD")))))
+            metadata_line(Span::new(input)).unwrap().1,
+            ("abc", Value::Amount(Amount::new(1, "USD")))
         );
     }
 
@@ -153,8 +153,8 @@ mod tests {
     fn value_is_currency() {
         let input = r#"abc: CHF"#;
         assert_eq!(
-            metadata_line(input),
-            Ok(("", ("abc", Value::Currency("CHF"))))
+            metadata_line(Span::new(input)).unwrap().1,
+            ("abc", Value::Currency("CHF"))
         );
     }
 
@@ -162,8 +162,8 @@ mod tests {
     fn value_is_date() {
         let input = r#"abc: 2014-01-01"#;
         assert_eq!(
-            metadata_line(input),
-            Ok(("", ("abc", Value::Date(Date::new(2014, 1, 1)))))
+            metadata_line(Span::new(input)).unwrap().1,
+            ("abc", Value::Date(Date::new(2014, 1, 1)))
         );
     }
 
@@ -171,8 +171,8 @@ mod tests {
     fn value_is_string() {
         let input = r#"abc: "def""#;
         assert_eq!(
-            metadata_line(input),
-            Ok(("", ("abc", Value::String(String::from("def")))))
+            metadata_line(Span::new(input)).unwrap().1,
+            ("abc", Value::String(String::from("def")))
         );
     }
 }

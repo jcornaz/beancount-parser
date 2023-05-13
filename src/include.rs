@@ -7,7 +7,7 @@ use nom::{
     sequence::{preceded, tuple},
 };
 
-use crate::{string::string, IResult};
+use crate::{string::string, IResult, Span};
 
 /// Include directive
 #[derive(Clone, Debug)]
@@ -23,7 +23,7 @@ impl Include {
     }
 }
 
-pub(crate) fn include(input: &str) -> IResult<'_, Include> {
+pub(crate) fn include(input: Span<'_>) -> IResult<'_, Include> {
     map(preceded(tuple((tag("include"), space1)), string), |path| {
         Include { path: path.into() }
     })(input)
@@ -37,14 +37,14 @@ mod tests {
 
     #[test]
     fn valid_include_directive() {
-        let (_, inc) = include(r#"include "abc.beancount""#).unwrap();
+        let (_, inc) = include(Span::new(r#"include "abc.beancount""#)).unwrap();
         assert_eq!(inc.path().to_str(), Some("abc.beancount"));
     }
 
     #[rstest]
     fn invalid(#[values("include", r#"include "a" "b""#)] input: &str) {
         assert!(matches!(
-            all_consuming(include)(input),
+            all_consuming(include)(Span::new(input)),
             Err(nom::Err::Error(_))
         ));
     }

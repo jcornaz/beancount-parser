@@ -7,7 +7,7 @@ use nom::{
 
 #[cfg(feature = "unstable")]
 use crate::pest_parser::Pair;
-use crate::{account, date::date, Account, Date};
+use crate::{account, date::date, Account, Date, Span};
 use crate::{amount, IResult};
 
 /// Open account directive
@@ -51,7 +51,7 @@ impl<'a> Open<'a> {
     }
 }
 
-pub(crate) fn open(input: &str) -> IResult<'_, Open<'_>> {
+pub(crate) fn open(input: Span<'_>) -> IResult<'_, Open<'_>> {
     let (input, date) = date(input)?;
     let (input, _) = tuple((space1, tag("open"), space1))(input)?;
     let (input, account) = account::account(input)?;
@@ -73,7 +73,7 @@ mod tests {
 
     #[test]
     fn simple_open_directive() {
-        let (_, open) = open("2022-10-14 open Assets:A").unwrap();
+        let (_, open) = open(Span::new("2022-10-14 open Assets:A")).unwrap();
         assert_eq!(open.date(), Date::new(2022, 10, 14));
         assert_eq!(open.account(), &Account::new(account::Type::Assets, ["A"]));
         assert_eq!(open.currencies().len(), 0);
@@ -81,14 +81,19 @@ mod tests {
 
     #[test]
     fn open_with_single_currency_constraint() {
-        let (_, open) = open("2014-05-01 open Liabilities:CreditCard:CapitalOne CHF").unwrap();
+        let (_, open) = open(Span::new(
+            "2014-05-01 open Liabilities:CreditCard:CapitalOne CHF",
+        ))
+        .unwrap();
         assert_eq!(open.currencies(), &["CHF"]);
     }
 
     #[test]
     fn open_with_multiple_currency_constraints() {
-        let (_, open) =
-            open("2014-05-01 open Liabilities:CreditCard:CapitalOne CHF, USD,EUR").unwrap();
+        let (_, open) = open(Span::new(
+            "2014-05-01 open Liabilities:CreditCard:CapitalOne CHF, USD,EUR",
+        ))
+        .unwrap();
         assert_eq!(open.currencies(), &["CHF", "USD", "EUR"]);
     }
 }
