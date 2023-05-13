@@ -1,7 +1,7 @@
 use nom::{
     bytes::complete::tag,
     character::complete::space1,
-    combinator::{cut, map},
+    combinator::cut,
     sequence::{preceded, terminated, tuple},
 };
 
@@ -47,20 +47,17 @@ impl<'a> Pad<'a> {
 }
 
 pub(crate) fn pad(input: &str) -> IResult<'_, Pad<'_>> {
-    map(
-        tuple((
-            terminated(date, tuple((space1, tag("pad")))),
-            cut(tuple((
-                preceded(space1, account),
-                preceded(space1, account),
-            ))),
-        )),
-        |(date, (target_account, source_account))| Pad {
+    let (input, date) = terminated(date, tuple((space1, tag("pad"))))(input)?;
+    let (input, target_account) = cut(preceded(space1, account))(input)?;
+    let (input, source_account) = cut(preceded(space1, account))(input)?;
+    Ok((
+        input,
+        Pad {
             date,
             target_account,
             source_account,
         },
-    )(input)
+    ))
 }
 
 #[cfg(test)]
