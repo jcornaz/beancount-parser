@@ -1,9 +1,8 @@
 use nom::{
     bytes::complete::tag,
     character::complete::{char, space0, space1},
-    combinator::map,
     multi::separated_list0,
-    sequence::{preceded, separated_pair, tuple},
+    sequence::{preceded, tuple},
 };
 
 #[cfg(feature = "unstable")]
@@ -53,21 +52,19 @@ impl<'a> Open<'a> {
 }
 
 pub(crate) fn open(input: &str) -> IResult<'_, Open<'_>> {
-    map(
-        separated_pair(
-            date,
-            space1,
-            tuple((
-                preceded(tuple((tag("open"), space1)), account::account),
-                separated_list0(char(','), preceded(space0, amount::currency)),
-            )),
-        ),
-        |(date, (account, currencies))| Open {
+    let (input, date) = date(input)?;
+    let (input, _) = tuple((space1, tag("open"), space1))(input)?;
+    let (input, account) = account::account(input)?;
+    let (input, currencies) =
+        separated_list0(char(','), preceded(space0, amount::currency))(input)?;
+    Ok((
+        input,
+        Open {
             date,
             account,
             currencies,
         },
-    )(input)
+    ))
 }
 
 #[cfg(test)]
