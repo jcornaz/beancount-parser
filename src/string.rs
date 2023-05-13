@@ -1,9 +1,9 @@
 use nom::{
     branch::alt,
-    bytes::complete::{escaped_transform, tag, take_till1, take_while1},
+    bytes::complete::{tag, take_till1, take_while1},
     character::complete::{char, not_line_ending},
     combinator::{map, value},
-    sequence::{delimited, preceded},
+    sequence::preceded,
 };
 
 #[cfg(feature = "unstable")]
@@ -19,12 +19,13 @@ pub(crate) fn from_pair(pair: Pair<'_>) -> &str {
 }
 
 pub(crate) fn string(input: &str) -> IResult<'_, String> {
-    delimited(
-        char('"'),
-        alt((
-            escaped_transform(
-                take_till1(|c| c == '\\' || c == '"'),
-                '\\',
+    let (mut input, _) = char('"')(input)?;
+    let mut string = String::new();
+    while !input.starts_with('"') && !input.is_empty() {
+        let (rest, s) = alt((
+            take_till1(|c| c == '\\' || c == '"'),
+            preceded(
+                char('\\'),
                 alt((
                     tag("\\"),
                     tag("\""),
@@ -32,10 +33,12 @@ pub(crate) fn string(input: &str) -> IResult<'_, String> {
                     value("\t", tag("t")),
                 )),
             ),
-            map(tag(""), String::from),
-        )),
-        char('"'),
-    )(input)
+        ))(input)?;
+        string.push_str(s);
+        input = rest;
+    }
+    let (input, _) = char('"')(input)?;
+    Ok((input, string))
 }
 
 pub(crate) fn comment(input: &str) -> IResult<'_, &str> {
