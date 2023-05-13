@@ -10,7 +10,8 @@ use nom::{
     bytes::complete::{tag, take_while1},
     character::complete::char,
     combinator::map,
-    multi::separated_list1,
+    multi::many0,
+    sequence::preceded,
 };
 
 /// Account
@@ -98,11 +99,10 @@ impl<'a> Account<'a> {
 
 pub(crate) fn account(input: &str) -> IResult<'_, Account<'_>> {
     let (input, type_) = type_(input)?;
-    let (input, _) = char(':')(input)?;
-    let (input, components) = separated_list1(
+    let (input, components) = many0(preceded(
         char(':'),
         take_while1(|c: char| c.is_alphanumeric() || c == '-'),
-    )(input)?;
+    ))(input)?;
     Ok((input, Account { type_, components }))
 }
 
