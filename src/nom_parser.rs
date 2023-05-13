@@ -204,7 +204,6 @@ mod acceptance_tests {
     #[case("2022-02-12 txn", None, None)]
     #[case("2022-02-12  txn", None, None)]
     #[case("2022-02-12 *", None, None)]
-    #[ignore = "not implemented"]
     #[case("2022-02-12  *  ", None, None)]
     #[case("2022-02-12 txn \"Hello\"", None, Some("Hello"))]
     #[case("2022-02-12   txn  \"Hello\"", None, Some("Hello"))]

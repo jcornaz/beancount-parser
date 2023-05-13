@@ -193,7 +193,8 @@ pub(crate) fn transaction(input: Span<'_>) -> IResult<'_, Transaction<'_>> {
     let (input, flag) = alt((map(flag, Some), map(complete::tag("txn"), |_| None)))(input)?;
     let (input, (payee, narration)) = payee_and_narration(input)?;
     let (input, tags) = many0(preceded(space0, tag))(input)?;
-    let (input, comment) = opt(preceded(space0, comment))(input)?;
+    let (input, _) = space0(input)?;
+    let (input, comment) = opt(comment)(input)?;
     #[cfg_attr(not(feature = "unstable"), allow(unused_variables))]
     let (input, metadata) = crate::metadata::metadata(input)?;
     let (input, postings) = many0(preceded(tuple((line_ending, space1)), posting))(input)?;
