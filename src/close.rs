@@ -1,9 +1,4 @@
-use nom::{
-    bytes::complete::tag,
-    character::complete::space1,
-    combinator::map,
-    sequence::{separated_pair, tuple},
-};
+use nom::{bytes::complete::tag, character::complete::space1, sequence::tuple};
 
 use crate::{account::account, date::date, Account, Date, IResult};
 
@@ -40,8 +35,8 @@ impl<'a> Close<'a> {
 }
 
 pub(crate) fn close(input: &str) -> IResult<'_, Close<'_>> {
-    map(
-        separated_pair(date, tuple((space1, tag("close"), space1)), account),
-        |(date, account)| Close { date, account },
-    )(input)
+    let (input, date) = date(input)?;
+    let (input, _) = tuple((space1, tag("close"), space1))(input)?;
+    let (input, account) = account(input)?;
+    Ok((input, Close { date, account }))
 }
