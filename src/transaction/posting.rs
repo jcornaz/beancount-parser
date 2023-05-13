@@ -216,23 +216,22 @@ fn lot_attributes(input: &str) -> IResult<'_, LotAttributes<'_>> {
 }
 
 pub fn posting(input: &str) -> IResult<'_, Posting<'_>> {
-    map(
-        tuple((
-            opt(terminated(flag, space1)),
-            account,
-            opt(preceded(space1, amount)),
-            opt(preceded(
-                space1,
-                delimited(
-                    tuple((char('{'), space0)),
-                    lot_attributes,
-                    preceded(space0, char('}')),
-                ),
-            )),
-            opt(preceded(space1, price)),
-            opt(preceded(space0, comment)),
-        )),
-        |(flag, account, amount, lot, price, comment)| Posting {
+    let (input, flag) = opt(terminated(flag, space1))(input)?;
+    let (input, account) = account(input)?;
+    let (input, amount) = opt(preceded(space1, amount))(input)?;
+    let (input, lot) = opt(preceded(
+        space1,
+        delimited(
+            tuple((char('{'), space0)),
+            lot_attributes,
+            preceded(space0, char('}')),
+        ),
+    ))(input)?;
+    let (input, price) = opt(preceded(space1, price))(input)?;
+    let (input, comment) = opt(preceded(space0, comment))(input)?;
+    Ok((
+        input,
+        Posting {
             flag,
             account,
             amount,
@@ -240,7 +239,7 @@ pub fn posting(input: &str) -> IResult<'_, Posting<'_>> {
             lot,
             comment,
         },
-    )(input)
+    ))
 }
 
 fn price(input: &str) -> IResult<'_, (PriceType, Amount<'_>)> {
