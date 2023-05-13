@@ -1,7 +1,6 @@
 use nom::{
     bytes::complete::tag,
     character::streaming::space1,
-    combinator::map,
     sequence::{terminated, tuple},
 };
 
@@ -57,18 +56,17 @@ impl<'a> Assertion<'a> {
 }
 
 pub(crate) fn assertion(input: &str) -> IResult<'_, Assertion<'_>> {
-    map(
-        tuple((
-            terminated(date, tuple((space1, tag("balance"), space1))),
-            terminated(account, space1),
-            amount,
-        )),
-        |(date, account, amount)| Assertion {
+    let (input, date) = terminated(date, tuple((space1, tag("balance"), space1)))(input)?;
+    let (input, account) = terminated(account, space1)(input)?;
+    let (input, amount) = amount(input)?;
+    Ok((
+        input,
+        Assertion {
             date,
             account,
             amount,
         },
-    )(input)
+    ))
 }
 
 #[cfg(test)]
