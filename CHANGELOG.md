@@ -3,7 +3,6 @@
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
-and this project *loosely* follows [Semantic Versioning v2](https://semver.org/spec/v2.0.0.html).
 
 
 ## [Unreleased]
@@ -19,6 +18,11 @@ and this project *loosely* follows [Semantic Versioning v2](https://semver.org/s
 ### Added
 
 * implement `Default` for `transaction::Flag` (The default value is `transaction::Flag::Cleared`)
+
+
+### Changed
+
+* Accept account types without more components. (e.g. `2023-05-13 open Assets` is now valid)
 
 
 ## [1.15.0] - 2023-03-07
