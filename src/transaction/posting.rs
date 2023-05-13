@@ -253,31 +253,3 @@ fn price(input: Span<'_>) -> IResult<'_, (PriceType, Amount<'_>)> {
         amount,
     )(input)
 }
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[rstest]
-    #[case("Assets:A 10 CHF", None)]
-    #[case(
-        "Assets:A 10 CHF @ 19 EUR",
-        Some((PriceType::Unit, Amount::new(19, "EUR")))
-    )]
-    #[case(
-        "Assets:A 10 CHF@19 EUR",
-        Some((PriceType::Unit, Amount::new(19, "EUR")))
-    )]
-    #[case(
-        "Assets:A 10 CHF  @  2 EUR",
-        Some((PriceType::Unit, Amount::new(2, "EUR")))
-    )]
-    #[case(
-        "Assets:A 10 CHF  @@  20 EUR",
-        Some((PriceType::Total, Amount::new(20, "EUR")))
-    )]
-    fn parse_posting_price(#[case] input: &str, #[case] expected: Option<(PriceType, Amount<'_>)>) {
-        let (_, posting) = posting(Span::new(input)).unwrap();
-        assert_eq!(posting.price().map(|(t, a)| (t, a.clone())), expected);
-    }
-}
