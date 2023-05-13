@@ -128,6 +128,7 @@ mod tests {
 
     #[rstest]
     #[case("Assets", Account::new(Type::Assets, []))]
+    #[case("Assets:Hello", Account::new(Type::Assets, ["Hello"]))]
     #[case("Assets:MyAccount", Account::new(Type::Assets, ["MyAccount"]))]
     #[case("Liabilities:A:B:C", Account::new(Type::Liabilities, ["A", "B", "C"]))]
     #[case("Income:Foo:Bar12", Account::new(Type::Income, ["Foo", "Bar12"]))]

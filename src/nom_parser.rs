@@ -240,7 +240,6 @@ mod acceptance_tests {
     #[case("2022-02-12 txn ; Hello\nAssets:Hello\n\tExpenses:Test \nLiabilities:Other", &["Assets:Hello", "Expenses:Test", "Liabilities:Other"])]
     #[case("2022-02-12 txn\nAssets:Hello\n\tExpenses:Test \nLiabilities:Other", &["Assets:Hello", "Expenses:Test", "Liabilities:Other"])]
     #[case("2020-11-24 * \"Legal Seafood\" \"\" #trip-boston-2020\n  Liabilities:US:Chase:Slate  -40.15 USD\n  Expenses:Food:Restaurant  40.15 USD", &["Liabilities:US:Chase:Slate", "Expenses:Food:Restaurant"])]
-    #[ignore = "not implemented"]
     fn parse_posting_accounts(#[case] input: &str, #[case] expected: &[&str]) {
         let expected: Vec<String> = expected.iter().map(ToString::to_string).collect();
         let transaction = parse_single_directive(input).into_transaction().unwrap();

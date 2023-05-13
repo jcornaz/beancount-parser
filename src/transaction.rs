@@ -197,7 +197,7 @@ pub(crate) fn transaction(input: Span<'_>) -> IResult<'_, Transaction<'_>> {
     let (input, comment) = opt(comment)(input)?;
     #[cfg_attr(not(feature = "unstable"), allow(unused_variables))]
     let (input, metadata) = crate::metadata::metadata(input)?;
-    let (input, postings) = many0(preceded(tuple((line_ending, space1)), posting))(input)?;
+    let (input, postings) = many0(preceded(tuple((line_ending, space0)), posting))(input)?;
     let (input, _) = cut(alt((line_ending, eof)))(input)?;
     Ok((
         input,
@@ -238,4 +238,33 @@ fn flag(input: Span<'_>) -> IResult<'_, Flag> {
         map(char('*'), |_| Flag::Cleared),
         map(char('!'), |_| Flag::Pending),
     ))(input)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[rstest]
+    #[case("2022-02-12 txn", &[])]
+    #[case("2022-02-12 txn\n  Assets:Hello", &["Assets:Hello"])]
+    #[case("2022-02-12 txn\nAssets:Hello", &["Assets:Hello"])]
+    #[case("2022-02-12 txn\n\tAssets:Hello", &["Assets:Hello"])]
+    #[case("2022-02-12 txn\n  Assets:Hello\n\tExpenses:Test\nLiabilities:Other", &["Assets:Hello", "Expenses:Test", "Liabilities:Other"])]
+    #[case("2022-02-12 txn\n  Assets:Hello\n\tExpenses:Test \nLiabilities:Other", &["Assets:Hello", "Expenses:Test", "Liabilities:Other"])]
+    #[case("2022-02-12 txn ; Hello\n  Assets:Hello\n\tExpenses:Test \nLiabilities:Other", &["Assets:Hello", "Expenses:Test", "Liabilities:Other"])]
+    #[case("2022-02-12 txn; Hello\n  Assets:Hello\n\tExpenses:Test \nLiabilities:Other", &["Assets:Hello", "Expenses:Test", "Liabilities:Other"])]
+    #[case("2022-02-12 txn ; Hello\nAssets:Hello\n\tExpenses:Test \nLiabilities:Other", &["Assets:Hello", "Expenses:Test", "Liabilities:Other"])]
+    #[case("2022-02-12 txn\nAssets:Hello\n\tExpenses:Test \nLiabilities:Other", &["Assets:Hello", "Expenses:Test", "Liabilities:Other"])]
+    #[case("2020-11-24 * \"Legal Seafood\" \"\" #trip-boston-2020\n  Liabilities:US:Chase:Slate  -40.15 USD\n  Expenses:Food:Restaurant  40.15 USD", &["Liabilities:US:Chase:Slate", "Expenses:Food:Restaurant"])]
+    fn parse_posting_accounts(#[case] input: &str, #[case] expected: &[&str]) {
+        let expected: Vec<String> = expected.iter().map(ToString::to_string).collect();
+        let (_, transaction) = transaction(Span::new(input)).unwrap();
+        let actual: Vec<String> = transaction
+            .postings()
+            .iter()
+            .map(Posting::account)
+            .map(ToString::to_string)
+            .collect();
+        assert_eq!(actual, expected);
+    }
 }
