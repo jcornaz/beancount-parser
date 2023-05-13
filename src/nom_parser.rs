@@ -139,7 +139,6 @@ mod acceptance_tests {
     const OFFICIAL: &str = include_str!("../tests/samples/official.beancount");
 
     #[rstest]
-    #[ignore = "not implemented"]
     fn successful_parse(
         #[values("", " ", " \n ", " \t ", COMMENTS, SIMPLE, OFFICIAL)] input: &str,
     ) {
@@ -261,7 +260,6 @@ mod acceptance_tests {
     #[case("! Assets:Hello", Some(Flag::Pending))]
     #[case("  ! Assets:Hello", Some(Flag::Pending))]
     #[case("  !  Assets:Hello", Some(Flag::Pending))]
-    #[ignore = "not implemented"]
     fn parse_posting_flag(#[case] input: &str, #[case] expected: Option<Flag>) {
         let input = format!("2022-02-23 txn\n{input}");
         let transaction = parse_single_directive(&input).into_transaction().unwrap();
@@ -276,7 +274,6 @@ mod acceptance_tests {
     #[case("Assets:Hello  10 CHF ; World", Some("World"))]
     #[case("Assets:Hello 10 CHF ;;;  World", Some("World"))]
     #[case("Assets:Hello 10 CHF; Tadaa", Some("Tadaa"))]
-    #[ignore = "not implemented"]
     fn parse_posting_comment(#[case] input: &str, #[case] expected: Option<&str>) {
         let input = format!("2022-02-23 txn\n{input}");
         let transaction = parse_single_directive(&input).into_transaction().unwrap();
@@ -306,7 +303,6 @@ mod acceptance_tests {
         "2022-02-12 txn\n  Assets:Hello  .2 CHF",
         Some(Amount::new(Decimal::new(2, 1), "CHF"))
     )]
-    #[ignore = "not implemented"]
     fn parse_posting_amount(#[case] input: &str, #[case] expected: Option<Amount<'_>>) {
         let transaction = parse_single_directive(input).into_transaction().unwrap();
         let posting = &transaction.postings()[0];

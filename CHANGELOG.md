@@ -23,8 +23,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Changed
 
 * Accept account types without more components. (e.g. `2023-05-13 open Assets` is now valid)
-* Ignore spaces after transaction/posting declaration
+* Ignore spaces after transaction/posting declarations
 * Accept unindented postings
+* Accept amount values with the unary operator `+` (e.g. `+42`)
 
 
 ## [1.15.0] - 2023-03-07

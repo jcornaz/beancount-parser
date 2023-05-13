@@ -1,6 +1,6 @@
 use nom::{
     branch::alt,
-    character::complete::{char, digit0, digit1, space0},
+    character::complete::{char, digit0, digit1, one_of, space0},
     combinator::{map, map_res, opt, recognize},
     multi::many0,
     sequence::{delimited, tuple},
@@ -291,9 +291,19 @@ fn exp_p2(input: Span<'_>) -> IResult<'_, Expression> {
 }
 
 fn value(input: Span<'_>) -> IResult<'_, Value> {
-    let value_string = recognize(tuple((opt(char('-')), digit0, opt(char('.')), opt(digit1))));
+    let value_string = recognize(tuple((
+        opt(one_of("-+")),
+        digit0,
+        opt(char('.')),
+        opt(digit1),
+    )));
     map(
-        map_res(value_string, |s: Span<'_>| s.fragment().parse()),
+        map_res(value_string, |s: Span<'_>| {
+            s.fragment()
+                .strip_prefix('+')
+                .unwrap_or(s.fragment())
+                .parse()
+        }),
         Value,
     )(input)
 }
@@ -305,6 +315,7 @@ mod tests {
     #[rstest]
     #[case("0", Decimal::ZERO)]
     #[case("42", Decimal::new(42, 0))]
+    #[case("+42", Decimal::new(42, 0))]
     #[case("42.", Decimal::new(42, 0))]
     #[case("1.1", Decimal::new(11, 1))]
     #[case(".1", Decimal::new(1, 1))]
