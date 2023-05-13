@@ -11,7 +11,6 @@ use nom::{
     character::complete::char,
     combinator::map,
     multi::separated_list1,
-    sequence::separated_pair,
 };
 
 /// Account
@@ -61,6 +60,7 @@ impl Display for Type {
 }
 
 impl<'a> Account<'a> {
+    #[cfg(test)]
     pub(crate) fn new(type_: Type, path: impl IntoIterator<Item = &'a str>) -> Self {
         Self {
             type_,
@@ -97,17 +97,13 @@ impl<'a> Account<'a> {
 }
 
 pub(crate) fn account(input: &str) -> IResult<'_, Account<'_>> {
-    map(
-        separated_pair(
-            type_,
-            char(':'),
-            separated_list1(
-                char(':'),
-                take_while1(|c: char| c.is_alphanumeric() || c == '-'),
-            ),
-        ),
-        |(t, p)| Account::new(t, p),
-    )(input)
+    let (input, type_) = type_(input)?;
+    let (input, _) = char(':')(input)?;
+    let (input, components) = separated_list1(
+        char(':'),
+        take_while1(|c: char| c.is_alphanumeric() || c == '-'),
+    )(input)?;
+    Ok((input, Account { type_, components }))
 }
 
 fn type_(input: &str) -> IResult<'_, Type> {
