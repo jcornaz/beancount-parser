@@ -556,7 +556,6 @@ mod acceptance_tests {
     #[case("2016-11-28 open Assets CHF,EUR", &["CHF", "EUR"])]
     #[case("2016-11-28 open Assets CHF , EUR", &["CHF", "EUR"])]
     #[case("2016-11-28 open Assets AB-CD, A_2B, A.B, A'B", &["AB-CD", "A_2B", "A.B", "A'B"])]
-    #[ignore = "not implemented"]
     fn parse_open_directive_currencies(#[case] input: &str, #[case] expected: &[&str]) {
         let directive = parse_single_directive(input);
         let Directive::Open(open) = directive else { panic!("expected open directive but was {directive:?}") };

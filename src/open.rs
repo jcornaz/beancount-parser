@@ -2,7 +2,7 @@ use nom::{
     bytes::complete::tag,
     character::complete::{char, space0, space1},
     multi::separated_list0,
-    sequence::{preceded, tuple},
+    sequence::tuple,
 };
 
 #[cfg(feature = "unstable")]
@@ -55,8 +55,9 @@ pub(crate) fn open(input: Span<'_>) -> IResult<'_, Open<'_>> {
     let (input, date) = date(input)?;
     let (input, _) = tuple((space1, tag("open"), space1))(input)?;
     let (input, account) = account::account(input)?;
-    let (input, currencies) =
-        separated_list0(char(','), preceded(space0, amount::currency))(input)?;
+    let (input, _) = space0(input)?;
+    let separator = tuple((space0, char(','), space0));
+    let (input, currencies) = separated_list0(separator, amount::currency)(input)?;
     Ok((
         input,
         Open {
@@ -88,12 +89,15 @@ mod tests {
         assert_eq!(open.currencies(), &["CHF"]);
     }
 
-    #[test]
-    fn open_with_multiple_currency_constraints() {
-        let (_, open) = open(Span::new(
+    #[rstest]
+    fn open_with_multiple_currency_constraints(
+        #[values(
             "2014-05-01 open Liabilities:CreditCard:CapitalOne CHF, USD,EUR",
-        ))
-        .unwrap();
+            "2014-05-01 open Liabilities:CreditCard:CapitalOne CHF ,\tUSD  ,EUR"
+        )]
+        input: &str,
+    ) {
+        let (_, open) = open(Span::new(input)).unwrap();
         assert_eq!(open.currencies(), &["CHF", "USD", "EUR"]);
     }
 }
