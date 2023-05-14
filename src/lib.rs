@@ -82,6 +82,7 @@ pub mod transaction;
     since = "1.15.0",
     note = "Use `AccountType` or `account::Type` instead"
 )]
+#[doc(hidden)]
 pub type Type = account::Type;
 
 pub use crate::include::Include;
