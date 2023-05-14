@@ -63,7 +63,8 @@ impl<'a> Iterator for Parser<'a> {
 }
 
 #[cfg(feature = "unstable")]
-pub fn parse_to_vec(
+#[doc(hidden)]
+pub fn parse(
     input: &str,
 ) -> Result<Vec<crate::span::Spanned<Directive<'_>>>, crate::span::Spanned<Error>> {
     use crate::span::Spanned;

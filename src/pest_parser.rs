@@ -1,5 +1,3 @@
-#![cfg(feature = "unstable")]
-
 use pest::Parser as Parse;
 use pest_derive::Parser;
 

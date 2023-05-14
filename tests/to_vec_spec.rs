@@ -1,7 +1,7 @@
 #![cfg(feature = "unstable")]
 
 use beancount_parser::{
-    account, parse_to_vec,
+    account, parse,
     transaction::{Flag, Posting},
     Date, Directive,
 };
@@ -14,7 +14,7 @@ const OFFICIAL: &str = include_str!("../tests/samples/official.beancount");
 
 #[rstest]
 fn successful_parse(#[values("", " ", " \n ", " \t ", COMMENTS, SIMPLE, OFFICIAL)] input: &str) {
-    if let Err(err) = parse_to_vec(input) {
+    if let Err(err) = parse(input) {
         panic!("{err:?}");
     }
 }
@@ -27,7 +27,7 @@ fn examples_have_expected_number_of_transaction(
     #[case] input: &str,
     #[case] expected_count: usize,
 ) {
-    let actual_count = parse_to_vec(input)
+    let actual_count = parse(input)
         .unwrap()
         .into_iter()
         .filter_map(|d| d.into_inner().into_transaction())
@@ -40,7 +40,7 @@ fn examples_have_expected_number_of_transaction(
 #[case(SIMPLE, 13)]
 #[case(COMMENTS, 0)]
 fn examples_have_expected_number_of_postings(#[case] input: &str, #[case] expected_count: usize) {
-    let actual_count: usize = parse_to_vec(input)
+    let actual_count: usize = parse(input)
         .unwrap()
         .into_iter()
         .map(|s| s.into_inner())
@@ -66,9 +66,7 @@ fn comments(
     )]
     input: &str,
 ) {
-    let len = parse_to_vec(input)
-        .expect("should successfully parse input")
-        .len();
+    let len = parse(input).expect("should successfully parse input").len();
     assert_eq!(len, 0);
 }
 
@@ -383,12 +381,12 @@ fn error_case(
     )]
     input: &str,
 ) {
-    let result = parse_to_vec(input);
+    let result = parse(input);
     assert!(result.is_err(), "{result:?}");
 }
 
 fn parse_single_directive(input: &str) -> Directive<'_> {
-    let directives = parse_to_vec(input).unwrap();
+    let directives = parse(input).unwrap();
     assert_eq!(directives.len(), 1, "unexpected number of direcives");
     directives.into_iter().next().unwrap().into_inner()
 }
