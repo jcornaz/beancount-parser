@@ -197,7 +197,7 @@ pub(crate) fn transaction(input: Span<'_>) -> IResult<'_, Transaction<'_>> {
     let (input, comment) = opt(comment)(input)?;
     #[cfg_attr(not(feature = "unstable"), allow(unused_variables))]
     let (input, metadata) = crate::metadata::metadata(input)?;
-    let (input, postings) = many0(preceded(tuple((line_ending, space0)), posting))(input)?;
+    let (input, postings) = many0(preceded(tuple((line_ending, space1)), posting))(input)?;
     let (input, _) = cut(alt((line_ending, eof)))(input)?;
     Ok((
         input,

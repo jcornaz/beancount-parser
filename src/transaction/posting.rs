@@ -227,7 +227,7 @@ pub fn posting(input: Span<'_>) -> IResult<'_, Posting<'_>> {
             preceded(space0, char('}')),
         ),
     ))(input)?;
-    let (input, price) = opt(preceded(space0, price))(input)?;
+    let (input, price) = opt(preceded(space1, price))(input)?;
     let (input, _) = space0(input)?;
     let (input, comment) = opt(comment)(input)?;
     Ok((

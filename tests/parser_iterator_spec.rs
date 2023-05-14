@@ -135,13 +135,13 @@ fn parse_transaction_tags(#[case] input: &str, #[case] expected: &[&str]) {
 #[rstest]
 #[case("2022-02-12 txn", &[])]
 #[case("2022-02-12 txn\n  Assets:Hello", &["Assets:Hello"])]
-#[case("2022-02-12 txn\nAssets:Hello", &["Assets:Hello"])]
+#[case("2022-02-12 txn\n  Assets:Hello", &["Assets:Hello"])]
 #[case("2022-02-12 txn\n\tAssets:Hello", &["Assets:Hello"])]
-#[case("2022-02-12 txn\n  Assets:Hello\n\tExpenses:Test \nLiabilities:Other", &["Assets:Hello", "Expenses:Test", "Liabilities:Other"])]
-#[case("2022-02-12 txn ; Hello\n  Assets:Hello\n\tExpenses:Test \nLiabilities:Other", &["Assets:Hello", "Expenses:Test", "Liabilities:Other"])]
-#[case("2022-02-12 txn; Hello\n  Assets:Hello\n\tExpenses:Test \nLiabilities:Other", &["Assets:Hello", "Expenses:Test", "Liabilities:Other"])]
-#[case("2022-02-12 txn ; Hello\nAssets:Hello\n\tExpenses:Test \nLiabilities:Other", &["Assets:Hello", "Expenses:Test", "Liabilities:Other"])]
-#[case("2022-02-12 txn\nAssets:Hello\n\tExpenses:Test \nLiabilities:Other", &["Assets:Hello", "Expenses:Test", "Liabilities:Other"])]
+#[case("2022-02-12 txn\n  Assets:Hello\n\tExpenses:Test \n  Liabilities:Other", &["Assets:Hello", "Expenses:Test", "Liabilities:Other"])]
+#[case("2022-02-12 txn ; Hello\n  Assets:Hello\n\tExpenses:Test \n  Liabilities:Other", &["Assets:Hello", "Expenses:Test", "Liabilities:Other"])]
+#[case("2022-02-12 txn; Hello\n  Assets:Hello\n\tExpenses:Test \n  Liabilities:Other", &["Assets:Hello", "Expenses:Test", "Liabilities:Other"])]
+#[case("2022-02-12 txn ; Hello\n  Assets:Hello\n\tExpenses:Test \n  Liabilities:Other", &["Assets:Hello", "Expenses:Test", "Liabilities:Other"])]
+#[case("2022-02-12 txn\n  Assets:Hello\n\tExpenses:Test \n  Liabilities:Other", &["Assets:Hello", "Expenses:Test", "Liabilities:Other"])]
 #[case("2020-11-24 * \"Legal Seafood\" \"\" #trip-boston-2020\n  Liabilities:US:Chase:Slate  -40.15 USD\n  Expenses:Food:Restaurant  40.15 USD", &["Liabilities:US:Chase:Slate", "Expenses:Food:Restaurant"])]
 fn parse_posting_accounts(#[case] input: &str, #[case] expected: &[&str]) {
     let expected: Vec<String> = expected.iter().map(ToString::to_string).collect();
@@ -165,7 +165,7 @@ fn parse_posting_accounts(#[case] input: &str, #[case] expected: &[&str]) {
 #[case("  ! Assets:Hello", Some(Flag::Pending))]
 #[case("  !  Assets:Hello", Some(Flag::Pending))]
 fn parse_posting_flag(#[case] input: &str, #[case] expected: Option<Flag>) {
-    let input = format!("2022-02-23 txn\n{input}");
+    let input = format!("2022-02-23 txn\n  {input}");
     let transaction = parse_single_directive(&input).into_transaction().unwrap();
     let posting = &transaction.postings()[0];
     assert_eq!(posting.flag(), expected);
@@ -179,7 +179,7 @@ fn parse_posting_flag(#[case] input: &str, #[case] expected: Option<Flag>) {
 #[case("Assets:Hello 10 CHF ;;;  World", Some("World"))]
 #[case("Assets:Hello 10 CHF; Tadaa", Some("Tadaa"))]
 fn parse_posting_comment(#[case] input: &str, #[case] expected: Option<&str>) {
-    let input = format!("2022-02-23 txn\n{input}");
+    let input = format!("2022-02-23 txn\n  {input}");
     let transaction = parse_single_directive(&input).into_transaction().unwrap();
     let posting = &transaction.postings()[0];
     assert_eq!(posting.comment(), expected);

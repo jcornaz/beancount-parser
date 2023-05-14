@@ -126,7 +126,7 @@ mod acceptance_tests {
 
     #[rstest]
     #[case("2022-02-12 txn\n  Assets:Hello", None)]
-    #[case("2022-02-12  txn \nAssets:Hello", None)]
+    #[case("2022-02-12  txn \n  Assets:Hello", None)]
     #[case("2022-02-12 txn\n  Assets:Hello  10 CHF", Some(Amount::new(10, "CHF")))]
     #[case(
         "2022-02-12 txn\n  Assets:Hello  10  \tCHF",
@@ -209,10 +209,6 @@ mod acceptance_tests {
     #[case("2023-02-27 txn\n  Assets:A 10 CHF", None)]
     #[case(
         "2023-02-27 txn\n  Assets:A 10 CHF @ 19 EUR",
-        Some((PriceType::Unit, Amount::new(19, "EUR")))
-    )]
-    #[case(
-        "2023-02-27 txn\n  Assets:A 10 CHF@19 EUR",
         Some((PriceType::Unit, Amount::new(19, "EUR")))
     )]
     #[case(

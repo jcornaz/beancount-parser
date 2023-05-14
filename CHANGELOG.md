@@ -22,10 +22,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Changed
 
 * Accept account types without more components. (e.g. `2023-05-13 open Assets` is now valid)
-* Ignore spaces after transaction/posting declarations
-* Accept unindented postings
+* Ignore trailing spaces after transaction/posting declarations
 * Accept amount values with the unary operator `+` (e.g. `+42`)
-* Make the space between amount and price optional in postings
 * Accept spaces before comma in currency list of open directive
 
 
