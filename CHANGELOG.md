@@ -7,6 +7,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+
+## [1.16.0] - 2023-05-14
+
 ### Breaking changes *(in unstable API)*
 
 * remove `Error::line_number`
@@ -336,7 +339,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
  - Parse directives
  - `Parser` iterator type
 
-[unreleased]: https://github.com/jcornaz/beancount-parser/compare/v1.15.0...HEAD
+[unreleased]: https://github.com/jcornaz/beancount-parser/compare/v1.16.0...HEAD
+[1.16.0]: https://github.com/jcornaz/beancount-parser/compare/v1.15.0...v1.16.0
 [1.15.0]: https://github.com/jcornaz/beancount-parser/compare/v1.14.0...v1.15.0
 [1.14.0]: https://github.com/jcornaz/beancount-parser/compare/v1.13.0...v1.14.0
 [1.13.0]: https://github.com/jcornaz/beancount-parser/compare/v1.12.0...v1.13.0
