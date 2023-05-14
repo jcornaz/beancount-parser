@@ -6,9 +6,9 @@ use beancount_parser::{
 
 use rstest::rstest;
 
-const COMMENTS: &str = include_str!("../tests/samples/comments.beancount");
-const SIMPLE: &str = include_str!("../tests/samples/simple.beancount");
-const OFFICIAL: &str = include_str!("../tests/samples/official.beancount");
+const COMMENTS: &str = include_str!("samples/comments.beancount");
+const SIMPLE: &str = include_str!("samples/simple.beancount");
+const OFFICIAL: &str = include_str!("samples/official.beancount");
 
 #[rstest]
 fn successful_parse(#[values("", " ", " \n ", " \t ", COMMENTS, SIMPLE, OFFICIAL)] input: &str) {
