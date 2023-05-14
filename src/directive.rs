@@ -127,6 +127,7 @@ pub(crate) fn directive(input: Span<'_>) -> IResult<'_, Directive<'_>> {
         map(pad, Directive::Pad),
         map(include, Directive::Include),
         map(crate::option::option, Directive::Option),
+        map(crate::event::event, Directive::Event),
     ))(input)
 }
 

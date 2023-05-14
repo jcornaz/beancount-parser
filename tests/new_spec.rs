@@ -255,11 +255,16 @@ fn parse_option(#[case] input: &str, #[case] expected_name: &str, #[case] expect
     assert_eq!(option.value(), expected_value);
 }
 
-#[test]
-#[ignore = "not implemented"]
+#[rstest]
 #[cfg(feature = "unstable")]
-fn parse_event() {
-    let input = r#"2020-11-23  event  "location"  "Boston""#;
+fn parse_event(
+    #[values(
+        r#"2020-11-23 event "location" "Boston""#,
+        r#"2020-11-23  event  "location"  "Boston""#,
+        r#"2020-11-23event "location""Boston""#
+    )]
+    input: &str,
+) {
     let directive = parse_single_directive(input);
     let Directive::Event(event) = directive else { panic!("expected event but was {directive:?}") };
     assert_eq!(event.date(), Date::new(2020, 11, 23));
