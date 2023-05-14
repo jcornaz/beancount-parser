@@ -127,7 +127,6 @@ mod acceptance_tests {
 
     use rust_decimal::Decimal;
 
-    use crate::amount::Expression;
     use crate::transaction::posting::LotAttributes;
     use crate::transaction::PriceType;
     use crate::{Amount, Date};
@@ -237,104 +236,6 @@ mod acceptance_tests {
         let transaction = parse_single_directive(input).into_transaction().unwrap();
         let posting = &transaction.postings()[0];
         assert_eq!(posting.price().map(|(t, a)| (t, a.clone())), expected);
-    }
-
-    #[rstest]
-    #[case("2", Expression::value(2))]
-    #[case("2+3", Expression::plus(Expression::value(2), Expression::value(3)))]
-    #[case("2 + 3", Expression::plus(Expression::value(2), Expression::value(3)))]
-    #[case(
-        "2 + 3 + 4",
-        Expression::plus(
-            Expression::plus(Expression::value(2), Expression::value(3)),
-            Expression::value(4)
-        )
-    )]
-    #[case(
-        "2 + 3 - 4",
-        Expression::minus(
-            Expression::plus(Expression::value(2), Expression::value(3)),
-            Expression::value(4)
-        )
-    )]
-    #[case("2*3", Expression::mul(Expression::value(2), Expression::value(3)))]
-    #[case("2 * 3", Expression::mul(Expression::value(2), Expression::value(3)))]
-    #[case("2  *  3", Expression::mul(Expression::value(2), Expression::value(3)))]
-    #[case("2 / 3", Expression::div(Expression::value(2), Expression::value(3)))]
-    #[case(
-        "2  / \t3",
-        Expression::div(Expression::value(2), Expression::value(3))
-    )]
-    #[case(
-        "1 + 2 * 3",
-        Expression::plus(
-            Expression::value(1),
-            Expression::mul(Expression::value(2), Expression::value(3)),
-        )
-    )]
-    #[case(
-        "1+2/3",
-        Expression::plus(
-            Expression::value(1),
-            Expression::div(Expression::value(2), Expression::value(3)),
-        )
-    )]
-    #[case(
-        "(1+2)/3",
-        Expression::div(
-            Expression::plus(Expression::value(1), Expression::value(2)),
-            Expression::value(3),
-        )
-    )]
-    #[case(
-        "( 1 + 2 ) / 3",
-        Expression::div(
-            Expression::plus(Expression::value(1), Expression::value(2)),
-            Expression::value(3),
-        )
-    )]
-    #[case(
-        "(3 - 2) / 1",
-        Expression::div(
-            Expression::minus(Expression::value(3), Expression::value(2)),
-            Expression::value(1),
-        )
-    )]
-    #[case(
-        "(3 - (2 * 1))",
-        Expression::minus(
-            Expression::value(3),
-            Expression::mul(Expression::value(2), Expression::value(1)),
-        )
-    )]
-    #[case(
-        "((2 * 1) - 3)",
-        Expression::minus(
-            Expression::mul(Expression::value(2), Expression::value(1)),
-            Expression::value(3),
-        )
-    )]
-    #[case(
-        "3+4   *5/(  6* 2  )  --71",
-        Expression::minus(
-            Expression::plus(
-                Expression::value(3),
-                Expression::div(
-                    Expression::mul(Expression::value(4), Expression::value(5)),
-                    Expression::mul(Expression::value(6), Expression::value(2))
-                )
-            ),
-            Expression::value(-71),
-        )
-    )]
-    fn parse_expression(#[case] input: &str, #[case] expected: Expression) {
-        let input = format!("2022-02-20 txn\n  Assets:A  {input} CHF");
-        let transaction = parse_single_directive(&input).into_transaction().unwrap();
-        let actual = transaction.postings()[0]
-            .amount()
-            .expect("no amount")
-            .expression();
-        assert_eq!(actual, &expected);
     }
 
     #[rstest]

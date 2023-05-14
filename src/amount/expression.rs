@@ -328,9 +328,17 @@ mod tests {
 
     #[rstest]
     #[case("3 / 2", Expression::div(Expression::value(3), Expression::value(2)))]
+    #[case("3/2", Expression::div(Expression::value(3), Expression::value(2)))]
     #[case("3 * 2", Expression::mul(Expression::value(3), Expression::value(2)))]
+    #[case("3*2", Expression::mul(Expression::value(3), Expression::value(2)))]
     #[case("3 + 2", Expression::plus(Expression::value(3), Expression::value(2)))]
+    #[case("3+2", Expression::plus(Expression::value(3), Expression::value(2)))]
     #[case("3 - 2", Expression::minus(Expression::value(3), Expression::value(2)))]
+    #[case(
+        "3 -\t2",
+        Expression::minus(Expression::value(3), Expression::value(2))
+    )]
+    #[case("3-2", Expression::minus(Expression::value(3), Expression::value(2)))]
     #[case(
         "3 - 2 - 1",
         Expression::minus(
@@ -381,7 +389,7 @@ mod tests {
         )
     )]
     #[case(
-        "3+4 *5/( 6* 2 ) --71",
+        "+3+4 *5/( 6* 2\t) --71",
         Expression::minus(
             Expression::plus(
                 Expression::value(3),
