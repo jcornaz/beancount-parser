@@ -75,6 +75,9 @@ pub mod pest_parser;
 mod price;
 mod string;
 pub mod transaction;
+#[cfg(feature = "unstable")]
+#[doc(hidden)]
+pub mod v2;
 
 /// Type of account
 #[deprecated(

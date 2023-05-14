@@ -34,7 +34,7 @@ fn examples_have_expected_number_of_transaction(
 
 #[rstest]
 #[case("", 0)]
-#[case(SIMPLE, 13)]
+#[case(SIMPLE, 12)]
 #[case(COMMENTS, 0)]
 fn examples_have_expected_number_of_postings(#[case] input: &str, #[case] expected_count: usize) {
     let actual_count: usize = Parser::new(input)
