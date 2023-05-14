@@ -73,7 +73,6 @@ mod pad;
 #[doc(hidden)]
 pub mod pest_parser;
 mod price;
-mod span;
 mod string;
 pub mod transaction;
 
@@ -102,7 +101,7 @@ pub use crate::{
 };
 
 #[cfg(feature = "unstable")]
-pub use crate::{commodity::Commodity, event::Event, nom_parser::parse, option::Option};
+pub use crate::{commodity::Commodity, event::Event, option::Option};
 
 type Span<'a> = nom_locate::LocatedSpan<&'a str>;
 type IResult<'a, O> = nom::IResult<Span<'a>, O>;

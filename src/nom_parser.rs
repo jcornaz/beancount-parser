@@ -62,26 +62,6 @@ impl<'a> Iterator for Parser<'a> {
     }
 }
 
-#[cfg(feature = "unstable")]
-#[doc(hidden)]
-pub fn parse(
-    input: &str,
-) -> Result<Vec<crate::span::Spanned<Directive<'_>>>, crate::span::Spanned<Error>> {
-    use crate::span::Spanned;
-    use nom::combinator::iterator;
-    let mut chunks = iterator(Span::new(input), chunk);
-    let directives: Vec<_> = chunks
-        .filter_map(|chunk| match chunk {
-            Chunk::Directive(d) => Some(Spanned::new(d)),
-            _ => None,
-        })
-        .collect();
-    let (_, _) = chunks
-        .finish()
-        .map_err(|_| Spanned::new(Error::from_parsing()))?;
-    Ok(directives)
-}
-
 fn chunk(input: Span<'_>) -> IResult<'_, Chunk<'_>> {
     alt((
         map(directive, Chunk::Directive),
