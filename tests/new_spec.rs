@@ -238,8 +238,6 @@ fn parse_open_directive_currencies(#[case] input: &str, #[case] expected: &[&str
 #[rstest]
 #[case(r#"option "operating_currency" "USD""#, "operating_currency", "USD")]
 #[case(r#"option "operating_currency" "USD""#, "operating_currency", "USD")]
-#[case(r#"option"operating_currency" "USD""#, "operating_currency", "USD")]
-#[case(r#"option "operating_currency""USD""#, "operating_currency", "USD")]
 #[case(r#"option  "operating_currency"  "USD""#, "operating_currency", "USD")]
 #[case("option\t\"operating_currency\"\t\"USD\"", "operating_currency", "USD")]
 #[case(
@@ -260,8 +258,7 @@ fn parse_option(#[case] input: &str, #[case] expected_name: &str, #[case] expect
 fn parse_event(
     #[values(
         r#"2020-11-23 event "location" "Boston""#,
-        r#"2020-11-23  event  "location"  "Boston""#,
-        r#"2020-11-23event "location""Boston""#
+        r#"2020-11-23  event  "location"  "Boston""#
     )]
     input: &str,
 ) {

@@ -1,7 +1,7 @@
 #![cfg(feature = "unstable")]
 
 use nom::bytes::complete::{tag, take_till};
-use nom::character::complete::{char, space0};
+use nom::character::complete::{char, space1};
 use nom::sequence::delimited;
 
 use crate::pest_parser::Pair;
@@ -41,9 +41,9 @@ impl<'a> Event<'a> {
 
 pub(crate) fn event(input: Span<'_>) -> IResult<'_, Event<'_>> {
     let (input, date) = date(input)?;
-    let (input, _) = delimited(space0, tag("event"), space0)(input)?;
+    let (input, _) = delimited(space1, tag("event"), space1)(input)?;
     let (input, name) = delimited(char('"'), take_till(|c| c == '"'), char('"'))(input)?;
-    let (input, _) = space0(input)?;
+    let (input, _) = space1(input)?;
     let (input, value) = delimited(char('"'), take_till(|c| c == '"'), char('"'))(input)?;
     Ok((
         input,

@@ -3,7 +3,7 @@
 use crate::pest_parser::Pair;
 use crate::{string, IResult, Span};
 use nom::bytes::streaming::take_till;
-use nom::character::complete::space0;
+use nom::character::complete::space1;
 use nom::sequence::delimited;
 use nom::{bytes::complete::tag, character::complete::char, sequence::terminated};
 
@@ -36,9 +36,9 @@ impl<'a> Option<'a> {
 }
 
 pub(crate) fn option(input: Span<'_>) -> IResult<'_, Option<'_>> {
-    let (input, _) = terminated(tag("option"), space0)(input)?;
+    let (input, _) = terminated(tag("option"), space1)(input)?;
     let (input, name) = delimited(char('"'), take_till(|c| c == '"'), char('"'))(input)?;
-    let (input, _) = space0(input)?;
+    let (input, _) = space1(input)?;
     let (input, value) = delimited(char('"'), take_till(|c| c == '"'), char('"'))(input)?;
     Ok((
         input,
