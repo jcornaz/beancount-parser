@@ -1,6 +1,6 @@
 use nom::bytes::complete::tag;
 use nom::character::complete::space0;
-use nom::character::streaming::space1;
+use nom::character::complete::space1;
 use nom::combinator::{map, opt};
 use nom::sequence::{preceded, terminated, tuple};
 

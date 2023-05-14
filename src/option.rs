@@ -2,7 +2,7 @@
 
 use crate::pest_parser::Pair;
 use crate::{string, IResult, Span};
-use nom::bytes::streaming::take_till;
+use nom::bytes::complete::take_till;
 use nom::character::complete::space1;
 use nom::sequence::delimited;
 use nom::{bytes::complete::tag, character::complete::char, sequence::terminated};

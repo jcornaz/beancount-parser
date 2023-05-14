@@ -1,6 +1,6 @@
 use nom::{
     bytes::complete::tag,
-    character::streaming::space1,
+    character::complete::space1,
     sequence::{terminated, tuple},
 };
 
