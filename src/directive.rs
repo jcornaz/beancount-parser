@@ -1,9 +1,7 @@
-use crate::assertion::assertion;
-use crate::close::close;
-use crate::include::{include, Include};
-use crate::open::open;
-use crate::pad::{pad, Pad};
-use crate::price::{price, Price};
+use crate::include::Include;
+
+use crate::pad::Pad;
+use crate::price::Price;
 #[cfg(feature = "unstable")]
 use crate::{
     pest_parser::{Pair, Rule},
@@ -13,7 +11,7 @@ use crate::{Assertion, Close, Date, IResult, Open, Span};
 use nom::branch::alt;
 use nom::combinator::map;
 
-use crate::transaction::{transaction, Transaction};
+use crate::transaction::Transaction;
 
 /// A directive
 ///
@@ -106,26 +104,26 @@ impl<'a> Directive<'a> {
 #[cfg(not(feature = "unstable"))]
 pub(crate) fn directive(input: Span<'_>) -> IResult<'_, Directive<'_>> {
     alt((
-        map(transaction, Directive::Transaction),
-        map(price, Directive::Price),
-        map(open, Directive::Open),
-        map(close, Directive::Close),
-        map(assertion, Directive::Assertion),
-        map(pad, Directive::Pad),
-        map(include, Directive::Include),
+        map(crate::transaction::transaction, Directive::Transaction),
+        map(crate::price::price, Directive::Price),
+        map(crate::open::directive, Directive::Open),
+        map(crate::close::close, Directive::Close),
+        map(crate::assertion::assertion, Directive::Assertion),
+        map(crate::pad::pad, Directive::Pad),
+        map(crate::include::include, Directive::Include),
     ))(input)
 }
 
 #[cfg(feature = "unstable")]
 pub(crate) fn directive(input: Span<'_>) -> IResult<'_, Directive<'_>> {
     alt((
-        map(transaction, Directive::Transaction),
-        map(price, Directive::Price),
-        map(open, Directive::Open),
-        map(close, Directive::Close),
-        map(assertion, Directive::Assertion),
-        map(pad, Directive::Pad),
-        map(include, Directive::Include),
+        map(crate::transaction::transaction, Directive::Transaction),
+        map(crate::price::price, Directive::Price),
+        map(crate::open::directive, Directive::Open),
+        map(crate::close::close, Directive::Close),
+        map(crate::assertion::assertion, Directive::Assertion),
+        map(crate::pad::pad, Directive::Pad),
+        map(crate::include::include, Directive::Include),
         map(crate::option::option, Directive::Option),
         map(crate::event::event, Directive::Event),
         map(crate::commodity::commodity, Directive::Commodity),

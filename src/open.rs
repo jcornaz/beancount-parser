@@ -51,21 +51,27 @@ impl<'a> Open<'a> {
     }
 }
 
-pub(crate) fn open(input: Span<'_>) -> IResult<'_, Open<'_>> {
+pub(crate) fn directive(input: Span<'_>) -> IResult<'_, Open<'_>> {
     let (input, date) = date(input)?;
     let (input, _) = tuple((space1, tag("open"), space1))(input)?;
-    let (input, account) = account::account(input)?;
-    let (input, _) = space0(input)?;
-    let separator = tuple((space0, char(','), space0));
-    let (input, currencies) = separated_list0(separator, amount::currency)(input)?;
-    Ok((
-        input,
-        Open {
-            date,
-            account,
-            currencies,
-        },
-    ))
+    content(date)(input)
+}
+
+pub(crate) fn content(date: Date) -> impl FnMut(Span<'_>) -> IResult<'_, Open<'_>> {
+    move |input| {
+        let (input, account) = account::account(input)?;
+        let (input, _) = space0(input)?;
+        let separator = tuple((space0, char(','), space0));
+        let (input, currencies) = separated_list0(separator, amount::currency)(input)?;
+        Ok((
+            input,
+            Open {
+                date,
+                account,
+                currencies,
+            },
+        ))
+    }
 }
 
 #[cfg(test)]
@@ -74,7 +80,7 @@ mod tests {
 
     #[test]
     fn simple_open_directive() {
-        let (_, open) = open(Span::new("2022-10-14 open Assets:A")).unwrap();
+        let (_, open) = directive(Span::new("2022-10-14 open Assets:A")).unwrap();
         assert_eq!(open.date(), Date::new(2022, 10, 14));
         assert_eq!(open.account(), &Account::new(account::Type::Assets, ["A"]));
         assert_eq!(open.currencies().len(), 0);
@@ -82,7 +88,7 @@ mod tests {
 
     #[test]
     fn open_with_single_currency_constraint() {
-        let (_, open) = open(Span::new(
+        let (_, open) = directive(Span::new(
             "2014-05-01 open Liabilities:CreditCard:CapitalOne CHF",
         ))
         .unwrap();
@@ -97,7 +103,7 @@ mod tests {
         )]
         input: &str,
     ) {
-        let (_, open) = open(Span::new(input)).unwrap();
+        let (_, open) = directive(Span::new(input)).unwrap();
         assert_eq!(open.currencies(), &["CHF", "USD", "EUR"]);
     }
 }
