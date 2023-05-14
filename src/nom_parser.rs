@@ -338,21 +338,6 @@ mod acceptance_tests {
     }
 
     #[rstest]
-    #[ignore = "not implemented"]
-    fn parse_commodity_currency(
-        #[values(
-            "1792-01-01 commodity USD",
-            "1792-01-01  commodity  USD",
-            "1792-01-01\tcommodity\tUSD"
-        )]
-        input: &str,
-    ) {
-        let directive = parse_single_directive(input);
-        let Directive::Commodity(commodity) = directive else { panic!("expected commodity but was {directive:?}") };
-        assert_eq!(commodity.currency(), "USD");
-    }
-
-    #[rstest]
     fn parse_price(
         #[values(
             "2020-01-03 price VBMPX 186 USD",

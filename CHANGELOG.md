@@ -38,6 +38,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 * Parse `option` directive
 * Parse `event` directive
+* Parse `commodity` directive
 
 
 ## [1.15.0] - 2023-03-07

@@ -1,6 +1,8 @@
 #![cfg(feature = "unstable")]
 
-use crate::pest_parser::Pair;
+use nom::{bytes::complete::tag, character::complete::space1, sequence::delimited};
+
+use crate::{amount::currency, date::date, pest_parser::Pair, IResult, Span};
 
 /// The commodity declaration directive
 ///
@@ -26,4 +28,11 @@ impl<'a> Commodity<'a> {
             .as_str();
         Self { currency }
     }
+}
+
+pub(crate) fn commodity(input: Span<'_>) -> IResult<'_, Commodity<'_>> {
+    let (input, _) = date(input)?;
+    let (input, _) = delimited(space1, tag("commodity"), space1)(input)?;
+    let (input, currency) = currency(input)?;
+    Ok((input, Commodity { currency }))
 }

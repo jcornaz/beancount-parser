@@ -270,6 +270,21 @@ fn parse_event(
 }
 
 #[rstest]
+#[cfg(feature = "unstable")]
+fn parse_commodity_currency(
+    #[values(
+        "1792-01-01 commodity USD",
+        "1792-01-01  commodity  USD",
+        "1792-01-01\tcommodity\tUSD"
+    )]
+    input: &str,
+) {
+    let directive = parse_single_directive(input);
+    let Directive::Commodity(commodity) = directive else { panic!("expected commodity but was {directive:?}") };
+    assert_eq!(commodity.currency(), "USD");
+}
+
+#[rstest]
 #[ignore = "not implemented"]
 fn error_case(
     #[values(
