@@ -18,7 +18,7 @@
         clippy::unwrap_used
     )
 )]
-#![cfg_attr(feature = "unstable", allow(missing_docs))]
+#![cfg_attr(feature = "unstable", allow(missing_docs, clippy::missing_errors_doc))]
 #![cfg_attr(has_doc_auto_cfg, feature(doc_auto_cfg))]
 
 //! A rust parsing library for [beancount](https://beancount.github.io/docs/) files
@@ -99,7 +99,10 @@ pub use crate::{
 };
 
 #[cfg(feature = "unstable")]
-pub use crate::{commodity::Commodity, event::Event, option::Option, pest_parser::parse};
+pub use crate::{
+    commodity::Commodity, event::Event, nom_parser::parse_to_vec, option::Option,
+    pest_parser::parse,
+};
 
 type Span<'a> = nom_locate::LocatedSpan<&'a str>;
 type IResult<'a, O> = nom::IResult<Span<'a>, O>;

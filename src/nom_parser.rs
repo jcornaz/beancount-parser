@@ -1,12 +1,9 @@
 use crate::{transaction, Directive, Error, IResult, Span};
 use nom::{
     branch::alt,
-    bytes::complete::tag,
-    character::{
-        complete::{line_ending, not_line_ending},
-        streaming::space1,
-    },
-    combinator::{map, opt, value},
+    bytes::complete::{tag, take_till1},
+    character::complete::{line_ending, space1},
+    combinator::{map, opt, recognize},
     sequence::{preceded, tuple},
 };
 
@@ -65,12 +62,37 @@ impl<'a> Iterator for Parser<'a> {
     }
 }
 
+#[cfg(feature = "unstable")]
+pub fn parse_to_vec(
+    input: &str,
+) -> Result<Vec<crate::span::Spanned<Directive<'_>>>, crate::span::Spanned<Error>> {
+    use crate::span::Spanned;
+    use nom::combinator::iterator;
+    let mut chunks = iterator(Span::new(input), chunk);
+    let directives: Vec<_> = chunks
+        .filter_map(|chunk| match chunk {
+            Chunk::Directive(d) => Some(Spanned::new(d)),
+            _ => None,
+        })
+        .collect();
+    let (_, _) = chunks
+        .finish()
+        .map_err(|_| Spanned::new(Error::from_parsing()))?;
+    Ok(directives)
+}
+
 fn chunk(input: Span<'_>) -> IResult<'_, Chunk<'_>> {
     alt((
         map(directive, Chunk::Directive),
         map(pushtag, Chunk::PushTag),
         map(poptag, Chunk::PopTag),
-        value(Chunk::Comment, tuple((not_line_ending, opt(line_ending)))),
+        map(
+            alt((
+                recognize(tuple((take_till1(|c| c == '\n'), opt(line_ending)))),
+                line_ending,
+            )),
+            |_| Chunk::Comment,
+        ),
     ))(input)
 }
 
@@ -106,18 +128,6 @@ mod tests {
         let input = "poptag #test";
         let (_, chunk) = chunk(Span::new(input)).expect("should successfully parse the input");
         assert!(matches!(chunk, Chunk::PopTag("test")));
-    }
-}
-
-#[cfg(all(test, feature = "unstable"))]
-fn parse(
-    input: &str,
-) -> Result<Vec<crate::span::Spanned<Directive<'_>>>, crate::span::Spanned<Error>> {
-    use crate::span::Spanned;
-    use nom::{multi::many0, Parser};
-    match many0(directive.map(Spanned::new))(Span::new(input)) {
-        Ok((_, directives)) => Ok(directives),
-        Err(_) => Err(Spanned::new(Error::from_parsing())),
     }
 }
 
@@ -271,8 +281,10 @@ mod acceptance_tests {
     }
 
     fn parse_single_directive(input: &str) -> Directive<'_> {
-        let directives = parse(input).expect("failed to parse input");
+        let directives = Parser::new(input)
+            .collect::<Result<Vec<_>, _>>()
+            .expect("failed to parse input");
         assert_eq!(directives.len(), 1, "unexpected number of directives");
-        directives.into_iter().next().unwrap().into_inner()
+        directives.into_iter().next().unwrap()
     }
 }
