@@ -1,7 +1,7 @@
 use nom::{
     branch::alt,
-    bytes::complete::tag,
-    character::complete::{alphanumeric1, char},
+    bytes::{complete::tag, complete::take_while},
+    character::complete::{char, satisfy},
     combinator::{cut, recognize},
     multi::many1_count,
     sequence::preceded,
@@ -27,7 +27,13 @@ pub(super) fn parse(input: Span<'_>) -> IResult<'_, Account<'_>> {
             tag("Income"),
             tag("Equity"),
         )),
-        cut(many1_count(preceded(char(':'), alphanumeric1))),
+        cut(many1_count(preceded(
+            char(':'),
+            preceded(
+                satisfy(|c: char| c.is_uppercase()),
+                take_while(|c: char| c.is_alphanumeric() || c == '-'),
+            ),
+        ))),
     ))(input)?;
     Ok((input, Account(name.fragment())))
 }

@@ -33,6 +33,8 @@ fn should_parse_date(
 #[case("2014-05-01 open Equity:A", "Equity:A")]
 #[case("2014-05-01 open Income:A", "Income:A")]
 #[case("2014-05-01 open Expenses:A", "Expenses:A")]
+#[case("2014-05-01 open Assets:Cash2", "Assets:Cash2")]
+#[case("2014-05-01 open Assets:Hello-world", "Assets:Hello-world")]
 #[case("2014-05-01  open  Assets:Cash", "Assets:Cash")]
 #[case("2014-05-01\topen\tAssets:Cash:Wallet", "Assets:Cash:Wallet")]
 #[case("2014-05-01\topen\tAssets:Cash:Wallet  ", "Assets:Cash:Wallet")]
@@ -69,7 +71,10 @@ fn should_parse_open_account_currency(#[case] input: &str, #[case] exepcted_curr
 fn should_reject_invalid_input(
     #[values(
         "14-05-01 open Assets:Cash",
-        "14-05-05 open Assets",
+        "2014-05-05 open Assets",
+        "2014-05-05 open Assets:hello",
+        "2014-05-05 open Assets:2",
+        "2014-05-05 open Assets:2Hello",
         "2014-5-01 open Assets:Cash",
         "2014-05-1 open Assets:Cash",
         "2014-00-01 open Assets:Cash",
