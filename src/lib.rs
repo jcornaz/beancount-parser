@@ -1,14 +1,15 @@
 mod account;
 mod currency;
 mod date;
+mod transaction;
 
 pub use date::Date;
 use nom::{
     branch::alt,
-    bytes::complete::tag,
+    bytes::{complete::tag, streaming::take_till},
     character::complete::{char, line_ending, not_line_ending, space0, space1},
     combinator::{all_consuming, cut, eof, iterator, map, opt},
-    sequence::preceded,
+    sequence::{delimited, preceded},
     Finish, Parser,
 };
 
@@ -38,6 +39,7 @@ pub struct Directive<'a> {
 #[derive(Debug)]
 #[non_exhaustive]
 pub enum DirectiveContent<'a> {
+    Transaction(transaction::Transaction<'a>),
     Open(account::Open<'a>),
     Close(account::Close<'a>),
 }
@@ -61,6 +63,7 @@ fn directive(input: Span<'_>) -> IResult<'_, Directive<'_>> {
 fn directive_content(input: Span<'_>) -> IResult<'_, DirectiveContent<'_>> {
     let (input, _) = space1(input)?;
     let (input, content) = alt((
+        map(transaction::parse, DirectiveContent::Transaction),
         map(
             preceded(tag("open"), cut(preceded(space1, account::open))),
             DirectiveContent::Open,
@@ -86,4 +89,11 @@ fn line(input: Span<'_>) -> IResult<'_, ()> {
     let (input, _) = not_line_ending(input)?;
     let (input, _) = line_ending(input)?;
     Ok((input, ()))
+}
+
+fn string(input: Span<'_>) -> IResult<'_, &str> {
+    map(
+        delimited(char('"'), take_till(|c: char| c == '"'), char('"')),
+        |s: Span<'_>| *s.fragment(),
+    )(input)
 }

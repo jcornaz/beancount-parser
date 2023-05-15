@@ -13,6 +13,21 @@ fn should_succeed_for_valid_input(#[values("", "\n", COMMENTS)] input: &str) {
 // TODO test number of open directives
 
 #[rstest]
+#[case("2023-05-15 txn", None)]
+#[case("2023-05-15 txn \"Hello world!\"", Some("Hello world!"))]
+#[case("2023-05-15 txn \"payee\" \"narration\"", Some("narration"))]
+#[case(
+    "2023-05-15 txn \"Hello world!\" ; And a comment",
+    Some("Hello world!")
+)]
+fn should_parse_transaction_description(#[case] input: &str, #[case] expected: Option<&str>) {
+    let DirectiveContent::Transaction(trx) = parse_single_directive(input).content else {
+        panic!("was not a transaction");
+    };
+    assert_eq!(trx.narration, expected)
+}
+
+#[rstest]
 #[case("2014-05-01 open Assets:Cash", 2014, 5, 1)]
 #[case("0001-01-01 open Assets:Cash", 1, 1, 1)]
 fn should_parse_date(
@@ -114,7 +129,10 @@ fn should_reject_invalid_input(
         "2014-05-01 open Assets:Checking -US",
         "2014-05-01close Assets:Cash",
         "2014-05-01 closeAssets:Cash",
-        "2014-05-01 closeAssets:Cash"
+        "2014-05-01 closeAssets:Cash",
+        "2023-05-15txn \"payee\" \"narration\"",
+        "2023-05-15 txn\"payee\" \"narration\"",
+        "2023-05-15 txn \"payee\"\"narration\""
     )]
     input: &str,
 ) {
