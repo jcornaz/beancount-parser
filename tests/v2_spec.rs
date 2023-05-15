@@ -48,6 +48,24 @@ fn should_parse_open_account(#[case] input: &str, #[case] expected_account: &str
 }
 
 #[rstest]
+#[case("2014-05-01 open Assets:Checking", &[])]
+#[case("2014-05-01 open Assets:Checking USD", &["USD"])]
+#[case("2014-05-01 open Assets:Checking A", &["A"])]
+#[case("2014-05-01 open Assets:Checking USD'42-CHF_EUR.PLN", &["USD'42-CHF_EUR.PLN"])]
+#[case("2014-05-01 open Assets:Checking\tUSD", &["USD"])]
+#[case("2014-05-01 open Assets:Checking  USD", &["USD"])]
+#[case("2014-05-01 open Assets:Checking CHF,USD", &["CHF", "USD"])]
+#[case("2014-05-01 open Assets:Checking CHF, USD", &["CHF", "USD"])]
+#[case("2014-05-01 open Assets:Checking CHF  ,\tUSD", &["CHF", "USD"])]
+fn should_parse_open_account_currency(#[case] input: &str, #[case] exepcted_currencies: &[&str]) {
+    let DirectiveContent::Open(open) = parse_single_directive(input).content else {
+        panic!("was not an open directive");
+    };
+    let actual_currencies: Vec<&str> = open.currencies.iter().map(|c| c.as_str()).collect();
+    assert_eq!(&actual_currencies, exepcted_currencies);
+}
+
+#[rstest]
 fn should_reject_invalid_input(
     #[values(
         "14-05-01 open Assets:Cash",
@@ -63,7 +81,14 @@ fn should_reject_invalid_input(
         "2014-05-01open Assets:Cash",
         "2014-05-01 openAssets:Cash",
         "2014-05-01 open",
-        "2014-05-01 open oops"
+        "2014-05-01 open oops",
+        "2014-05-01 open Assets:Checking usd",
+        "2014-05-01 open Assets:Checking Hello",
+        "2014-05-01 open Assets:Checking USD CHF",
+        "2014-05-01 open Assets:Checking 1SD",
+        "2014-05-01 open Assets:Checking US2",
+        "2014-05-01 open Assets:Checking US-",
+        "2014-05-01 open Assets:Checking -US"
     )]
     input: &str,
 ) {
