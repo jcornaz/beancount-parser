@@ -56,11 +56,10 @@ fn should_reject_invalid_input(
         "2014-05-32 open Assets:Cash",
         "2014-05-15 open Assets::Cash",
         "2014-05-01 open Assets:Cash 2014-05-01 open Assets:Cash",
-        // TODO no new line between directives
-        // TODO "2014-05-01open Assets:Cash",
-        // TODO "2014-05-01 openAssets:Cash",
-        // TODO "2014-05-01 open",
-        // TODO "2014-05-01 open oops"
+        "2014-05-01open Assets:Cash",
+        "2014-05-01 openAssets:Cash",
+        "2014-05-01 open",
+        // "2014-05-01 open oops"
     )]
     input: &str,
 ) {
