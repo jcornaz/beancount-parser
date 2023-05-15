@@ -1,4 +1,8 @@
-use nom::character::complete::not_line_ending;
+use nom::{
+    character::complete::{alphanumeric1, char},
+    combinator::recognize,
+    multi::separated_list1,
+};
 
 use super::{IResult, Span};
 
@@ -12,6 +16,6 @@ impl<'a> Account<'a> {
 }
 
 pub(super) fn parse(input: Span<'_>) -> IResult<'_, Account<'_>> {
-    let (input, name) = not_line_ending(input)?;
+    let (input, name) = recognize(separated_list1(char(':'), alphanumeric1))(input)?;
     Ok((input, Account(name.fragment())))
 }

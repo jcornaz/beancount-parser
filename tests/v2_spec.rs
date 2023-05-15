@@ -1,16 +1,16 @@
-#![cfg(feature = "unstable")]
-
 const COMMENTS: &str = include_str!("samples/comments.beancount");
 // TODO const SIMPLE: &str = include_str!("samples/simple.beancount");
 // TODO const OFFICIAL: &str = include_str!("samples/official.beancount");
 
-use beancount_parser::v2::{parse, Directive, DirectiveContent};
+use beancount_parser::{parse, Directive, DirectiveContent};
 use rstest::rstest;
 
 #[rstest]
 fn should_succeed_for_valid_input(#[values("", "\n", COMMENTS)] input: &str) {
     parse(input).expect("parsing should succeed");
 }
+
+// TODO test number of open directives
 
 #[rstest]
 #[case("2014-05-01 open Assets:Cash", 2014, 5, 1)]
@@ -31,9 +31,7 @@ fn should_parse_date(
 #[case("2014-05-01 open Assets:Cash", "Assets:Cash")]
 #[case("2014-05-01  open  Assets:Cash", "Assets:Cash")]
 #[case("2014-05-01\topen\tAssets:Cash:Wallet", "Assets:Cash:Wallet")]
-#[ignore = "not implemented"]
 #[case("2014-05-01\topen\tAssets:Cash:Wallet  ", "Assets:Cash:Wallet")]
-#[ignore = "not implemented"]
 #[case(
     "2014-05-01\topen\tAssets:Cash:Wallet ; And a comment",
     "Assets:Cash:Wallet"
@@ -55,6 +53,9 @@ fn should_reject_invalid_input(
         "2014-13-01 open Assets:Cash",
         "2014-05-00 open Assets:Cash",
         "2014-05-32 open Assets:Cash",
+        "2014-05-15 open Assets::Cash",
+        // TODO :: in account
+        // TODO no new line between directives
         // TODO "2014-05-01open Assets:Cash",
         // TODO "2014-05-01 openAssets:Cash",
         // TODO "2014-05-01 open",
