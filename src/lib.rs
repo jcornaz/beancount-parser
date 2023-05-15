@@ -1,7 +1,6 @@
 mod account;
 mod currency;
 mod date;
-mod open;
 
 pub use date::Date;
 use nom::{
@@ -39,7 +38,8 @@ pub struct Directive<'a> {
 #[derive(Debug)]
 #[non_exhaustive]
 pub enum DirectiveContent<'a> {
-    Open(open::Open<'a>),
+    Open(account::Open<'a>),
+    Close(account::Close<'a>),
 }
 
 type Span<'a> = nom_locate::LocatedSpan<&'a str>;
@@ -60,10 +60,16 @@ fn directive(input: Span<'_>) -> IResult<'_, Directive<'_>> {
 
 fn directive_content(input: Span<'_>) -> IResult<'_, DirectiveContent<'_>> {
     let (input, _) = space1(input)?;
-    let (input, content) = alt((map(
-        preceded(tag("open"), cut(preceded(space1, open::parse))),
-        DirectiveContent::Open,
-    ),))(input)?;
+    let (input, content) = alt((
+        map(
+            preceded(tag("open"), cut(preceded(space1, account::open))),
+            DirectiveContent::Open,
+        ),
+        map(
+            preceded(tag("close"), cut(preceded(space1, account::close))),
+            DirectiveContent::Close,
+        ),
+    ))(input)?;
     let (input, _) = space0(input)?;
     let (input, _) = opt(comment)(input)?;
     let (input, _) = alt((line_ending, eof))(input)?;
