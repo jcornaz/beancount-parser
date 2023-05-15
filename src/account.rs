@@ -1,7 +1,10 @@
 use nom::{
+    branch::alt,
+    bytes::complete::tag,
     character::complete::{alphanumeric1, char},
-    combinator::recognize,
-    multi::separated_list1,
+    combinator::{cut, recognize},
+    multi::many1_count,
+    sequence::preceded,
 };
 
 use super::{IResult, Span};
@@ -16,6 +19,15 @@ impl<'a> Account<'a> {
 }
 
 pub(super) fn parse(input: Span<'_>) -> IResult<'_, Account<'_>> {
-    let (input, name) = recognize(separated_list1(char(':'), alphanumeric1))(input)?;
+    let (input, name) = recognize(preceded(
+        alt((
+            tag("Expenses"),
+            tag("Assets"),
+            tag("Liabilities"),
+            tag("Income"),
+            tag("Equity"),
+        )),
+        cut(many1_count(preceded(char(':'), alphanumeric1))),
+    ))(input)?;
     Ok((input, Account(name.fragment())))
 }

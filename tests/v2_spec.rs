@@ -29,6 +29,10 @@ fn should_parse_date(
 
 #[rstest]
 #[case("2014-05-01 open Assets:Cash", "Assets:Cash")]
+#[case("2014-05-01 open Liabilities:A", "Liabilities:A")]
+#[case("2014-05-01 open Equity:A", "Equity:A")]
+#[case("2014-05-01 open Income:A", "Income:A")]
+#[case("2014-05-01 open Expenses:A", "Expenses:A")]
 #[case("2014-05-01  open  Assets:Cash", "Assets:Cash")]
 #[case("2014-05-01\topen\tAssets:Cash:Wallet", "Assets:Cash:Wallet")]
 #[case("2014-05-01\topen\tAssets:Cash:Wallet  ", "Assets:Cash:Wallet")]
@@ -59,7 +63,7 @@ fn should_reject_invalid_input(
         "2014-05-01open Assets:Cash",
         "2014-05-01 openAssets:Cash",
         "2014-05-01 open",
-        // "2014-05-01 open oops"
+        "2014-05-01 open oops"
     )]
     input: &str,
 ) {
