@@ -7,7 +7,7 @@ use nom::{
     branch::alt,
     bytes::complete::tag,
     character::complete::{char, line_ending, not_line_ending, space0, space1},
-    combinator::{all_consuming, cut, iterator, map, opt},
+    combinator::{all_consuming, cut, eof, iterator, map, opt},
     sequence::preceded,
     Finish, Parser,
 };
@@ -65,6 +65,7 @@ fn directive_content(input: Span<'_>) -> IResult<'_, DirectiveContent<'_>> {
     ),))(input)?;
     let (input, _) = space0(input)?;
     let (input, _) = opt(comment)(input)?;
+    let (input, _) = alt((line_ending, eof))(input)?;
     Ok((input, content))
 }
 

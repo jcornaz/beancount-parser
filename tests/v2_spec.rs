@@ -47,6 +47,7 @@ fn should_parse_open_account(#[case] input: &str, #[case] expected_account: &str
 fn should_reject_invalid_input(
     #[values(
         "14-05-01 open Assets:Cash",
+        "14-05-05 open Assets",
         "2014-5-01 open Assets:Cash",
         "2014-05-1 open Assets:Cash",
         "2014-00-01 open Assets:Cash",
@@ -54,7 +55,7 @@ fn should_reject_invalid_input(
         "2014-05-00 open Assets:Cash",
         "2014-05-32 open Assets:Cash",
         "2014-05-15 open Assets::Cash",
-        // TODO :: in account
+        "2014-05-01 open Assets:Cash 2014-05-01 open Assets:Cash",
         // TODO no new line between directives
         // TODO "2014-05-01open Assets:Cash",
         // TODO "2014-05-01 openAssets:Cash",
