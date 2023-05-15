@@ -28,6 +28,21 @@ fn should_parse_transaction_description(#[case] input: &str, #[case] expected: O
 }
 
 #[rstest]
+#[case("2023-05-15 txn", None)]
+#[case("2023-05-15 txn \"Hello world!\"", None)]
+#[case("2023-05-15 txn \"payee\" \"narration\"", Some("payee"))]
+#[case(
+    "2023-05-15 txn \"Hello world!\" \"\"; And a comment",
+    Some("Hello world!")
+)]
+fn should_parse_transaction_payee(#[case] input: &str, #[case] expected: Option<&str>) {
+    let DirectiveContent::Transaction(trx) = parse_single_directive(input).content else {
+        panic!("was not a transaction");
+    };
+    assert_eq!(trx.payee, expected)
+}
+
+#[rstest]
 #[case("2014-05-01 open Assets:Cash", 2014, 5, 1)]
 #[case("0001-01-01 open Assets:Cash", 1, 1, 1)]
 fn should_parse_date(
@@ -130,6 +145,8 @@ fn should_reject_invalid_input(
         "2014-05-01close Assets:Cash",
         "2014-05-01 closeAssets:Cash",
         "2014-05-01 closeAssets:Cash",
+        "2023-05-15txn \"narration\"",
+        "2023-05-15 txn\"narration\"",
         "2023-05-15txn \"payee\" \"narration\"",
         "2023-05-15 txn\"payee\" \"narration\"",
         "2023-05-15 txn \"payee\"\"narration\""
