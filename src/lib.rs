@@ -74,10 +74,15 @@ fn directive_content(input: Span<'_>) -> IResult<'_, DirectiveContent<'_>> {
             DirectiveContent::Close,
         ),
     ))(input)?;
+    let (input, _) = end_of_line(input)?;
+    Ok((input, content))
+}
+
+fn end_of_line(input: Span<'_>) -> IResult<'_, ()> {
     let (input, _) = space0(input)?;
     let (input, _) = opt(comment)(input)?;
     let (input, _) = alt((line_ending, eof))(input)?;
-    Ok((input, content))
+    Ok((input, ()))
 }
 
 fn comment(input: Span<'_>) -> IResult<'_, ()> {
