@@ -2,7 +2,7 @@ const COMMENTS: &str = include_str!("samples/comments.beancount");
 // TODO const SIMPLE: &str = include_str!("samples/simple.beancount");
 // TODO const OFFICIAL: &str = include_str!("samples/official.beancount");
 
-use beancount_parser::{parse, Directive, DirectiveContent};
+use beancount_parser::{parse, Directive, DirectiveContent, Flag};
 use rstest::rstest;
 
 #[rstest]
@@ -40,6 +40,20 @@ fn should_parse_transaction_payee(#[case] input: &str, #[case] expected: Option<
         panic!("was not a transaction");
     };
     assert_eq!(trx.payee, expected)
+}
+
+#[rstest]
+#[case("2023-05-15 txn", None)]
+#[case("2023-05-15 txn \"hello\"", None)]
+#[case("2023-05-15 *", Some(Flag::Completed))]
+#[case("2023-05-15 * \"hello\"", Some(Flag::Completed))]
+#[case("2023-05-15 !", Some(Flag::Incomplete))]
+#[case("2023-05-15 ! \"hello\"", Some(Flag::Incomplete))]
+fn should_parse_transaction_flag(#[case] input: &str, #[case] expected: Option<Flag>) {
+    let DirectiveContent::Transaction(trx) = parse_single_directive(input).content else {
+        panic!("was not a transaction");
+    };
+    assert_eq!(trx.flag, expected)
 }
 
 #[rstest]
@@ -146,10 +160,13 @@ fn should_reject_invalid_input(
         "2014-05-01 closeAssets:Cash",
         "2014-05-01 closeAssets:Cash",
         "2023-05-15txn \"narration\"",
+        "2023-05-15* \"narration\"",
+        "2023-05-15! \"narration\"",
         "2023-05-15 txn\"narration\"",
         "2023-05-15txn \"payee\" \"narration\"",
         "2023-05-15 txn\"payee\" \"narration\"",
-        "2023-05-15 txn \"payee\"\"narration\""
+        "2023-05-15 txn \"payee\"\"narration\"",
+        "2023-05-15 * \"payee\"\"narration\""
     )]
     input: &str,
 ) {

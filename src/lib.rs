@@ -12,6 +12,7 @@ use nom::{
     sequence::{delimited, preceded},
     Finish, Parser,
 };
+pub use transaction::Flag;
 
 pub fn parse(input: &str) -> Result<BeancountFile<'_>, Error<'_>> {
     match all_consuming(beancount_file)(Span::new(input)).finish() {
