@@ -2,7 +2,7 @@ name: check
 
 on:
   push:
-    branches: ["[0-9]+.x", main, rc, beta, alpha]
+    branches: [main, v1, v2]
   pull_request:
   workflow_dispatch:
 
