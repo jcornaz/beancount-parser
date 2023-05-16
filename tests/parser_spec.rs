@@ -61,7 +61,7 @@ fn should_parse_transaction_flag(#[case] input: &str, #[case] expected: Option<F
 #[case("2023-05-15 txn\n  Assets:Cash", &["Assets:Cash"])]
 #[case("2023-05-15 * \"Hello\" ; with comment \n  Assets:Cash", &["Assets:Cash"])]
 #[case("2023-05-15 txn\n  Assets:Cash\n Income:Salary", &["Assets:Cash", "Income:Salary"])]
-fn should_parse_postings_account(#[case] input: &str, #[case] expected: &[&str]) {
+fn should_parse_posting_accounts(#[case] input: &str, #[case] expected: &[&str]) {
     let DirectiveContent::Transaction(trx) = parse_single_directive(input).content else {
         panic!("was not a transaction");
     };
@@ -70,6 +70,19 @@ fn should_parse_postings_account(#[case] input: &str, #[case] expected: &[&str])
         .into_iter()
         .map(|p| p.account.as_str())
         .collect();
+    assert_eq!(&posting_accounts, expected);
+}
+
+#[rstest]
+#[case("2023-05-15 txn", &[])]
+#[case("2023-05-15 txn\n  Assets:Cash", &[None])]
+#[case("2023-05-15 * \"Hello\" ; with comment \n  Assets:Cash", &[None])]
+#[case("2023-05-15 txn\n  * Assets:Cash\n  ! Income:Salary\n  Equity:Openings", &[Some(Flag::Completed), Some(Flag::Incomplete), None])]
+fn should_parse_posting_flags(#[case] input: &str, #[case] expected: &[Option<Flag>]) {
+    let DirectiveContent::Transaction(trx) = parse_single_directive(input).content else {
+        panic!("was not a transaction");
+    };
+    let posting_accounts: Vec<Option<Flag>> = trx.postings.into_iter().map(|p| p.flag).collect();
     assert_eq!(&posting_accounts, expected);
 }
 
@@ -185,7 +198,9 @@ fn should_reject_invalid_input(
         "2023-05-15 txn \"payee\"\"narration\"",
         "2023-05-15 * \"payee\"\"narration\"",
         "2023-05-15 txn\nAssets:Cash",
-        "2023-05-15 * \"hello\"\nAssets:Cash"
+        "2023-05-15 * \"hello\"\nAssets:Cash",
+        "2023-05-15 * \"test\"\n  *Assets:Cash",
+        "2023-05-15 * \"test\"\n* Assets:Cash"
     )]
     input: &str,
 ) {

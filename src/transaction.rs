@@ -2,9 +2,9 @@ use nom::{
     branch::alt,
     bytes::complete::tag,
     character::complete::{char, space1},
-    combinator::{cut, opt, value},
+    combinator::{cut, map, opt, value},
     multi::many0,
-    sequence::preceded,
+    sequence::{preceded, terminated},
 };
 
 use crate::{
@@ -24,6 +24,7 @@ pub struct Transaction<'a> {
 #[derive(Debug)]
 #[non_exhaustive]
 pub struct Posting<'a> {
+    pub flag: Option<Flag>,
     pub account: Account<'a>,
 }
 
@@ -44,12 +45,15 @@ impl From<Flag> for char {
 }
 
 pub(crate) fn parse(input: Span<'_>) -> IResult<'_, Transaction<'_>> {
-    let (input, flag) = alt((
-        value(Some(Flag::Completed), char('*')),
-        value(Some(Flag::Incomplete), char('!')),
-        value(None, tag("txn")),
-    ))(input)?;
+    let (input, flag) = alt((map(flag, Some), value(None, tag("txn"))))(input)?;
     cut(do_parse(flag))(input)
+}
+
+fn flag(input: Span<'_>) -> IResult<'_, Flag> {
+    alt((
+        value(Flag::Completed, char('*')),
+        value(Flag::Incomplete, char('!')),
+    ))(input)
 }
 
 fn do_parse(flag: Option<Flag>) -> impl Fn(Span<'_>) -> IResult<'_, Transaction<'_>> {
@@ -82,6 +86,7 @@ fn payee_and_narration(input: Span<'_>) -> IResult<'_, (Option<&str>, &str)> {
 
 fn posting(input: Span<'_>) -> IResult<'_, Posting<'_>> {
     let (input, _) = space1(input)?;
+    let (input, flag) = opt(terminated(flag, space1))(input)?;
     let (input, account) = account::parse(input)?;
-    Ok((input, Posting { account }))
+    Ok((input, Posting { flag, account }))
 }
