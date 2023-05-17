@@ -88,7 +88,10 @@ fn should_parse_posting_flags(#[case] input: &str, #[case] expected: &[Option<Fl
 
 #[rstest]
 #[case("2014-05-01 open Assets:Cash", 2014, 5, 1)]
-#[case("0001-01-01 open Assets:Cash", 1, 1, 1)]
+#[case("0001-01-01 open Assets:Cash CHF", 1, 1, 1)]
+#[case("0003-02-01 close Assets:Cash", 3, 2, 1)]
+#[case("0001-02-03 txn", 1, 2, 3)]
+#[case("0001-02-03 * \"hello\"", 1, 2, 3)]
 fn should_parse_date(
     #[case] input: &str,
     #[case] expected_year: u16,
