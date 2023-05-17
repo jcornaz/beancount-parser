@@ -1,16 +1,40 @@
 const COMMENTS: &str = include_str!("samples/comments.beancount");
-// TODO const SIMPLE: &str = include_str!("samples/simple.beancount");
+const SIMPLE: &str = include_str!("samples/simple.beancount");
 // TODO const OFFICIAL: &str = include_str!("samples/official.beancount");
 
 use beancount_parser::{parse, Decimal, Directive, DirectiveContent, Flag, Posting};
 use rstest::rstest;
 
 #[rstest]
-fn should_succeed_for_valid_input(#[values("", "\n", COMMENTS)] input: &str) {
+fn should_succeed_for_valid_input(#[values("", "\n", COMMENTS, SIMPLE)] input: &str) {
     parse(input).expect("parsing should succeed");
 }
 
-// TODO test number of open directives
+#[rstest]
+#[case("", 0)]
+#[case(SIMPLE, 3)]
+fn should_find_all_transactions(#[case] input: &str, #[case] expected_count: usize) {
+    let actual_count = parse(input)
+        .expect("parsing should succeed")
+        .directives
+        .into_iter()
+        .filter(|d| matches!(d.content, DirectiveContent::Transaction(_)))
+        .count();
+    assert_eq!(actual_count, expected_count);
+}
+
+#[rstest]
+#[case("", 0)]
+#[case(SIMPLE, 10)]
+fn should_find_all_open_directives(#[case] input: &str, #[case] expected_count: usize) {
+    let actual_count = parse(input)
+        .expect("parsing should succeed")
+        .directives
+        .into_iter()
+        .filter(|d| matches!(d.content, DirectiveContent::Open(_)))
+        .count();
+    assert_eq!(actual_count, expected_count);
+}
 
 #[rstest]
 #[case("2023-05-15 txn", None)]
