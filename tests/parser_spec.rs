@@ -25,6 +25,22 @@ fn should_find_all_transactions(#[case] input: &str, #[case] expected_count: usi
 
 #[rstest]
 #[case("", 0)]
+#[case(SIMPLE, 12)]
+fn should_find_all_postings(#[case] input: &str, #[case] expected_count: usize) {
+    let actual_count: usize = parse(input)
+        .expect("parsing should succeed")
+        .directives
+        .into_iter()
+        .map(|d| match d.content {
+            DirectiveContent::Transaction(trx) => trx.postings.len(),
+            _ => 0,
+        })
+        .sum();
+    assert_eq!(actual_count, expected_count);
+}
+
+#[rstest]
+#[case("", 0)]
 #[case(SIMPLE, 10)]
 fn should_find_all_open_directives(#[case] input: &str, #[case] expected_count: usize) {
     let actual_count = parse(input)
