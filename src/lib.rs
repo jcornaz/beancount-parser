@@ -3,6 +3,7 @@ mod amount;
 mod date;
 mod transaction;
 
+use amount::Currency;
 pub use date::Date;
 use nom::{
     branch::alt,
@@ -46,6 +47,7 @@ pub enum DirectiveContent<'a> {
     Transaction(transaction::Transaction<'a>),
     Open(account::Open<'a>),
     Close(account::Close<'a>),
+    Commodity(Currency<'a>),
 }
 
 type Span<'a> = nom_locate::LocatedSpan<&'a str>;
@@ -107,6 +109,10 @@ fn directive_content(input: Span<'_>) -> IResult<'_, DirectiveContent<'_>> {
         map(
             preceded(tag("close"), cut(preceded(space1, account::close))),
             DirectiveContent::Close,
+        ),
+        map(
+            preceded(tag("commodity"), cut(preceded(space1, amount::currency))),
+            DirectiveContent::Commodity,
         ),
     ))(input)?;
     let (input, _) = end_of_line(input)?;

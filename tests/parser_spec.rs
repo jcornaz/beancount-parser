@@ -231,6 +231,15 @@ fn should_parse_option() {
 }
 
 #[rstest]
+fn should_parse_commodity() {
+    let input = "1792-01-01 commodity USD";
+    let DirectiveContent::Commodity(commodity) = parse_single_directive(input).content else {
+        panic!("was not an commodity directive");
+    };
+    assert_eq!(commodity.as_str(), "USD");
+}
+
+#[rstest]
 fn should_reject_invalid_input(
     #[values(
         "14-05-01 open Assets:Cash",
@@ -278,6 +287,9 @@ fn should_reject_invalid_input(
         "2023-05-15 * \"test\"\n  Assets:Cash 10CHF",
         "2023-05-15 * \"test\"\n  Assets:Cash 10..2 CHF",
         "2023-05-15 * \"test\"\n  Assets:Cash - CHF",
+        "2023-05-15 commodity",
+        "2023-05-15commodity CHF",
+        "2023-05-15 commodityCHF",
         "option\"hello\" \"world\"",
         "option \"hello\"\"world\"",
         "option \"hello\""
