@@ -2,7 +2,7 @@ const COMMENTS: &str = include_str!("samples/comments.beancount");
 // TODO const SIMPLE: &str = include_str!("samples/simple.beancount");
 // TODO const OFFICIAL: &str = include_str!("samples/official.beancount");
 
-use beancount_parser::{parse, Directive, DirectiveContent, Flag};
+use beancount_parser::{parse, Decimal, Directive, DirectiveContent, Flag, Posting};
 use rstest::rstest;
 
 #[rstest]
@@ -84,6 +84,30 @@ fn should_parse_posting_flags(#[case] input: &str, #[case] expected: &[Option<Fl
     };
     let posting_accounts: Vec<Option<Flag>> = trx.postings.into_iter().map(|p| p.flag).collect();
     assert_eq!(&posting_accounts, expected);
+}
+
+#[rstest]
+fn amount_should_be_empty_if_absent() {
+    let posting = parse_single_posting("2023-05-17 *\n  Assets:Cash");
+    assert!(posting.amount.is_none(), "{:?}", posting.amount);
+}
+
+#[rstest]
+#[case("10 CHF", 10, "CHF")]
+#[case("0 USD", 0, "USD")]
+#[case("-1 EUR", -1, "EUR")]
+#[case("1.2 PLN", Decimal::new(12, 1), "PLN")]
+#[case(".1 PLN", Decimal::new(1, 1), "PLN")]
+#[case("1. CHF", 1, "CHF")]
+fn should_parse_amount_if_set(
+    #[case] input: &str,
+    #[case] expected_value: impl Into<Decimal>,
+    #[case] expected_currency: &str,
+) {
+    let input = format!("2023-05-17 *\n  Assets:Cash {input}");
+    let amount = parse_single_posting(&input).amount.unwrap();
+    assert_eq!(amount.value, expected_value.into());
+    assert_eq!(amount.currency.as_str(), expected_currency);
 }
 
 #[rstest]
@@ -203,7 +227,11 @@ fn should_reject_invalid_input(
         "2023-05-15 txn\nAssets:Cash",
         "2023-05-15 * \"hello\"\nAssets:Cash",
         "2023-05-15 * \"test\"\n  *Assets:Cash",
-        "2023-05-15 * \"test\"\n* Assets:Cash"
+        "2023-05-15 * \"test\"\n* Assets:Cash",
+        "2023-05-15 * \"test\"\n  Assets:Cash10 CHF",
+        "2023-05-15 * \"test\"\n  Assets:Cash 10CHF",
+        "2023-05-15 * \"test\"\n  Assets:Cash 10..2 CHF",
+        "2023-05-15 * \"test\"\n  Assets:Cash - CHF"
     )]
     input: &str,
 ) {
@@ -216,8 +244,22 @@ fn parse_single_directive(input: &str) -> Directive {
     assert_eq!(
         directives.len(),
         1,
-        "unexepcted number of directives: {}",
-        directives.len()
+        "unexepcted number of directives: {:?}",
+        directives
     );
     directives.into_iter().next().unwrap()
+}
+
+fn parse_single_posting(input: &str) -> Posting<'_> {
+    let directive_content = parse_single_directive(input).content;
+    let DirectiveContent::Transaction(trx) = directive_content else {
+        panic!("was not a transaction but: {directive_content:?}");
+    };
+    assert_eq!(
+        trx.postings.len(),
+        1,
+        "unexpected number of postings: {:?}",
+        trx.postings
+    );
+    trx.postings.into_iter().next().unwrap()
 }

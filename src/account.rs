@@ -7,7 +7,7 @@ use nom::{
     sequence::{delimited, preceded},
 };
 
-use crate::currency::{self, Currency};
+use crate::amount::{self, Currency};
 
 use super::{IResult, Span};
 
@@ -57,7 +57,7 @@ pub(super) fn open(input: Span<'_>) -> IResult<'_, Open<'_>> {
     let (input, account) = parse(input)?;
     let (input, _) = space0(input)?;
     let sep = delimited(space0, char(','), space0);
-    let (input, currencies) = separated_list0(sep, currency::parse)(input)?;
+    let (input, currencies) = separated_list0(sep, amount::currency)(input)?;
     Ok((
         input,
         Open {

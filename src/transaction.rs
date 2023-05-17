@@ -9,6 +9,7 @@ use nom::{
 
 use crate::{
     account::{self, Account},
+    amount::{self, Amount},
     end_of_line, string, IResult, Span,
 };
 
@@ -26,6 +27,7 @@ pub struct Transaction<'a> {
 pub struct Posting<'a> {
     pub flag: Option<Flag>,
     pub account: Account<'a>,
+    pub amount: Option<Amount<'a>>,
 }
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Default)]
@@ -88,5 +90,13 @@ fn posting(input: Span<'_>) -> IResult<'_, Posting<'_>> {
     let (input, _) = space1(input)?;
     let (input, flag) = opt(terminated(flag, space1))(input)?;
     let (input, account) = account::parse(input)?;
-    Ok((input, Posting { flag, account }))
+    let (input, amount) = opt(preceded(space1, amount::parse))(input)?;
+    Ok((
+        input,
+        Posting {
+            flag,
+            account,
+            amount,
+        },
+    ))
 }

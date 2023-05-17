@@ -1,8 +1,7 @@
 mod account;
-mod currency;
+mod amount;
 mod date;
 mod transaction;
-
 pub use date::Date;
 use nom::{
     branch::alt,
@@ -12,7 +11,8 @@ use nom::{
     sequence::{delimited, preceded},
     Finish, Parser,
 };
-pub use transaction::Flag;
+pub use rust_decimal::Decimal;
+pub use transaction::{Flag, Posting, Transaction};
 
 pub fn parse(input: &str) -> Result<BeancountFile<'_>, Error<'_>> {
     match all_consuming(beancount_file)(Span::new(input)).finish() {
