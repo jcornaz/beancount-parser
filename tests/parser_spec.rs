@@ -225,6 +225,12 @@ fn should_parse_close_account(#[case] input: &str, #[case] expected_account: &st
 }
 
 #[rstest]
+fn should_parse_option() {
+    let options = parse(r#"option "Hello" "world!""#).unwrap().options;
+    assert_eq!(options.get("Hello"), Some(&"world!"));
+}
+
+#[rstest]
 fn should_reject_invalid_input(
     #[values(
         "14-05-01 open Assets:Cash",
@@ -271,7 +277,10 @@ fn should_reject_invalid_input(
         "2023-05-15 * \"test\"\n  Assets:Cash10 CHF",
         "2023-05-15 * \"test\"\n  Assets:Cash 10CHF",
         "2023-05-15 * \"test\"\n  Assets:Cash 10..2 CHF",
-        "2023-05-15 * \"test\"\n  Assets:Cash - CHF"
+        "2023-05-15 * \"test\"\n  Assets:Cash - CHF",
+        "option\"hello\" \"world\"",
+        "option \"hello\"\"world\"",
+        "option \"hello\""
     )]
     input: &str,
 ) {

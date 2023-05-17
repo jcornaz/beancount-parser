@@ -2,6 +2,7 @@ mod account;
 mod amount;
 mod date;
 mod transaction;
+
 pub use date::Date;
 use nom::{
     branch::alt,
@@ -12,6 +13,7 @@ use nom::{
     Finish, Parser,
 };
 pub use rust_decimal::Decimal;
+use std::collections::HashMap;
 pub use transaction::{Flag, Posting, Transaction};
 
 pub fn parse(input: &str) -> Result<BeancountFile<'_>, Error<'_>> {
@@ -27,6 +29,7 @@ pub struct Error<'a>(Span<'a>);
 #[derive(Debug)]
 #[non_exhaustive]
 pub struct BeancountFile<'a> {
+    pub options: HashMap<&'a str, &'a str>,
     pub directives: Vec<Directive<'a>>,
 }
 
@@ -49,10 +52,42 @@ type Span<'a> = nom_locate::LocatedSpan<&'a str>;
 type IResult<'a, O> = nom::IResult<Span<'a>, O>;
 
 fn beancount_file(input: Span<'_>) -> IResult<'_, BeancountFile<'_>> {
-    let mut iter = iterator(input, alt((directive.map(Some), line.map(|_| None))));
-    let directives = iter.flatten().collect();
+    let mut iter = iterator(input, entry);
+    let mut options = HashMap::new();
+    let mut directives = Vec::new();
+    for entry in &mut iter {
+        match entry {
+            Entry::Directive(d) => {
+                directives.push(d);
+            }
+            Entry::Option { key, value } => {
+                options.insert(key, value);
+            }
+            Entry::Comment => (),
+        }
+    }
     let (input, _) = iter.finish()?;
-    Ok((input, BeancountFile { directives }))
+    Ok((
+        input,
+        BeancountFile {
+            options,
+            directives,
+        },
+    ))
+}
+
+enum Entry<'a> {
+    Directive(Directive<'a>),
+    Option { key: &'a str, value: &'a str },
+    Comment,
+}
+
+fn entry(input: Span<'_>) -> IResult<'_, Entry<'_>> {
+    alt((
+        directive.map(Entry::Directive),
+        line.map(|_| Entry::Comment),
+        option.map(|(key, value)| Entry::Option { key, value }),
+    ))(input)
 }
 
 fn directive(input: Span<'_>) -> IResult<'_, Directive<'_>> {
@@ -76,6 +111,13 @@ fn directive_content(input: Span<'_>) -> IResult<'_, DirectiveContent<'_>> {
     ))(input)?;
     let (input, _) = end_of_line(input)?;
     Ok((input, content))
+}
+
+fn option(input: Span<'_>) -> IResult<'_, (&str, &str)> {
+    let (input, _) = tag("option")(input)?;
+    let (input, key) = preceded(space1, string)(input)?;
+    let (input, value) = preceded(space1, string)(input)?;
+    Ok((input, (key, value)))
 }
 
 fn end_of_line(input: Span<'_>) -> IResult<'_, ()> {
