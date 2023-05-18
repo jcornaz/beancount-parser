@@ -11,7 +11,7 @@ use nom::{
     bytes::complete::{tag, take_till},
     character::complete::{char, line_ending, not_line_ending, space0, space1},
     combinator::{all_consuming, cut, eof, iterator, map, opt},
-    sequence::{delimited, preceded, terminated},
+    sequence::{delimited, preceded, terminated, tuple},
     Finish, Parser,
 };
 pub use rust_decimal::Decimal;
@@ -96,8 +96,34 @@ fn entry(input: Span<'_>) -> IResult<'_, Entry<'_>> {
 
 fn directive(input: Span<'_>) -> IResult<'_, Directive<'_>> {
     let (input, date) = date::parse(input)?;
-    let (input, content) = cut(directive_content)(input)?;
-    let (input, metadata) = metadata::parse(input)?;
+    let (input, (content, metadata)) = cut(preceded(
+        space1,
+        alt((
+            map(transaction::parse, |(t, m)| {
+                (DirectiveContent::Transaction(t), m)
+            }),
+            tuple((
+                terminated(
+                    alt((
+                        map(
+                            preceded(tag("open"), cut(preceded(space1, account::open))),
+                            DirectiveContent::Open,
+                        ),
+                        map(
+                            preceded(tag("close"), cut(preceded(space1, account::close))),
+                            DirectiveContent::Close,
+                        ),
+                        map(
+                            preceded(tag("commodity"), cut(preceded(space1, amount::currency))),
+                            DirectiveContent::Commodity,
+                        ),
+                    )),
+                    end_of_line,
+                ),
+                metadata::parse,
+            )),
+        )),
+    ))(input)?;
     Ok((
         input,
         Directive {
@@ -106,31 +132,6 @@ fn directive(input: Span<'_>) -> IResult<'_, Directive<'_>> {
             content,
         },
     ))
-}
-
-fn directive_content(input: Span<'_>) -> IResult<'_, DirectiveContent<'_>> {
-    let (input, _) = space1(input)?;
-    let (input, content) = alt((
-        map(transaction::parse, DirectiveContent::Transaction),
-        terminated(
-            alt((
-                map(
-                    preceded(tag("open"), cut(preceded(space1, account::open))),
-                    DirectiveContent::Open,
-                ),
-                map(
-                    preceded(tag("close"), cut(preceded(space1, account::close))),
-                    DirectiveContent::Close,
-                ),
-                map(
-                    preceded(tag("commodity"), cut(preceded(space1, amount::currency))),
-                    DirectiveContent::Commodity,
-                ),
-            )),
-            end_of_line,
-        ),
-    ))(input)?;
-    Ok((input, content))
 }
 
 fn option(input: Span<'_>) -> IResult<'_, (&str, &str)> {

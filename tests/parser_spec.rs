@@ -280,11 +280,11 @@ fn should_parse_commodity() {
     "good_title2",
     metadata::Value::String("Hello world!")
 )]
-// #[case(
-//     "2022-05-18 * \"a transaction\"\n  title: \"hello\"\n  Assets:Cash 10 CHF",
-//     "title",
-//     metadata::Value::String("hello")
-// )]
+#[case(
+    "2022-05-18 * \"a transaction\"\n  title: \"hello\"\n  Assets:Cash 10 CHF",
+    "title",
+    metadata::Value::String("hello")
+)]
 fn should_parse_metadata_entry(
     #[case] input: &str,
     #[case] key: &str,

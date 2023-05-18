@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use nom::{
     branch::alt,
     bytes::complete::tag,
@@ -10,7 +12,7 @@ use nom::{
 use crate::{
     account::{self, Account},
     amount::{self, Amount},
-    end_of_line, string, IResult, Span,
+    end_of_line, metadata, string, IResult, Span,
 };
 
 #[derive(Debug)]
@@ -46,7 +48,9 @@ impl From<Flag> for char {
     }
 }
 
-pub(crate) fn parse(input: Span<'_>) -> IResult<'_, Transaction<'_>> {
+pub(crate) fn parse(
+    input: Span<'_>,
+) -> IResult<'_, (Transaction<'_>, HashMap<&str, metadata::Value<'_>>)> {
     let (input, flag) = alt((map(flag, Some), value(None, tag("txn"))))(input)?;
     cut(do_parse(flag))(input)
 }
@@ -58,19 +62,25 @@ fn flag(input: Span<'_>) -> IResult<'_, Flag> {
     ))(input)
 }
 
-fn do_parse(flag: Option<Flag>) -> impl Fn(Span<'_>) -> IResult<'_, Transaction<'_>> {
+fn do_parse(
+    flag: Option<Flag>,
+) -> impl Fn(Span<'_>) -> IResult<'_, (Transaction<'_>, HashMap<&str, metadata::Value<'_>>)> {
     move |input| {
         let (input, payee_and_narration) = opt(preceded(space1, payee_and_narration))(input)?;
         let (input, _) = end_of_line(input)?;
+        let (input, metadata) = metadata::parse(input)?;
         let (input, postings) = many0(posting)(input)?;
         Ok((
             input,
-            Transaction {
-                flag,
-                payee: payee_and_narration.and_then(|(p, _)| p),
-                narration: payee_and_narration.map(|(_, n)| n),
-                postings,
-            },
+            (
+                Transaction {
+                    flag,
+                    payee: payee_and_narration.and_then(|(p, _)| p),
+                    narration: payee_and_narration.map(|(_, n)| n),
+                    postings,
+                },
+                metadata,
+            ),
         ))
     }
 }
