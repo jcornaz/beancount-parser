@@ -169,6 +169,36 @@ fn should_parse_date(
 }
 
 #[rstest]
+#[case(
+    "2020-04-10 balance Assets:US:BofA:Checking        2473.33 USD",
+    "Assets:US:BofA:Checking"
+)]
+fn should_parse_balance_assertion_account(#[case] input: &str, #[case] exepected: &str) {
+    let DirectiveContent::Balance(assertion) = parse_single_directive(input).content else {
+        panic!("was not an open directive");
+    };
+    assert_eq!(assertion.account.as_str(), exepected);
+}
+
+#[rstest]
+#[case(
+    "2020-04-10 balance Assets:US:BofA:Checking        2473 USD",
+    2473,
+    "USD"
+)]
+fn should_parse_balance_assertion_amount(
+    #[case] input: &str,
+    #[case] expected_value: impl Into<Decimal>,
+    #[case] expected_currency: &str,
+) {
+    let DirectiveContent::Balance(assertion) = parse_single_directive(input).content else {
+        panic!("was not an open directive");
+    };
+    assert_eq!(assertion.amount.value, expected_value.into());
+    assert_eq!(assertion.amount.currency.as_str(), expected_currency);
+}
+
+#[rstest]
 #[case("2014-05-01 open Assets:Cash", "Assets:Cash")]
 #[case("2014-05-01 open Liabilities:A", "Liabilities:A")]
 #[case("2014-05-01 open Equity:A", "Equity:A")]
@@ -349,7 +379,9 @@ fn should_reject_invalid_input(
         "option \"hello\"\"world\"",
         "option \"hello\"",
         "2022-05-18 open Assets:Cash\ntitle: \"hello\"",
-        "2022-05-18 open Assets:Cash\n  Title: \"hello\""
+        "2022-05-18 open Assets:Cash\n  Title: \"hello\"",
+        "2020-04-10 balance Assets:US:BofA:Checking2473.33 USD",
+        "2020-04-10 balance Assets:US:BofA:Checking"
     )]
     input: &str,
 ) {

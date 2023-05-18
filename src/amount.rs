@@ -8,6 +8,7 @@ use nom::{
 use crate::{Decimal, IResult, Span};
 
 #[derive(Debug)]
+#[non_exhaustive]
 pub struct Amount<'a> {
     pub value: Decimal,
     pub currency: Currency<'a>,

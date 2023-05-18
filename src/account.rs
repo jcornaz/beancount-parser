@@ -1,13 +1,13 @@
 use nom::{
     branch::alt,
     bytes::{complete::tag, complete::take_while},
-    character::complete::{char, satisfy, space0},
+    character::complete::{char, satisfy, space0, space1},
     combinator::{cut, recognize},
     multi::{many1_count, separated_list0},
     sequence::{delimited, preceded},
 };
 
-use crate::amount::{self, Currency};
+use crate::amount::{self, Amount, Currency};
 
 use super::{IResult, Span};
 
@@ -31,6 +31,13 @@ pub struct Open<'a> {
 #[non_exhaustive]
 pub struct Close<'a> {
     pub account: Account<'a>,
+}
+
+#[derive(Debug)]
+#[non_exhaustive]
+pub struct Balance<'a> {
+    pub account: Account<'a>,
+    pub amount: Amount<'a>,
 }
 
 pub(super) fn parse(input: Span<'_>) -> IResult<'_, Account<'_>> {
@@ -70,4 +77,11 @@ pub(super) fn open(input: Span<'_>) -> IResult<'_, Open<'_>> {
 pub(super) fn close(input: Span<'_>) -> IResult<'_, Close<'_>> {
     let (input, account) = parse(input)?;
     Ok((input, Close { account }))
+}
+
+pub(super) fn balance(input: Span<'_>) -> IResult<'_, Balance<'_>> {
+    let (input, account) = parse(input)?;
+    let (input, _) = space1(input)?;
+    let (input, amount) = amount::parse(input)?;
+    Ok((input, Balance { account, amount }))
 }
