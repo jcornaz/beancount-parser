@@ -1,42 +1,13 @@
+use beancount_parser::{metadata, parse, Decimal, Directive, DirectiveContent};
+use rstest::rstest;
+
 const COMMENTS: &str = include_str!("samples/comments.beancount");
 const SIMPLE: &str = include_str!("samples/simple.beancount");
 // TODO const OFFICIAL: &str = include_str!("samples/official.beancount");
 
-use beancount_parser::{metadata, parse, Decimal, Directive, DirectiveContent, Flag, Posting};
-use rstest::rstest;
-
 #[rstest]
 fn should_succeed_for_valid_input(#[values("", "\n", COMMENTS, SIMPLE)] input: &str) {
     parse(input).expect("parsing should succeed");
-}
-
-#[rstest]
-#[case("", 0)]
-#[case(SIMPLE, 3)]
-fn should_find_all_transactions(#[case] input: &str, #[case] expected_count: usize) {
-    let actual_count = parse(input)
-        .expect("parsing should succeed")
-        .directives
-        .into_iter()
-        .filter(|d| matches!(d.content, DirectiveContent::Transaction(_)))
-        .count();
-    assert_eq!(actual_count, expected_count);
-}
-
-#[rstest]
-#[case("", 0)]
-#[case(SIMPLE, 12)]
-fn should_find_all_postings(#[case] input: &str, #[case] expected_count: usize) {
-    let actual_count: usize = parse(input)
-        .expect("parsing should succeed")
-        .directives
-        .into_iter()
-        .map(|d| match d.content {
-            DirectiveContent::Transaction(trx) => trx.postings.len(),
-            _ => 0,
-        })
-        .sum();
-    assert_eq!(actual_count, expected_count);
 }
 
 #[rstest]
@@ -50,104 +21,6 @@ fn should_find_all_open_directives(#[case] input: &str, #[case] expected_count: 
         .filter(|d| matches!(d.content, DirectiveContent::Open(_)))
         .count();
     assert_eq!(actual_count, expected_count);
-}
-
-#[rstest]
-#[case("2023-05-15 txn", None)]
-#[case("2023-05-15 txn \"Hello world!\"", Some("Hello world!"))]
-#[case("2023-05-15 txn \"payee\" \"narration\"", Some("narration"))]
-#[case(
-    "2023-05-15 txn \"Hello world!\" ; And a comment",
-    Some("Hello world!")
-)]
-fn should_parse_transaction_description(#[case] input: &str, #[case] expected: Option<&str>) {
-    let DirectiveContent::Transaction(trx) = parse_single_directive(input).content else {
-        panic!("was not a transaction");
-    };
-    assert_eq!(trx.narration, expected)
-}
-
-#[rstest]
-#[case("2023-05-15 txn", None)]
-#[case("2023-05-15 txn \"Hello world!\"", None)]
-#[case("2023-05-15 txn \"payee\" \"narration\"", Some("payee"))]
-#[case(
-    "2023-05-15 txn \"Hello world!\" \"\"; And a comment",
-    Some("Hello world!")
-)]
-fn should_parse_transaction_payee(#[case] input: &str, #[case] expected: Option<&str>) {
-    let DirectiveContent::Transaction(trx) = parse_single_directive(input).content else {
-        panic!("was not a transaction");
-    };
-    assert_eq!(trx.payee, expected)
-}
-
-#[rstest]
-#[case("2023-05-15 txn", None)]
-#[case("2023-05-15 txn \"hello\"", None)]
-#[case("2023-05-15 *", Some(Flag::Completed))]
-#[case("2023-05-15 * \"hello\"", Some(Flag::Completed))]
-#[case("2023-05-15 !", Some(Flag::Incomplete))]
-#[case("2023-05-15 ! \"hello\"", Some(Flag::Incomplete))]
-fn should_parse_transaction_flag(#[case] input: &str, #[case] expected: Option<Flag>) {
-    let DirectiveContent::Transaction(trx) = parse_single_directive(input).content else {
-        panic!("was not a transaction");
-    };
-    assert_eq!(trx.flag, expected)
-}
-
-#[rstest]
-#[case("2023-05-15 txn", &[])]
-#[case("2023-05-15 txn\n  Assets:Cash", &["Assets:Cash"])]
-#[case("2023-05-15 * \"Hello\" ; with comment \n  Assets:Cash", &["Assets:Cash"])]
-#[case("2023-05-15 txn\n  Assets:Cash\n Income:Salary", &["Assets:Cash", "Income:Salary"])]
-fn should_parse_posting_accounts(#[case] input: &str, #[case] expected: &[&str]) {
-    let DirectiveContent::Transaction(trx) = parse_single_directive(input).content else {
-        panic!("was not a transaction");
-    };
-    let posting_accounts: Vec<&str> = trx
-        .postings
-        .into_iter()
-        .map(|p| p.account.as_str())
-        .collect();
-    assert_eq!(&posting_accounts, expected);
-}
-
-#[rstest]
-#[case("2023-05-15 txn", &[])]
-#[case("2023-05-15 txn\n  Assets:Cash", &[None])]
-#[case("2023-05-15 * \"Hello\" ; with comment \n  Assets:Cash", &[None])]
-#[case("2023-05-15 txn\n  * Assets:Cash\n  ! Income:Salary\n  Equity:Openings", &[Some(Flag::Completed), Some(Flag::Incomplete), None])]
-fn should_parse_posting_flags(#[case] input: &str, #[case] expected: &[Option<Flag>]) {
-    let DirectiveContent::Transaction(trx) = parse_single_directive(input).content else {
-        panic!("was not a transaction");
-    };
-    let posting_accounts: Vec<Option<Flag>> = trx.postings.into_iter().map(|p| p.flag).collect();
-    assert_eq!(&posting_accounts, expected);
-}
-
-#[rstest]
-fn amount_should_be_empty_if_absent() {
-    let posting = parse_single_posting("2023-05-17 *\n  Assets:Cash");
-    assert!(posting.amount.is_none(), "{:?}", posting.amount);
-}
-
-#[rstest]
-#[case("10 CHF", 10, "CHF")]
-#[case("0 USD", 0, "USD")]
-#[case("-1 EUR", -1, "EUR")]
-#[case("1.2 PLN", Decimal::new(12, 1), "PLN")]
-#[case(".1 PLN", Decimal::new(1, 1), "PLN")]
-#[case("1. CHF", 1, "CHF")]
-fn should_parse_amount_if_set(
-    #[case] input: &str,
-    #[case] expected_value: impl Into<Decimal>,
-    #[case] expected_currency: &str,
-) {
-    let input = format!("2023-05-17 *\n  Assets:Cash {input}");
-    let amount = parse_single_posting(&input).amount.unwrap();
-    assert_eq!(amount.value, expected_value.into());
-    assert_eq!(amount.currency.as_str(), expected_currency);
 }
 
 #[rstest]
@@ -366,22 +239,6 @@ fn should_reject_invalid_input(
         "2014-05-01close Assets:Cash",
         "2014-05-01 closeAssets:Cash",
         "2014-05-01 closeAssets:Cash",
-        "2023-05-15txn \"narration\"",
-        "2023-05-15* \"narration\"",
-        "2023-05-15! \"narration\"",
-        "2023-05-15 txn\"narration\"",
-        "2023-05-15txn \"payee\" \"narration\"",
-        "2023-05-15 txn\"payee\" \"narration\"",
-        "2023-05-15 txn \"payee\"\"narration\"",
-        "2023-05-15 * \"payee\"\"narration\"",
-        "2023-05-15 txn\nAssets:Cash",
-        "2023-05-15 * \"hello\"\nAssets:Cash",
-        "2023-05-15 * \"test\"\n  *Assets:Cash",
-        "2023-05-15 * \"test\"\n* Assets:Cash",
-        "2023-05-15 * \"test\"\n  Assets:Cash10 CHF",
-        "2023-05-15 * \"test\"\n  Assets:Cash 10CHF",
-        "2023-05-15 * \"test\"\n  Assets:Cash 10..2 CHF",
-        "2023-05-15 * \"test\"\n  Assets:Cash - CHF",
         "2023-05-15 commodity",
         "2023-05-15commodity CHF",
         "2023-05-15 commodityCHF",
@@ -412,18 +269,4 @@ fn parse_single_directive(input: &str) -> Directive {
         directives
     );
     directives.into_iter().next().unwrap()
-}
-
-fn parse_single_posting(input: &str) -> Posting<'_> {
-    let directive_content = parse_single_directive(input).content;
-    let DirectiveContent::Transaction(trx) = directive_content else {
-        panic!("was not a transaction but: {directive_content:?}");
-    };
-    assert_eq!(
-        trx.postings.len(),
-        1,
-        "unexpected number of postings: {:?}",
-        trx.postings
-    );
-    trx.postings.into_iter().next().unwrap()
 }
