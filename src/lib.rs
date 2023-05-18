@@ -11,7 +11,7 @@ use nom::{
     bytes::complete::{tag, take_till},
     character::complete::{char, line_ending, not_line_ending, space0, space1},
     combinator::{all_consuming, cut, eof, iterator, map, opt},
-    sequence::{delimited, preceded},
+    sequence::{delimited, preceded, terminated},
     Finish, Parser,
 };
 pub use rust_decimal::Decimal;
@@ -112,20 +112,24 @@ fn directive_content(input: Span<'_>) -> IResult<'_, DirectiveContent<'_>> {
     let (input, _) = space1(input)?;
     let (input, content) = alt((
         map(transaction::parse, DirectiveContent::Transaction),
-        map(
-            preceded(tag("open"), cut(preceded(space1, account::open))),
-            DirectiveContent::Open,
-        ),
-        map(
-            preceded(tag("close"), cut(preceded(space1, account::close))),
-            DirectiveContent::Close,
-        ),
-        map(
-            preceded(tag("commodity"), cut(preceded(space1, amount::currency))),
-            DirectiveContent::Commodity,
+        terminated(
+            alt((
+                map(
+                    preceded(tag("open"), cut(preceded(space1, account::open))),
+                    DirectiveContent::Open,
+                ),
+                map(
+                    preceded(tag("close"), cut(preceded(space1, account::close))),
+                    DirectiveContent::Close,
+                ),
+                map(
+                    preceded(tag("commodity"), cut(preceded(space1, amount::currency))),
+                    DirectiveContent::Commodity,
+                ),
+            )),
+            end_of_line,
         ),
     ))(input)?;
-    let (input, _) = end_of_line(input)?;
     Ok((input, content))
 }
 

@@ -61,7 +61,8 @@ fn flag(input: Span<'_>) -> IResult<'_, Flag> {
 fn do_parse(flag: Option<Flag>) -> impl Fn(Span<'_>) -> IResult<'_, Transaction<'_>> {
     move |input| {
         let (input, payee_and_narration) = opt(preceded(space1, payee_and_narration))(input)?;
-        let (input, postings) = many0(preceded(end_of_line, posting))(input)?;
+        let (input, _) = end_of_line(input)?;
+        let (input, postings) = many0(posting)(input)?;
         Ok((
             input,
             Transaction {
@@ -91,6 +92,7 @@ fn posting(input: Span<'_>) -> IResult<'_, Posting<'_>> {
     let (input, flag) = opt(terminated(flag, space1))(input)?;
     let (input, account) = account::parse(input)?;
     let (input, amount) = opt(preceded(space1, amount::parse))(input)?;
+    let (input, _) = end_of_line(input)?;
     Ok((
         input,
         Posting {
