@@ -1,6 +1,7 @@
 mod account;
 mod amount;
 mod date;
+mod event;
 pub mod metadata;
 mod transaction;
 
@@ -47,10 +48,11 @@ pub struct Directive<'a> {
 #[non_exhaustive]
 pub enum DirectiveContent<'a> {
     Transaction(transaction::Transaction<'a>),
+    Balance(account::Balance<'a>),
     Open(account::Open<'a>),
     Close(account::Close<'a>),
-    Balance(account::Balance<'a>),
     Commodity(Currency<'a>),
+    Event(event::Event<'a>),
 }
 
 type Span<'a> = nom_locate::LocatedSpan<&'a str>;
@@ -121,6 +123,10 @@ fn directive(input: Span<'_>) -> IResult<'_, Directive<'_>> {
                         map(
                             preceded(tag("commodity"), cut(preceded(space1, amount::currency))),
                             DirectiveContent::Commodity,
+                        ),
+                        map(
+                            preceded(tag("event"), cut(preceded(space1, event::parse))),
+                            DirectiveContent::Event,
                         ),
                     )),
                     end_of_line,
