@@ -2,7 +2,7 @@ const COMMENTS: &str = include_str!("samples/comments.beancount");
 const SIMPLE: &str = include_str!("samples/simple.beancount");
 // TODO const OFFICIAL: &str = include_str!("samples/official.beancount");
 
-use beancount_parser::{parse, Decimal, Directive, DirectiveContent, Flag, Posting};
+use beancount_parser::{metadata, parse, Decimal, Directive, DirectiveContent, Flag, Posting};
 use rstest::rstest;
 
 #[rstest]
@@ -240,6 +240,61 @@ fn should_parse_commodity() {
 }
 
 #[rstest]
+#[case(
+    "2022-05-18 open Assets:Cash\n  title: \"hello\"",
+    "title",
+    metadata::Value::String("hello")
+)]
+#[case(
+    "2022-05-18 open Assets:Cash\n  title: \"hello\"\n  name: \"world\"",
+    "title",
+    metadata::Value::String("hello")
+)]
+#[case(
+    "2022-05-18 open Assets:Cash\n  title: \"hello\"\n  name: \"world\"",
+    "name",
+    metadata::Value::String("world")
+)]
+#[case(
+    "2022-05-18 * \"a transaction\"\n  title: \"hello\"",
+    "title",
+    metadata::Value::String("hello")
+)]
+#[case(
+    "2022-05-18 *\n  goodTitle: \"Hello world!\"",
+    "goodTitle",
+    metadata::Value::String("Hello world!")
+)]
+#[case(
+    "2022-05-18 *\n  good-title: \"Hello world!\"",
+    "good-title",
+    metadata::Value::String("Hello world!")
+)]
+#[case(
+    "2022-05-18 *\n  good_title: \"Hello world!\"",
+    "good_title",
+    metadata::Value::String("Hello world!")
+)]
+#[case(
+    "2022-05-18 *\n  good_title2: \"Hello world!\"",
+    "good_title2",
+    metadata::Value::String("Hello world!")
+)]
+// #[case(
+//     "2022-05-18 * \"a transaction\"\n  title: \"hello\"\n  Assets:Cash 10 CHF",
+//     "title",
+//     metadata::Value::String("hello")
+// )]
+fn should_parse_metadata_entry(
+    #[case] input: &str,
+    #[case] key: &str,
+    #[case] expected_value: metadata::Value<'static>,
+) {
+    let metdata = parse_single_directive(input).metadata;
+    assert_eq!(metdata.get(key), Some(&expected_value));
+}
+
+#[rstest]
 fn should_reject_invalid_input(
     #[values(
         "14-05-01 open Assets:Cash",
@@ -292,7 +347,9 @@ fn should_reject_invalid_input(
         "2023-05-15 commodityCHF",
         "option\"hello\" \"world\"",
         "option \"hello\"\"world\"",
-        "option \"hello\""
+        "option \"hello\"",
+        "2022-05-18 open Assets:Cash\ntitle: \"hello\"",
+        "2022-05-18 open Assets:Cash\n  Title: \"hello\""
     )]
     input: &str,
 ) {

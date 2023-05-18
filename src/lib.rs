@@ -1,13 +1,14 @@
 mod account;
 mod amount;
 mod date;
+pub mod metadata;
 mod transaction;
 
 use amount::Currency;
 pub use date::Date;
 use nom::{
     branch::alt,
-    bytes::{complete::tag, streaming::take_till},
+    bytes::complete::{tag, take_till},
     character::complete::{char, line_ending, not_line_ending, space0, space1},
     combinator::{all_consuming, cut, eof, iterator, map, opt},
     sequence::{delimited, preceded},
@@ -39,6 +40,7 @@ pub struct BeancountFile<'a> {
 pub struct Directive<'a> {
     pub date: Date,
     pub content: DirectiveContent<'a>,
+    pub metadata: HashMap<&'a str, metadata::Value<'a>>,
 }
 
 #[derive(Debug)]
@@ -95,7 +97,15 @@ fn entry(input: Span<'_>) -> IResult<'_, Entry<'_>> {
 fn directive(input: Span<'_>) -> IResult<'_, Directive<'_>> {
     let (input, date) = date::parse(input)?;
     let (input, content) = cut(directive_content)(input)?;
-    Ok((input, Directive { date, content }))
+    let (input, metadata) = metadata::parse(input)?;
+    Ok((
+        input,
+        Directive {
+            date,
+            metadata,
+            content,
+        },
+    ))
 }
 
 fn directive_content(input: Span<'_>) -> IResult<'_, DirectiveContent<'_>> {
