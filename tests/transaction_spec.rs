@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 use beancount_parser_2::{parse, Decimal, Directive, DirectiveContent, Flag, Posting};
 use rstest::rstest;
 
@@ -87,8 +89,9 @@ fn should_parse_transaction_flag(#[case] input: &str, #[case] expected: Option<F
 #[case("2014-04-23 * \"Flight to Berlin\" #berlin-trip-2014\n  Expenses:Flights -1230.27 USD\n  Liabilities:CreditCard", &["berlin-trip-2014"])]
 #[case("2014-04-23 * #hello-world #2023_05", &["hello-world", "2023_05"])]
 fn should_parse_tags(#[case] input: &str, #[case] expected: &[&str]) {
+    let expected: HashSet<_> = expected.iter().copied().collect();
     let trx = parse_single_transaction(input);
-    assert_eq!(&trx.tags, expected);
+    assert_eq!(trx.tags, expected);
 }
 
 #[rstest]

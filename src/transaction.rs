@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 use nom::{
     branch::alt,
@@ -21,7 +21,7 @@ pub struct Transaction<'a> {
     pub flag: Option<Flag>,
     pub payee: Option<&'a str>,
     pub narration: Option<&'a str>,
-    pub tags: Vec<&'a str>,
+    pub tags: HashSet<&'a str>,
     pub postings: Vec<Posting<'a>>,
 }
 
@@ -97,7 +97,7 @@ fn do_parse(
     }
 }
 
-fn tags(input: Span<'_>) -> IResult<'_, Vec<&str>> {
+fn tags(input: Span<'_>) -> IResult<'_, HashSet<&str>> {
     let mut tags_iter = iterator(
         input,
         preceded(
@@ -108,7 +108,7 @@ fn tags(input: Span<'_>) -> IResult<'_, Vec<&str>> {
             ),
         ),
     );
-    let tags: Vec<_> = tags_iter.map(|s: Span<'_>| *s.fragment()).collect();
+    let tags = tags_iter.map(|s: Span<'_>| *s.fragment()).collect();
     let (input, _) = tags_iter.finish()?;
     Ok((input, tags))
 }
