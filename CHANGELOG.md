@@ -7,6 +7,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+Can parse:
+
+* Transaction and postings
+* Open and close directives
+* Balance assertion
+* Commodity declaration
+* Events
+* Options
+
 
 [unreleased]: https://github.com/jcornaz/beancount-parser/compare/...HEAD
 
