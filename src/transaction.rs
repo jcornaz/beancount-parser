@@ -2,9 +2,9 @@ use std::collections::HashMap;
 
 use nom::{
     branch::alt,
-    bytes::complete::tag,
+    bytes::complete::{tag, take_while},
     character::complete::{char, space0, space1},
-    combinator::{cut, map, opt, success, value},
+    combinator::{cut, iterator, map, opt, success, value},
     multi::many0,
     sequence::{delimited, preceded, separated_pair, terminated, tuple},
 };
@@ -21,6 +21,7 @@ pub struct Transaction<'a> {
     pub flag: Option<Flag>,
     pub payee: Option<&'a str>,
     pub narration: Option<&'a str>,
+    pub tags: Vec<&'a str>,
     pub postings: Vec<Posting<'a>>,
 }
 
@@ -76,6 +77,7 @@ fn do_parse(
 ) -> impl Fn(Span<'_>) -> IResult<'_, (Transaction<'_>, HashMap<&str, metadata::Value<'_>>)> {
     move |input| {
         let (input, payee_and_narration) = opt(preceded(space1, payee_and_narration))(input)?;
+        let (input, tags) = tags(input)?;
         let (input, _) = end_of_line(input)?;
         let (input, metadata) = metadata::parse(input)?;
         let (input, postings) = many0(posting)(input)?;
@@ -86,12 +88,29 @@ fn do_parse(
                     flag,
                     payee: payee_and_narration.and_then(|(p, _)| p),
                     narration: payee_and_narration.map(|(_, n)| n),
+                    tags,
                     postings,
                 },
                 metadata,
             ),
         ))
     }
+}
+
+fn tags(input: Span<'_>) -> IResult<'_, Vec<&str>> {
+    let mut tags_iter = iterator(
+        input,
+        preceded(
+            space1,
+            preceded(
+                char('#'),
+                take_while(|c: char| c.is_alphanumeric() || c == '-' || c == '_'),
+            ),
+        ),
+    );
+    let tags: Vec<_> = tags_iter.map(|s: Span<'_>| *s.fragment()).collect();
+    let (input, _) = tags_iter.finish()?;
+    Ok((input, tags))
 }
 
 fn payee_and_narration(input: Span<'_>) -> IResult<'_, (Option<&str>, &str)> {

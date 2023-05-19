@@ -81,6 +81,15 @@ fn should_parse_transaction_flag(#[case] input: &str, #[case] expected: Option<F
 }
 
 #[rstest]
+#[case("2014-04-23 * \"Flight to Berlin\"\n  Expenses:Flights -1230.27 USD\n  Liabilities:CreditCard", &[])]
+#[case("2014-04-23 * \"Flight to Berlin\" #berlin-trip-2014\n  Expenses:Flights -1230.27 USD\n  Liabilities:CreditCard", &["berlin-trip-2014"])]
+#[case("2014-04-23 * #hello-world #2023_05", &["hello-world", "2023_05"])]
+fn should_parse_tags(#[case] input: &str, #[case] expected: &[&str]) {
+    let trx = parse_single_transaction(input);
+    assert_eq!(&trx.tags, expected);
+}
+
+#[rstest]
 #[case("2023-05-15 txn", &[])]
 #[case("2023-05-15 txn\n  Assets:Cash", &["Assets:Cash"])]
 #[case("2023-05-15 * \"Hello\" ; with comment \n  Assets:Cash", &["Assets:Cash"])]
@@ -242,7 +251,9 @@ fn should_reject_invalid_input(
         "2023-05-19 *\n  Assets:Cash 1 CHF {1 EUR} @4 PLN",
         "2023-05-19 *\n  Assets:Cash 1 CHF {1 EUR,}",
         "2023-05-19 *\n  Assets:Cash 1 CHF {, 2023-05-19}",
-        "2023-05-19 *\n  Assets:Cash 1 CHF {,}"
+        "2023-05-19 *\n  Assets:Cash 1 CHF {,}",
+        "2014-04-23 * #hello-world#2023_05",
+        "2014-04-23 *#hello-world #2023_05"
     )]
     input: &str,
 ) {
@@ -262,10 +273,7 @@ fn parse_single_directive(input: &str) -> Directive {
 }
 
 fn parse_single_posting(input: &str) -> Posting<'_> {
-    let directive_content = parse_single_directive(input).content;
-    let DirectiveContent::Transaction(trx) = directive_content else {
-        panic!("was not a transaction but: {directive_content:?}");
-    };
+    let trx = parse_single_transaction(input);
     assert_eq!(
         trx.postings.len(),
         1,
@@ -273,4 +281,12 @@ fn parse_single_posting(input: &str) -> Posting<'_> {
         trx.postings
     );
     trx.postings.into_iter().next().unwrap()
+}
+
+fn parse_single_transaction(input: &str) -> beancount_parser_2::Transaction {
+    let directive_content = parse_single_directive(input).content;
+    let DirectiveContent::Transaction(trx) = directive_content else {
+        panic!("was not a transaction but: {directive_content:?}");
+    };
+    trx
 }
