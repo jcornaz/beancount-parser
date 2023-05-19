@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use nom::{
     branch::alt,
     bytes::complete::tag,
-    character::complete::{char, space1},
+    character::complete::{char, space0, space1},
     combinator::{cut, map, opt, value},
     multi::many0,
     sequence::{delimited, preceded, terminated},
@@ -31,6 +31,13 @@ pub struct Posting<'a> {
     pub account: Account<'a>,
     pub amount: Option<Amount<'a>>,
     pub price: Option<Amount<'a>>,
+    pub lot: Option<Lot<'a>>,
+}
+
+#[derive(Debug)]
+#[non_exhaustive]
+pub struct Lot<'a> {
+    pub cost: Option<Amount<'a>>,
 }
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Default)]
@@ -103,6 +110,7 @@ fn posting(input: Span<'_>) -> IResult<'_, Posting<'_>> {
     let (input, flag) = opt(terminated(flag, space1))(input)?;
     let (input, account) = account::parse(input)?;
     let (input, amount) = opt(preceded(space1, amount))(input)?;
+    let (input, lot) = opt(preceded(space0, lot))(input)?;
     let (input, _) = end_of_line(input)?;
     Ok((
         input,
@@ -111,6 +119,7 @@ fn posting(input: Span<'_>) -> IResult<'_, Posting<'_>> {
             account,
             amount: amount.map(|(a, _)| a),
             price: amount.and_then(|(_, p)| p),
+            lot,
         },
     ))
 }
@@ -122,4 +131,11 @@ fn amount(input: Span<'_>) -> IResult<'_, (Amount<'_>, Option<Amount<'_>>)> {
         amount::parse,
     ))(input)?;
     Ok((input, (amount, price)))
+}
+
+fn lot(input: Span<'_>) -> IResult<'_, Lot<'_>> {
+    let (input, _) = char('{')(input)?;
+    let (input, cost) = amount::parse(input)?;
+    let (input, _) = char('}')(input)?;
+    Ok((input, Lot { cost: Some(cost) }))
 }
