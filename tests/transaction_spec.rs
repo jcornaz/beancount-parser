@@ -1,4 +1,4 @@
-use beancount_parser::{parse, Decimal, Directive, DirectiveContent, Flag, Posting};
+use beancount_parser_2::{parse, Decimal, Directive, DirectiveContent, Flag, Posting};
 use rstest::rstest;
 
 const COMMENTS: &str = include_str!("samples/comments.beancount");

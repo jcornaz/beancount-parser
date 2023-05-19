@@ -2,9 +2,9 @@
 
 ## Ask for help, propose a feature request a feature or report a bug
 
-Use the [discussions](https://github.com/jcornaz/beancount-parser/discussions) to ask questions, share/discuss idea of features and even show-case what cool think you made with this project!
+Use the [discussions](https://github.com/jcornaz/beancount-parser-2/discussions) to ask questions, share/discuss idea of features and even show-case what cool think you made with this project!
 
-Use the [issues](https://github.com/jcornaz/beancount-parser/issues) to report any issue you have (bug or missing feature). Make sure to explain why you need something.
+Use the [issues](https://github.com/jcornaz/beancount-parser-2/issues) to report any issue you have (bug or missing feature). Make sure to explain why you need something.
 
 
 ## Work with the sources

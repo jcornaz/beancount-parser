@@ -1,4 +1,4 @@
-use beancount_parser::Flag;
+use beancount_parser_2::Flag;
 use rstest::rstest;
 
 #[test]

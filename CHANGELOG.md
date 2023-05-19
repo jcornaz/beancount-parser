@@ -17,5 +17,5 @@ Can parse:
 * Options
 
 
-[unreleased]: https://github.com/jcornaz/beancount-parser/compare/...HEAD
+[unreleased]: https://github.com/jcornaz/beancount-parser-2/compare/...HEAD
 
