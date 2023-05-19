@@ -117,6 +117,14 @@ fn amount_should_be_empty_if_absent() {
 }
 
 #[rstest]
+fn price_should_be_empty_if_absent(
+    #[values("2023-05-17 *\n  Assets:Cash", "2023-05-17 *\n  Assets:Cash 10 CHF")] input: &str,
+) {
+    let posting = parse_single_posting(input);
+    assert!(posting.price.is_none(), "{:?}", posting.price);
+}
+
+#[rstest]
 #[case("10 CHF", 10, "CHF")]
 #[case("0 USD", 0, "USD")]
 #[case("-1 EUR", -1, "EUR")]
@@ -130,6 +138,24 @@ fn should_parse_amount_if_set(
 ) {
     let input = format!("2023-05-17 *\n  Assets:Cash {input}");
     let amount = parse_single_posting(&input).amount.unwrap();
+    assert_eq!(amount.value, expected_value.into());
+    assert_eq!(amount.currency.as_str(), expected_currency);
+}
+
+#[rstest]
+#[case("10 CHF", 10, "CHF")]
+#[case("0 USD", 0, "USD")]
+#[case("-1 EUR", -1, "EUR")]
+#[case("1.2 PLN", Decimal::new(12, 1), "PLN")]
+#[case(".1 PLN", Decimal::new(1, 1), "PLN")]
+#[case("1. CHF", 1, "CHF")]
+fn should_parse_price_if_set(
+    #[case] input: &str,
+    #[case] expected_value: impl Into<Decimal>,
+    #[case] expected_currency: &str,
+) {
+    let input = format!("2023-05-17 *\n  Assets:Cash 1 DKK @ {input}");
+    let amount = parse_single_posting(&input).price.unwrap();
     assert_eq!(amount.value, expected_value.into());
     assert_eq!(amount.currency.as_str(), expected_currency);
 }
@@ -152,7 +178,10 @@ fn should_reject_invalid_input(
         "2023-05-15 * \"test\"\n  Assets:Cash10 CHF",
         "2023-05-15 * \"test\"\n  Assets:Cash 10CHF",
         "2023-05-15 * \"test\"\n  Assets:Cash 10..2 CHF",
-        "2023-05-15 * \"test\"\n  Assets:Cash - CHF"
+        "2023-05-15 * \"test\"\n  Assets:Cash - CHF",
+        "2023-05-19 *\n  Assets:Cash 1 CHF @2 EUR",
+        "2023-05-19 *\n  Assets:Cash 1 CHF@ 2 EUR",
+        "2023-05-19 *\n  Assets:Cash @ 2 EUR"
     )]
     input: &str,
 ) {

@@ -6,7 +6,7 @@ use nom::{
     character::complete::{char, space1},
     combinator::{cut, map, opt, value},
     multi::many0,
-    sequence::{preceded, terminated},
+    sequence::{delimited, preceded, terminated},
 };
 
 use crate::{
@@ -30,6 +30,7 @@ pub struct Posting<'a> {
     pub flag: Option<Flag>,
     pub account: Account<'a>,
     pub amount: Option<Amount<'a>>,
+    pub price: Option<Amount<'a>>,
 }
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Default)]
@@ -101,14 +102,24 @@ fn posting(input: Span<'_>) -> IResult<'_, Posting<'_>> {
     let (input, _) = space1(input)?;
     let (input, flag) = opt(terminated(flag, space1))(input)?;
     let (input, account) = account::parse(input)?;
-    let (input, amount) = opt(preceded(space1, amount::parse))(input)?;
+    let (input, amount) = opt(preceded(space1, amount))(input)?;
     let (input, _) = end_of_line(input)?;
     Ok((
         input,
         Posting {
             flag,
             account,
-            amount,
+            amount: amount.map(|(a, _)| a),
+            price: amount.and_then(|(_, p)| p),
         },
     ))
+}
+
+fn amount(input: Span<'_>) -> IResult<'_, (Amount<'_>, Option<Amount<'_>>)> {
+    let (input, amount) = amount::parse(input)?;
+    let (input, price) = opt(preceded(
+        delimited(space1, char('@'), space1),
+        amount::parse,
+    ))(input)?;
+    Ok((input, (amount, price)))
 }
