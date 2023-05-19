@@ -148,8 +148,8 @@ fn posting(input: Span<'_>) -> IResult<'_, Posting<'_>> {
             flag,
             account,
             amount,
-            price,
             cost,
+            price,
         },
     ))
 }

@@ -25,7 +25,7 @@ pub(crate) fn parse(input: Span<'_>) -> IResult<'_, HashMap<&str, Value<'_>>> {
 fn entry(input: Span<'_>) -> IResult<'_, (&str, Value<'_>)> {
     let (input, _) = space1(input)?;
     let (input, key) = recognize(preceded(
-        satisfy(|c: char| c.is_lowercase()),
+        satisfy(char::is_lowercase),
         take_while(|c: char| c.is_alphanumeric() || c == '-' || c == '_'),
     ))(input)?;
     let (input, _) = char(':')(input)?;

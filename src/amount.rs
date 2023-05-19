@@ -52,18 +52,12 @@ pub(crate) fn price(input: Span<'_>) -> IResult<'_, Price<'_>> {
 
 pub(crate) fn currency(input: Span<'_>) -> IResult<'_, Currency<'_>> {
     let (input, currency) = recognize(tuple((
-        satisfy(|c: char| c.is_uppercase()),
+        satisfy(char::is_uppercase),
         verify(
             take_while(|c: char| {
                 c.is_uppercase() || c.is_numeric() || c == '-' || c == '_' || c == '.' || c == '\''
             }),
-            |s: &Span<'_>| {
-                s.fragment()
-                    .chars()
-                    .last()
-                    .map(|c| c.is_uppercase())
-                    .unwrap_or(true)
-            },
+            |s: &Span<'_>| s.fragment().chars().last().map_or(true, char::is_uppercase),
         ),
     )))(input)?;
     Ok((input, Currency(currency.fragment())))

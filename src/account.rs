@@ -52,7 +52,7 @@ pub(super) fn parse(input: Span<'_>) -> IResult<'_, Account<'_>> {
         cut(many1_count(preceded(
             char(':'),
             preceded(
-                satisfy(|c: char| c.is_uppercase()),
+                satisfy(char::is_uppercase),
                 take_while(|c: char| c.is_alphanumeric() || c == '-'),
             ),
         ))),

@@ -1,3 +1,6 @@
+#![deny(future_incompatible, nonstandard_style, unsafe_code, private_in_public)]
+#![warn(rust_2018_idioms, clippy::pedantic)]
+
 mod account;
 mod amount;
 mod date;
@@ -19,6 +22,11 @@ pub use rust_decimal::Decimal;
 use std::collections::HashMap;
 pub use transaction::{Flag, Posting, Transaction};
 
+/// Parse the input beancount file and return an instance of [`BeancountFile`] on success
+///
+/// # Errors
+///
+/// Returns an error in case of invalid beancount syntax found
 pub fn parse(input: &str) -> Result<BeancountFile<'_>, Error<'_>> {
     match all_consuming(beancount_file)(Span::new(input)).finish() {
         Ok((_, content)) => Ok(content),
@@ -144,8 +152,8 @@ fn directive(input: Span<'_>) -> IResult<'_, Directive<'_>> {
         input,
         Directive {
             date,
-            metadata,
             content,
+            metadata,
         },
     ))
 }
