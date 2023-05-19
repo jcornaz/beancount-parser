@@ -3,10 +3,10 @@ use rstest::rstest;
 
 const COMMENTS: &str = include_str!("samples/comments.beancount");
 const SIMPLE: &str = include_str!("samples/simple.beancount");
-// TODO const OFFICIAL: &str = include_str!("samples/official.beancount");
+const OFFICIAL: &str = include_str!("samples/official.beancount");
 
 #[rstest]
-fn should_succeed_for_valid_input(#[values("", "\n", COMMENTS, SIMPLE)] input: &str) {
+fn should_succeed_for_valid_input(#[values("", "\n", COMMENTS, SIMPLE, OFFICIAL)] input: &str) {
     parse(input).expect("parsing should succeed");
 }
 

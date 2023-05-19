@@ -3,12 +3,13 @@ use rstest::rstest;
 
 const COMMENTS: &str = include_str!("samples/comments.beancount");
 const SIMPLE: &str = include_str!("samples/simple.beancount");
-// TODO const OFFICIAL: &str = include_str!("samples/official.beancount");
+const OFFICIAL: &str = include_str!("samples/official.beancount");
 
 #[rstest]
 #[case("", 0)]
 #[case(COMMENTS, 0)]
 #[case(SIMPLE, 3)]
+#[case(OFFICIAL, 1096)]
 fn should_find_all_transactions(#[case] input: &str, #[case] expected_count: usize) {
     let actual_count = parse(input)
         .expect("parsing should succeed")
@@ -23,6 +24,7 @@ fn should_find_all_transactions(#[case] input: &str, #[case] expected_count: usi
 #[case("", 0)]
 #[case(COMMENTS, 0)]
 #[case(SIMPLE, 12)]
+#[case(OFFICIAL, 3385)]
 fn should_find_all_postings(#[case] input: &str, #[case] expected_count: usize) {
     let actual_count: usize = parse(input)
         .expect("parsing should succeed")
