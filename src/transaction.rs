@@ -136,7 +136,7 @@ fn posting(input: Span<'_>) -> IResult<'_, Posting<'_>> {
 
 fn lot(input: Span<'_>) -> IResult<'_, Lot<'_>> {
     let (input, _) = terminated(char('{'), space0)(input)?;
-    let (input, cost) = amount::parse(input)?;
+    let (input, cost) = opt(amount::parse)(input)?;
     let (input, _) = preceded(space0, char('}'))(input)?;
-    Ok((input, Lot { cost: Some(cost) }))
+    Ok((input, Lot { cost }))
 }

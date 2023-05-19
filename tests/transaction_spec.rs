@@ -174,6 +174,14 @@ fn should_parse_price_if_set(
 }
 
 #[rstest]
+fn cost_should_be_empty_if_absent() {
+    let input = "2023-05-19 *\n  Assets:Cash 10 CHF {}";
+    let posting = parse_single_posting(input);
+    let cost = posting.lot.unwrap().cost;
+    assert!(cost.is_none(), "{cost:?}");
+}
+
+#[rstest]
 #[case("Assets:Cash 1 CHF {1 EUR}", 1, "EUR")]
 #[case("Assets:Cash 1 CHF { 1 EUR }", 1, "EUR")]
 #[case("Assets:Cash 1 CHF {1 EUR} @ 4 PLN", 1, "EUR")]
