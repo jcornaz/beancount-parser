@@ -1,10 +1,10 @@
 [package]
 name = "beancount-parser"
-version = "2.0.0-dev"
+version = "1.16.0"
 license = "Unlicense"
 authors = ["Jonathan Cornaz"]
 edition = "2021"
-rust-version = "1.69.0"
+rust-version = "1.60.0"
 description = "A beancount file parser library for rust"
 repository = "https://github.com/jcornaz/beancount-parser"
 categories = ["parser-implementations"]
@@ -13,15 +13,25 @@ keywords = ["parsing", "beancount", "accounting"]
 [package.metadata.docs.rs]
 all-features = true
 
+[features]
+unstable = ["pest", "pest_derive"]
+rust_decimal = []
+
 [dependencies]
 nom = { version = "7.1", default-features = false, features = ["std"] }
-nom_locate = { version = "4.1", default-features = false }
 rust_decimal = { version = "1.29", default-features = false }
 thiserror = { version = "1.0", default-features = false }
+pest = { version = "2.6", default-features = false, features = ["std"], optional = true }
+pest_derive = { version = "2.6", default-features = false, features = ["std"], optional = true }
+nom_locate = { version = "4.1", default-features = false }
+
 
 [dev-dependencies]
 criterion = "0.4.0"
 rstest = { version = "0.17.0", default-features = false }
+
+[build-dependencies]
+version_check = "0.9.4"
 
 [[bench]]
 name = "benchmark"

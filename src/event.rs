@@ -1,17 +1,56 @@
-use nom::character::complete::space1;
+#![cfg(feature = "unstable")]
 
-use crate::{string, IResult, Span};
+use nom::bytes::complete::{tag, take_till};
+use nom::character::complete::{char, space1};
+use nom::sequence::delimited;
 
-#[derive(Debug)]
-#[non_exhaustive]
+use crate::pest_parser::Pair;
+use crate::{date::date, string, Date, IResult, Span};
+
+#[derive(Debug, Clone)]
 pub struct Event<'a> {
-    pub name: &'a str,
-    pub value: &'a str,
+    date: Date,
+    name: &'a str,
+    value: &'a str,
 }
 
-pub(super) fn parse(input: Span<'_>) -> IResult<'_, Event<'_>> {
-    let (input, name) = string(input)?;
+impl<'a> Event<'a> {
+    #[must_use]
+    pub fn date(&self) -> Date {
+        self.date
+    }
+
+    #[must_use]
+    pub fn name(&self) -> &'a str {
+        self.name
+    }
+
+    #[must_use]
+    pub fn value(&self) -> &'a str {
+        self.value
+    }
+
+    pub(crate) fn from_pair(pair: Pair<'a>) -> Self {
+        let mut inner = pair.into_inner();
+        let date = Date::from_pair(inner.next().expect("no date in event"));
+        let name = string::from_pair(inner.next().expect("no name in event"));
+        let value = string::from_pair(inner.next().expect("no value in event"));
+        Self { date, name, value }
+    }
+}
+
+pub(crate) fn event(input: Span<'_>) -> IResult<'_, Event<'_>> {
+    let (input, date) = date(input)?;
+    let (input, _) = delimited(space1, tag("event"), space1)(input)?;
+    let (input, name) = delimited(char('"'), take_till(|c| c == '"'), char('"'))(input)?;
     let (input, _) = space1(input)?;
-    let (input, value) = string(input)?;
-    Ok((input, Event { name, value }))
+    let (input, value) = delimited(char('"'), take_till(|c| c == '"'), char('"'))(input)?;
+    Ok((
+        input,
+        Event {
+            date,
+            name: name.fragment(),
+            value: value.fragment(),
+        },
+    ))
 }
