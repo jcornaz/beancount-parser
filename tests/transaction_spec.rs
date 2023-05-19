@@ -174,18 +174,15 @@ fn should_parse_price_if_set(
 }
 
 #[rstest]
-#[case("10 CHF", 10, "CHF")]
-#[case("0 USD", 0, "USD")]
-#[case("-1 EUR", -1, "EUR")]
-#[case("1.2 PLN", Decimal::new(12, 1), "PLN")]
-#[case(".1 PLN", Decimal::new(1, 1), "PLN")]
-#[case("1. CHF", 1, "CHF")]
+#[case("Assets:Cash 1 CHF {1 EUR}", 1, "EUR")]
+#[case("Assets:Cash 1 CHF { 1 EUR }", 1, "EUR")]
+#[case("Assets:Cash 1 CHF {1 EUR} @ 4 PLN", 1, "EUR")]
 fn should_parse_cost_if_set(
     #[case] input: &str,
     #[case] expected_value: impl Into<Decimal>,
     #[case] expected_currency: &str,
 ) {
-    let input = format!("2023-05-17 *\n  Assets:Cash 1 DKK {{{input}}}",);
+    let input = format!("2023-05-17 *\n  {input}",);
     println!("input: {input}");
     let amount = parse_single_posting(&input).lot.unwrap().cost.unwrap();
     assert_eq!(amount.value, expected_value.into());
@@ -213,7 +210,11 @@ fn should_reject_invalid_input(
         "2023-05-15 * \"test\"\n  Assets:Cash - CHF",
         "2023-05-19 *\n  Assets:Cash 1 CHF @2 EUR",
         "2023-05-19 *\n  Assets:Cash 1 CHF@ 2 EUR",
-        "2023-05-19 *\n  Assets:Cash @ 2 EUR"
+        "2023-05-19 *\n  Assets:Cash @ 2 EUR",
+        "2023-05-19 *\n  Assets:Cash {1 EUR} @ 4 PLN",
+        "2023-05-19 *\n  Assets:Cash {1 EUR}",
+        "2023-05-19 *\n  Assets:Cash 1 CHF {1 EUR}@ 4 PLN",
+        "2023-05-19 *\n  Assets:Cash 1 CHF {1 EUR} @4 PLN"
     )]
     input: &str,
 ) {

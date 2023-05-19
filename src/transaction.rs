@@ -6,7 +6,7 @@ use nom::{
     character::complete::{char, space0, space1},
     combinator::{cut, map, opt, value},
     multi::many0,
-    sequence::{delimited, preceded, terminated},
+    sequence::{delimited, preceded, terminated, tuple},
 };
 
 use crate::{
@@ -30,8 +30,8 @@ pub struct Posting<'a> {
     pub flag: Option<Flag>,
     pub account: Account<'a>,
     pub amount: Option<Amount<'a>>,
-    pub price: Option<Amount<'a>>,
     pub lot: Option<Lot<'a>>,
+    pub price: Option<Amount<'a>>,
 }
 
 #[derive(Debug)]
@@ -109,33 +109,34 @@ fn posting(input: Span<'_>) -> IResult<'_, Posting<'_>> {
     let (input, _) = space1(input)?;
     let (input, flag) = opt(terminated(flag, space1))(input)?;
     let (input, account) = account::parse(input)?;
-    let (input, amount) = opt(preceded(space1, amount))(input)?;
-    let (input, lot) = opt(preceded(space0, lot))(input)?;
+    let (input, amounts) = opt(tuple((
+        preceded(space1, amount::parse),
+        opt(preceded(space1, lot)),
+        opt(preceded(
+            delimited(space1, char('@'), space1),
+            amount::parse,
+        )),
+    )))(input)?;
     let (input, _) = end_of_line(input)?;
+    let (amount, lot, price) = match amounts {
+        Some((a, l, p)) => (Some(a), l, p),
+        None => (None, None, None),
+    };
     Ok((
         input,
         Posting {
             flag,
             account,
-            amount: amount.map(|(a, _)| a),
-            price: amount.and_then(|(_, p)| p),
+            amount,
+            price,
             lot,
         },
     ))
 }
 
-fn amount(input: Span<'_>) -> IResult<'_, (Amount<'_>, Option<Amount<'_>>)> {
-    let (input, amount) = amount::parse(input)?;
-    let (input, price) = opt(preceded(
-        delimited(space1, char('@'), space1),
-        amount::parse,
-    ))(input)?;
-    Ok((input, (amount, price)))
-}
-
 fn lot(input: Span<'_>) -> IResult<'_, Lot<'_>> {
-    let (input, _) = char('{')(input)?;
+    let (input, _) = terminated(char('{'), space0)(input)?;
     let (input, cost) = amount::parse(input)?;
-    let (input, _) = char('}')(input)?;
+    let (input, _) = preceded(space0, char('}'))(input)?;
     Ok((input, Lot { cost: Some(cost) }))
 }
