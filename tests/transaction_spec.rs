@@ -125,19 +125,6 @@ fn price_should_be_empty_if_absent(
 }
 
 #[rstest]
-fn lot_should_be_empty_if_absent(
-    #[values(
-        "2023-05-17 *\n  Assets:Cash",
-        "2023-05-17 *\n  Assets:Cash 10 CHF",
-        "2023-05-17 *\n  Assets:Cash 10 CHF @ 1 EUR"
-    )]
-    input: &str,
-) {
-    let posting = parse_single_posting(input);
-    assert!(posting.lot.is_none(), "{:?}", posting.lot);
-}
-
-#[rstest]
 #[case("10 CHF", 10, "CHF")]
 #[case("0 USD", 0, "USD")]
 #[case("-1 EUR", -1, "EUR")]
@@ -174,11 +161,24 @@ fn should_parse_price_if_set(
 }
 
 #[rstest]
-fn cost_should_be_empty_if_absent() {
+fn cost_amount_should_be_empty_if_absent() {
     let input = "2023-05-19 *\n  Assets:Cash 10 CHF {}";
     let posting = parse_single_posting(input);
-    let cost = posting.lot.unwrap().cost;
+    let cost = posting.cost.unwrap().amount;
     assert!(cost.is_none(), "{cost:?}");
+}
+
+#[rstest]
+fn cost_should_be_empty_if_absent(
+    #[values(
+        "2023-05-17 *\n  Assets:Cash",
+        "2023-05-17 *\n  Assets:Cash 10 CHF",
+        "2023-05-17 *\n  Assets:Cash 10 CHF @ 1 EUR"
+    )]
+    input: &str,
+) {
+    let posting = parse_single_posting(input);
+    assert!(posting.cost.is_none(), "{:?}", posting.cost);
 }
 
 #[rstest]
@@ -191,7 +191,7 @@ fn should_parse_cost(
     #[case] expected_currency: &str,
 ) {
     let input = format!("2023-05-17 *\n  {input}",);
-    let amount = parse_single_posting(&input).lot.unwrap().cost.unwrap();
+    let amount = parse_single_posting(&input).cost.unwrap().amount.unwrap();
     assert_eq!(amount.value, expected_value.into());
     assert_eq!(amount.currency.as_str(), expected_currency);
 }
@@ -201,14 +201,14 @@ fn should_parse_cost(
 #[case("Assets:Cash 1 CHF {1 EUR, 2023-05-19}", 2023, 5, 19)]
 #[case("Assets:Cash 1 CHF {1 EUR ,2023-05-19}", 2023, 5, 19)]
 #[case("Assets:Cash 1 CHF {2023-05-19, 1 EUR}", 2023, 5, 19)]
-fn should_parse_lot_date(
+fn should_parse_cost_date(
     #[case] input: &str,
     #[case] expected_year: u16,
     #[case] expected_month: u8,
     #[case] expected_day: u8,
 ) {
     let input = format!("2023-05-17 *\n  {input}",);
-    let date = parse_single_posting(&input).lot.unwrap().date.unwrap();
+    let date = parse_single_posting(&input).cost.unwrap().date.unwrap();
     assert_eq!(date.year, expected_year);
     assert_eq!(date.month, expected_month);
     assert_eq!(date.day, expected_day);

@@ -30,14 +30,14 @@ pub struct Posting<'a> {
     pub flag: Option<Flag>,
     pub account: Account<'a>,
     pub amount: Option<Amount<'a>>,
-    pub lot: Option<Lot<'a>>,
+    pub cost: Option<Cost<'a>>,
     pub price: Option<Amount<'a>>,
 }
 
 #[derive(Debug)]
 #[non_exhaustive]
-pub struct Lot<'a> {
-    pub cost: Option<Amount<'a>>,
+pub struct Cost<'a> {
+    pub amount: Option<Amount<'a>>,
     pub date: Option<Date>,
 }
 
@@ -112,14 +112,14 @@ fn posting(input: Span<'_>) -> IResult<'_, Posting<'_>> {
     let (input, account) = account::parse(input)?;
     let (input, amounts) = opt(tuple((
         preceded(space1, amount::parse),
-        opt(preceded(space1, lot)),
+        opt(preceded(space1, cost)),
         opt(preceded(
             delimited(space1, char('@'), space1),
             amount::parse,
         )),
     )))(input)?;
     let (input, _) = end_of_line(input)?;
-    let (amount, lot, price) = match amounts {
+    let (amount, cost, price) = match amounts {
         Some((a, l, p)) => (Some(a), l, p),
         None => (None, None, None),
     };
@@ -130,12 +130,12 @@ fn posting(input: Span<'_>) -> IResult<'_, Posting<'_>> {
             account,
             amount,
             price,
-            lot,
+            cost,
         },
     ))
 }
 
-fn lot(input: Span<'_>) -> IResult<'_, Lot<'_>> {
+fn cost(input: Span<'_>) -> IResult<'_, Cost<'_>> {
     let (input, _) = terminated(char('{'), space0)(input)?;
     let (input, (cost, date)) = alt((
         map(
@@ -159,5 +159,5 @@ fn lot(input: Span<'_>) -> IResult<'_, Lot<'_>> {
         success((None, None)),
     ))(input)?;
     let (input, _) = preceded(space0, char('}'))(input)?;
-    Ok((input, Lot { cost, date }))
+    Ok((input, Cost { amount: cost, date }))
 }
