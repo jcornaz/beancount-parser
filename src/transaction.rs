@@ -4,15 +4,15 @@ use nom::{
     branch::alt,
     bytes::complete::tag,
     character::complete::{char, space0, space1},
-    combinator::{cut, map, opt, value},
+    combinator::{cut, map, opt, success, value},
     multi::many0,
-    sequence::{delimited, preceded, terminated, tuple},
+    sequence::{delimited, preceded, separated_pair, terminated, tuple},
 };
 
 use crate::{
     account::{self, Account},
     amount::{self, Amount},
-    end_of_line, metadata, string, IResult, Span,
+    date, end_of_line, metadata, string, Date, IResult, Span,
 };
 
 #[derive(Debug)]
@@ -38,6 +38,7 @@ pub struct Posting<'a> {
 #[non_exhaustive]
 pub struct Lot<'a> {
     pub cost: Option<Amount<'a>>,
+    pub date: Option<Date>,
 }
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Default)]
@@ -136,7 +137,27 @@ fn posting(input: Span<'_>) -> IResult<'_, Posting<'_>> {
 
 fn lot(input: Span<'_>) -> IResult<'_, Lot<'_>> {
     let (input, _) = terminated(char('{'), space0)(input)?;
-    let (input, cost) = opt(amount::parse)(input)?;
+    let (input, (cost, date)) = alt((
+        map(
+            separated_pair(
+                amount::parse,
+                delimited(space0, char(','), space0),
+                date::parse,
+            ),
+            |(a, d)| (Some(a), Some(d)),
+        ),
+        map(
+            separated_pair(
+                date::parse,
+                delimited(space0, char(','), space0),
+                amount::parse,
+            ),
+            |(d, a)| (Some(a), Some(d)),
+        ),
+        map(amount::parse, |a| (Some(a), None)),
+        map(date::parse, |d| (None, Some(d))),
+        success((None, None)),
+    ))(input)?;
     let (input, _) = preceded(space0, char('}'))(input)?;
-    Ok((input, Lot { cost }))
+    Ok((input, Lot { cost, date }))
 }

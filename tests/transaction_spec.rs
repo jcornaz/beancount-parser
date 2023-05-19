@@ -185,16 +185,33 @@ fn cost_should_be_empty_if_absent() {
 #[case("Assets:Cash 1 CHF {1 EUR}", 1, "EUR")]
 #[case("Assets:Cash 1 CHF { 1 EUR }", 1, "EUR")]
 #[case("Assets:Cash 1 CHF {1 EUR} @ 4 PLN", 1, "EUR")]
-fn should_parse_cost_if_set(
+fn should_parse_cost(
     #[case] input: &str,
     #[case] expected_value: impl Into<Decimal>,
     #[case] expected_currency: &str,
 ) {
     let input = format!("2023-05-17 *\n  {input}",);
-    println!("input: {input}");
     let amount = parse_single_posting(&input).lot.unwrap().cost.unwrap();
     assert_eq!(amount.value, expected_value.into());
     assert_eq!(amount.currency.as_str(), expected_currency);
+}
+
+#[rstest]
+#[case("Assets:Cash 1 CHF {2023-05-19}", 2023, 5, 19)]
+#[case("Assets:Cash 1 CHF {1 EUR, 2023-05-19}", 2023, 5, 19)]
+#[case("Assets:Cash 1 CHF {1 EUR ,2023-05-19}", 2023, 5, 19)]
+#[case("Assets:Cash 1 CHF {2023-05-19, 1 EUR}", 2023, 5, 19)]
+fn should_parse_lot_date(
+    #[case] input: &str,
+    #[case] expected_year: u16,
+    #[case] expected_month: u8,
+    #[case] expected_day: u8,
+) {
+    let input = format!("2023-05-17 *\n  {input}",);
+    let date = parse_single_posting(&input).lot.unwrap().date.unwrap();
+    assert_eq!(date.year, expected_year);
+    assert_eq!(date.month, expected_month);
+    assert_eq!(date.day, expected_day);
 }
 
 #[rstest]
@@ -222,7 +239,10 @@ fn should_reject_invalid_input(
         "2023-05-19 *\n  Assets:Cash {1 EUR} @ 4 PLN",
         "2023-05-19 *\n  Assets:Cash {1 EUR}",
         "2023-05-19 *\n  Assets:Cash 1 CHF {1 EUR}@ 4 PLN",
-        "2023-05-19 *\n  Assets:Cash 1 CHF {1 EUR} @4 PLN"
+        "2023-05-19 *\n  Assets:Cash 1 CHF {1 EUR} @4 PLN",
+        "2023-05-19 *\n  Assets:Cash 1 CHF {1 EUR,}",
+        "2023-05-19 *\n  Assets:Cash 1 CHF {, 2023-05-19}",
+        "2023-05-19 *\n  Assets:Cash 1 CHF {,}"
     )]
     input: &str,
 ) {

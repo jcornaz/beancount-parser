@@ -16,8 +16,8 @@ use super::{IResult, Span};
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub struct Date {
     pub year: u16,
-    pub month_of_year: u8,
-    pub day_of_month: u8,
+    pub month: u8,
+    pub day: u8,
 }
 
 pub(super) fn parse(input: Span<'_>) -> IResult<'_, Date> {
@@ -28,17 +28,10 @@ pub(super) fn parse(input: Span<'_>) -> IResult<'_, Date> {
 fn do_parse(input: Span<'_>) -> IResult<'_, Date> {
     let (input, year) = year(input)?;
     let (input, _) = char('-')(input)?;
-    let (input, month_of_year) = month(input)?;
+    let (input, month) = month(input)?;
     let (input, _) = char('-')(input)?;
-    let (input, day_of_month) = day(input)?;
-    Ok((
-        input,
-        Date {
-            year,
-            month_of_year,
-            day_of_month,
-        },
-    ))
+    let (input, day) = day(input)?;
+    Ok((input, Date { year, month, day }))
 }
 
 fn year(input: Span<'_>) -> IResult<'_, u16> {

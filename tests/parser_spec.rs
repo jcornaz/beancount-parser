@@ -37,8 +37,8 @@ fn should_parse_date(
 ) {
     let date = parse_single_directive(input).date;
     assert_eq!(date.year, expected_year);
-    assert_eq!(date.month_of_year, expected_month);
-    assert_eq!(date.day_of_month, expected_day);
+    assert_eq!(date.month, expected_month);
+    assert_eq!(date.day, expected_day);
 }
 
 #[rstest]
