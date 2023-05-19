@@ -9,6 +9,12 @@ A [beancount] file parser library for rust
 
 [beancount]: https://beancount.github.io/docs/index.html
 
+This crate a a rewrite of [beancount-parser]. Not all features of [beancount-parser] have been ported yet, and some of them may never be.
+
+If you're missing something, please open an issue.
+
+[beancount-parser]: https://github.com/jcornaz/beancount-parser
+
 ## Goal
 
 Parse a [beancount file](https://beancount.github.io/docs/beancount_language_syntax.html) into a rust data structure
@@ -21,23 +27,11 @@ Do not verify beancount rules, such as "transaction must balance to zero", "acco
 Do not provide any "business" logic to analyze or manipulate the ledger. No balance, no currency translation, etc.
 
 
-## Cargo features
-
-| Feature        | Description                                                                          |
-|----------------|--------------------------------------------------------------------------------------|
-| `rust_decimal` | Add conversion from `Value` into `Decimal`                                           |
-| `unstable`     | New, unfinished and unstable API. <br /> **Unstable API is not considered as part of the public API. It may be broken or removed in a minor or patch release!** |
-
-> **Warning**
-> 
-> Features and optional dependencies not mentionned in the table above are not considered part of the public API and may be removed at any time.
-
-
 ## MSRV
 
-The minimum supported rust version is currently `1.60`.
+The minimum supported rust version is currently `1.69`.
 
-It can be updated to a newer stable version when required, and that will not be considered a breaking change (it can be increased in a minor or patch release).
+It can be updated to a newer stable version when required, and that will not be considered a breaking change.
 
 
 ## Unlicense
