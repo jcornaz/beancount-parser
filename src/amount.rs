@@ -23,6 +23,12 @@ impl<'a> Currency<'a> {
     }
 }
 
+#[derive(Debug)]
+pub struct Price<'a> {
+    pub currency: Currency<'a>,
+    pub amount: Amount<'a>,
+}
+
 pub(crate) fn parse(input: Span<'_>) -> IResult<'_, Amount<'_>> {
     let (input, value) = value(input)?;
     let (input, _) = space1(input)?;
@@ -35,6 +41,13 @@ fn value(input: Span<'_>) -> IResult<'_, Decimal> {
         take_while1(|c: char| c.is_numeric() || c == '-' || c == '.'),
         |s: Span<'_>| s.fragment().parse(),
     )(input)
+}
+
+pub(crate) fn price(input: Span<'_>) -> IResult<'_, Price<'_>> {
+    let (input, currency) = currency(input)?;
+    let (input, _) = space1(input)?;
+    let (input, amount) = parse(input)?;
+    Ok((input, Price { currency, amount }))
 }
 
 pub(crate) fn currency(input: Span<'_>) -> IResult<'_, Currency<'_>> {

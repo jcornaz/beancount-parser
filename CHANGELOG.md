@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 Can parse:
 
 * Transaction and postings
+* Price directive
 * Open and close directives
 * Balance assertion
 * Commodity declaration

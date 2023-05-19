@@ -153,6 +153,25 @@ fn should_parse_event() {
 }
 
 #[rstest]
+fn should_parse_price_commodity() {
+    let input = "2022-08-26 price VHT          121.03 USD";
+    let DirectiveContent::Price(price) = parse_single_directive(input).content else {
+    panic!("was not an price directive");
+};
+    assert_eq!(price.currency.as_str(), "VHT");
+}
+
+#[rstest]
+fn should_parse_price_amount() {
+    let input = "2022-08-26 price VHT          121.03 USD";
+    let DirectiveContent::Price(price) = parse_single_directive(input).content else {
+    panic!("was not an price directive");
+};
+    assert_eq!(price.amount.value, Decimal::new(12103, 2));
+    assert_eq!(price.amount.currency.as_str(), "USD");
+}
+
+#[rstest]
 #[case(
     "2022-05-18 open Assets:Cash\n  title: \"hello\"",
     "title",
@@ -252,7 +271,13 @@ fn should_reject_invalid_input(
         "2020-12-09 event \"location\"\"New Metropolis\"",
         "2020-12-09 event\"location\" \"New Metropolis\"",
         "2020-12-09 event \"location\"",
-        "2020-12-09 event"
+        "2020-12-09 event",
+        "2022-08-26price VHT  121.03 USD",
+        "2022-08-26 priceVHT  121.03 USD",
+        "2022-08-26 price VHT121.03 USD",
+        "2022-08-26 price VHT 121.03USD",
+        "2022-08-26 price VHT",
+        "2022-08-26 price 121.03 USD"
     )]
     input: &str,
 ) {

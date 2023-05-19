@@ -48,6 +48,7 @@ pub struct Directive<'a> {
 #[non_exhaustive]
 pub enum DirectiveContent<'a> {
     Transaction(transaction::Transaction<'a>),
+    Price(amount::Price<'a>),
     Balance(account::Balance<'a>),
     Open(account::Open<'a>),
     Close(account::Close<'a>),
@@ -108,6 +109,10 @@ fn directive(input: Span<'_>) -> IResult<'_, Directive<'_>> {
             tuple((
                 terminated(
                     alt((
+                        map(
+                            preceded(tag("price"), cut(preceded(space1, amount::price))),
+                            DirectiveContent::Price,
+                        ),
                         map(
                             preceded(tag("balance"), cut(preceded(space1, account::balance))),
                             DirectiveContent::Balance,
