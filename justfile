@@ -43,3 +43,6 @@ install-dev-tools:
 	rustup override set stable
 	cargo install cargo-hack cargo-watch cargo-msrv cargo-deny cargo-release
 
+release: verify
+	cargo release --execute
+
