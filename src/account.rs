@@ -1,3 +1,5 @@
+use std::str::FromStr;
+
 use nom::{
     branch::alt,
     bytes::{complete::tag, complete::take_while},
@@ -35,9 +37,9 @@ pub struct Close<'a> {
 
 #[derive(Debug)]
 #[non_exhaustive]
-pub struct Balance<'a> {
+pub struct Balance<'a, D> {
     pub account: Account<'a>,
-    pub amount: Amount<'a>,
+    pub amount: Amount<'a, D>,
 }
 
 pub(super) fn parse(input: Span<'_>) -> IResult<'_, Account<'_>> {
@@ -79,7 +81,7 @@ pub(super) fn close(input: Span<'_>) -> IResult<'_, Close<'_>> {
     Ok((input, Close { account }))
 }
 
-pub(super) fn balance(input: Span<'_>) -> IResult<'_, Balance<'_>> {
+pub(super) fn balance<D: FromStr>(input: Span<'_>) -> IResult<'_, Balance<'_, D>> {
     let (input, account) = parse(input)?;
     let (input, _) = space1(input)?;
     let (input, amount) = amount::parse(input)?;

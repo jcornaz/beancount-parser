@@ -1,3 +1,5 @@
+use std::str::FromStr;
+
 use nom::{
     bytes::complete::{take_while, take_while1},
     character::complete::{satisfy, space1},
@@ -5,12 +7,12 @@ use nom::{
     sequence::tuple,
 };
 
-use crate::{Decimal, IResult, Span};
+use crate::{IResult, Span};
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 #[non_exhaustive]
-pub struct Amount<'a> {
-    pub value: Decimal,
+pub struct Amount<'a, D> {
+    pub value: D,
     pub currency: Currency<'a>,
 }
 
@@ -24,26 +26,26 @@ impl<'a> Currency<'a> {
 }
 
 #[derive(Debug)]
-pub struct Price<'a> {
+pub struct Price<'a, D> {
     pub currency: Currency<'a>,
-    pub amount: Amount<'a>,
+    pub amount: Amount<'a, D>,
 }
 
-pub(crate) fn parse(input: Span<'_>) -> IResult<'_, Amount<'_>> {
+pub(crate) fn parse<D: FromStr>(input: Span<'_>) -> IResult<'_, Amount<'_, D>> {
     let (input, value) = value(input)?;
     let (input, _) = space1(input)?;
     let (input, currency) = currency(input)?;
     Ok((input, Amount { value, currency }))
 }
 
-fn value(input: Span<'_>) -> IResult<'_, Decimal> {
+fn value<D: FromStr>(input: Span<'_>) -> IResult<'_, D> {
     map_res(
         take_while1(|c: char| c.is_numeric() || c == '-' || c == '.'),
         |s: Span<'_>| s.fragment().parse(),
     )(input)
 }
 
-pub(crate) fn price(input: Span<'_>) -> IResult<'_, Price<'_>> {
+pub(crate) fn price<D: FromStr>(input: Span<'_>) -> IResult<'_, Price<'_, D>> {
     let (input, currency) = currency(input)?;
     let (input, _) = space1(input)?;
     let (input, amount) = parse(input)?;

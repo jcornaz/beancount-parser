@@ -1,5 +1,6 @@
-use beancount_parser_2::{metadata, parse, Decimal, Directive, DirectiveContent};
+use beancount_parser_2::{metadata, parse, Directive, DirectiveContent};
 use rstest::rstest;
+use rust_decimal::Decimal;
 
 const COMMENTS: &str = include_str!("samples/comments.beancount");
 const SIMPLE: &str = include_str!("samples/simple.beancount");
@@ -7,14 +8,14 @@ const OFFICIAL: &str = include_str!("samples/official.beancount");
 
 #[rstest]
 fn should_succeed_for_valid_input(#[values("", "\n", COMMENTS, SIMPLE, OFFICIAL)] input: &str) {
-    parse(input).expect("parsing should succeed");
+    parse::<Decimal>(input).expect("parsing should succeed");
 }
 
 #[rstest]
 #[case("", 0)]
 #[case(SIMPLE, 10)]
 fn should_find_all_open_directives(#[case] input: &str, #[case] expected_count: usize) {
-    let actual_count = parse(input)
+    let actual_count = parse::<Decimal>(input)
         .expect("parsing should succeed")
         .directives
         .into_iter()
@@ -129,7 +130,9 @@ fn should_parse_close_account(#[case] input: &str, #[case] expected_account: &st
 
 #[rstest]
 fn should_parse_option() {
-    let options = parse(r#"option "Hello" "world!""#).unwrap().options;
+    let options = parse::<Decimal>(r#"option "Hello" "world!""#)
+        .unwrap()
+        .options;
     assert_eq!(options.get("Hello"), Some(&"world!"));
 }
 
@@ -281,11 +284,11 @@ fn should_reject_invalid_input(
     )]
     input: &str,
 ) {
-    let result = parse(input);
+    let result = parse::<Decimal>(input);
     assert!(result.is_err(), "{result:#?}");
 }
 
-fn parse_single_directive(input: &str) -> Directive {
+fn parse_single_directive(input: &str) -> Directive<'_, Decimal> {
     let directives = parse(input).expect("parsing should succeed").directives;
     assert_eq!(
         directives.len(),

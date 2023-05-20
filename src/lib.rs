@@ -18,8 +18,7 @@ use nom::{
     sequence::{delimited, preceded, terminated, tuple},
     Finish, Parser,
 };
-pub use rust_decimal::Decimal;
-use std::collections::HashMap;
+use std::{collections::HashMap, str::FromStr};
 pub use transaction::{Flag, Posting, Transaction};
 
 /// Parse the input beancount file and return an instance of [`BeancountFile`] on success
@@ -27,7 +26,7 @@ pub use transaction::{Flag, Posting, Transaction};
 /// # Errors
 ///
 /// Returns an error in case of invalid beancount syntax found
-pub fn parse(input: &str) -> Result<BeancountFile<'_>, Error<'_>> {
+pub fn parse<D: FromStr>(input: &str) -> Result<BeancountFile<'_, D>, Error<'_>> {
     match all_consuming(beancount_file)(Span::new(input)).finish() {
         Ok((_, content)) => Ok(content),
         Err(nom::error::Error { input, .. }) => Err(Error(input)),
@@ -39,25 +38,25 @@ pub struct Error<'a>(Span<'a>);
 
 #[derive(Debug)]
 #[non_exhaustive]
-pub struct BeancountFile<'a> {
+pub struct BeancountFile<'a, D> {
     pub options: HashMap<&'a str, &'a str>,
-    pub directives: Vec<Directive<'a>>,
+    pub directives: Vec<Directive<'a, D>>,
 }
 
 #[derive(Debug)]
 #[non_exhaustive]
-pub struct Directive<'a> {
+pub struct Directive<'a, D> {
     pub date: Date,
-    pub content: DirectiveContent<'a>,
+    pub content: DirectiveContent<'a, D>,
     pub metadata: HashMap<&'a str, metadata::Value<'a>>,
 }
 
 #[derive(Debug)]
 #[non_exhaustive]
-pub enum DirectiveContent<'a> {
-    Transaction(transaction::Transaction<'a>),
-    Price(amount::Price<'a>),
-    Balance(account::Balance<'a>),
+pub enum DirectiveContent<'a, D> {
+    Transaction(transaction::Transaction<'a, D>),
+    Price(amount::Price<'a, D>),
+    Balance(account::Balance<'a, D>),
     Open(account::Open<'a>),
     Close(account::Close<'a>),
     Commodity(Currency<'a>),
@@ -67,7 +66,7 @@ pub enum DirectiveContent<'a> {
 type Span<'a> = nom_locate::LocatedSpan<&'a str>;
 type IResult<'a, O> = nom::IResult<Span<'a>, O>;
 
-fn beancount_file(input: Span<'_>) -> IResult<'_, BeancountFile<'_>> {
+fn beancount_file<D: FromStr>(input: Span<'_>) -> IResult<'_, BeancountFile<'_, D>> {
     let mut iter = iterator(input, entry);
     let mut options = HashMap::new();
     let mut directives = Vec::new();
@@ -92,13 +91,13 @@ fn beancount_file(input: Span<'_>) -> IResult<'_, BeancountFile<'_>> {
     ))
 }
 
-enum Entry<'a> {
-    Directive(Directive<'a>),
+enum Entry<'a, D> {
+    Directive(Directive<'a, D>),
     Option { key: &'a str, value: &'a str },
     Comment,
 }
 
-fn entry(input: Span<'_>) -> IResult<'_, Entry<'_>> {
+fn entry<D: FromStr>(input: Span<'_>) -> IResult<'_, Entry<'_, D>> {
     alt((
         directive.map(Entry::Directive),
         line.map(|_| Entry::Comment),
@@ -106,7 +105,7 @@ fn entry(input: Span<'_>) -> IResult<'_, Entry<'_>> {
     ))(input)
 }
 
-fn directive(input: Span<'_>) -> IResult<'_, Directive<'_>> {
+fn directive<D: FromStr>(input: Span<'_>) -> IResult<'_, Directive<'_, D>> {
     let (input, date) = date::parse(input)?;
     let (input, (content, metadata)) = cut(preceded(
         space1,

@@ -1,4 +1,7 @@
-use std::collections::{HashMap, HashSet};
+use std::{
+    collections::{HashMap, HashSet},
+    str::FromStr,
+};
 
 use nom::{
     branch::alt,
@@ -17,28 +20,28 @@ use crate::{
 
 #[derive(Debug)]
 #[non_exhaustive]
-pub struct Transaction<'a> {
+pub struct Transaction<'a, D> {
     pub flag: Option<Flag>,
     pub payee: Option<&'a str>,
     pub narration: Option<&'a str>,
     pub tags: HashSet<&'a str>,
-    pub postings: Vec<Posting<'a>>,
+    pub postings: Vec<Posting<'a, D>>,
 }
 
 #[derive(Debug)]
 #[non_exhaustive]
-pub struct Posting<'a> {
+pub struct Posting<'a, D> {
     pub flag: Option<Flag>,
     pub account: Account<'a>,
-    pub amount: Option<Amount<'a>>,
-    pub cost: Option<Cost<'a>>,
-    pub price: Option<Amount<'a>>,
+    pub amount: Option<Amount<'a, D>>,
+    pub cost: Option<Cost<'a, D>>,
+    pub price: Option<Amount<'a, D>>,
 }
 
 #[derive(Debug)]
 #[non_exhaustive]
-pub struct Cost<'a> {
-    pub amount: Option<Amount<'a>>,
+pub struct Cost<'a, D> {
+    pub amount: Option<Amount<'a, D>>,
     pub date: Option<Date>,
 }
 
@@ -58,9 +61,9 @@ impl From<Flag> for char {
     }
 }
 
-pub(crate) fn parse(
+pub(crate) fn parse<D: FromStr>(
     input: Span<'_>,
-) -> IResult<'_, (Transaction<'_>, HashMap<&str, metadata::Value<'_>>)> {
+) -> IResult<'_, (Transaction<'_, D>, HashMap<&str, metadata::Value<'_>>)> {
     let (input, flag) = alt((map(flag, Some), value(None, tag("txn"))))(input)?;
     cut(do_parse(flag))(input)
 }
@@ -72,9 +75,9 @@ fn flag(input: Span<'_>) -> IResult<'_, Flag> {
     ))(input)
 }
 
-fn do_parse(
+fn do_parse<D: FromStr>(
     flag: Option<Flag>,
-) -> impl Fn(Span<'_>) -> IResult<'_, (Transaction<'_>, HashMap<&str, metadata::Value<'_>>)> {
+) -> impl Fn(Span<'_>) -> IResult<'_, (Transaction<'_, D>, HashMap<&str, metadata::Value<'_>>)> {
     move |input| {
         let (input, payee_and_narration) = opt(preceded(space1, payee_and_narration))(input)?;
         let (input, tags) = tags(input)?;
@@ -125,7 +128,7 @@ fn payee_and_narration(input: Span<'_>) -> IResult<'_, (Option<&str>, &str)> {
     ))
 }
 
-fn posting(input: Span<'_>) -> IResult<'_, Posting<'_>> {
+fn posting<D: FromStr>(input: Span<'_>) -> IResult<'_, Posting<'_, D>> {
     let (input, _) = space1(input)?;
     let (input, flag) = opt(terminated(flag, space1))(input)?;
     let (input, account) = account::parse(input)?;
@@ -154,7 +157,7 @@ fn posting(input: Span<'_>) -> IResult<'_, Posting<'_>> {
     ))
 }
 
-fn cost(input: Span<'_>) -> IResult<'_, Cost<'_>> {
+fn cost<D: FromStr>(input: Span<'_>) -> IResult<'_, Cost<'_, D>> {
     let (input, _) = terminated(char('{'), space0)(input)?;
     let (input, (cost, date)) = alt((
         map(
@@ -175,7 +178,7 @@ fn cost(input: Span<'_>) -> IResult<'_, Cost<'_>> {
         ),
         map(amount::parse, |a| (Some(a), None)),
         map(date::parse, |d| (None, Some(d))),
-        success((None, None)),
+        map(success(true), |_| (None, None)),
     ))(input)?;
     let (input, _) = preceded(space0, char('}'))(input)?;
     Ok((input, Cost { amount: cost, date }))

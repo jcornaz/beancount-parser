@@ -1,7 +1,8 @@
 use std::collections::HashSet;
 
-use beancount_parser_2::{parse, Decimal, Directive, DirectiveContent, Flag, Posting};
+use beancount_parser_2::{parse, Directive, DirectiveContent, Flag, Posting, Transaction};
 use rstest::rstest;
+use rust_decimal::Decimal;
 
 const COMMENTS: &str = include_str!("samples/comments.beancount");
 const SIMPLE: &str = include_str!("samples/simple.beancount");
@@ -13,7 +14,7 @@ const OFFICIAL: &str = include_str!("samples/official.beancount");
 #[case(SIMPLE, 3)]
 #[case(OFFICIAL, 1096)]
 fn should_find_all_transactions(#[case] input: &str, #[case] expected_count: usize) {
-    let actual_count = parse(input)
+    let actual_count = parse::<Decimal>(input)
         .expect("parsing should succeed")
         .directives
         .into_iter()
@@ -28,7 +29,7 @@ fn should_find_all_transactions(#[case] input: &str, #[case] expected_count: usi
 #[case(SIMPLE, 12)]
 #[case(OFFICIAL, 3385)]
 fn should_find_all_postings(#[case] input: &str, #[case] expected_count: usize) {
-    let actual_count: usize = parse(input)
+    let actual_count: usize = parse::<Decimal>(input)
         .expect("parsing should succeed")
         .directives
         .into_iter()
@@ -262,11 +263,11 @@ fn should_reject_invalid_input(
     )]
     input: &str,
 ) {
-    let result = parse(input);
+    let result = parse::<Decimal>(input);
     assert!(result.is_err(), "{result:#?}");
 }
 
-fn parse_single_directive(input: &str) -> Directive {
+fn parse_single_directive(input: &str) -> Directive<Decimal> {
     let directives = parse(input).expect("parsing should succeed").directives;
     assert_eq!(
         directives.len(),
@@ -277,7 +278,7 @@ fn parse_single_directive(input: &str) -> Directive {
     directives.into_iter().next().unwrap()
 }
 
-fn parse_single_posting(input: &str) -> Posting<'_> {
+fn parse_single_posting(input: &str) -> Posting<'_, Decimal> {
     let trx = parse_single_transaction(input);
     assert_eq!(
         trx.postings.len(),
@@ -288,7 +289,7 @@ fn parse_single_posting(input: &str) -> Posting<'_> {
     trx.postings.into_iter().next().unwrap()
 }
 
-fn parse_single_transaction(input: &str) -> beancount_parser_2::Transaction {
+fn parse_single_transaction(input: &str) -> Transaction<Decimal> {
     let directive_content = parse_single_directive(input).content;
     let DirectiveContent::Transaction(trx) = directive_content else {
         panic!("was not a transaction but: {directive_content:?}");
