@@ -43,6 +43,26 @@ pub struct Balance<'a, D> {
     pub amount: Amount<'a, D>,
 }
 
+/// [pad] directive
+///
+/// [pad]: https://beancount.github.io/docs/beancount_language_syntax.html#pad
+///
+/// # Example
+/// ```
+/// use beancount_parser_2::DirectiveContent;
+/// let raw = "2014-06-01 pad Assets:BofA:Checking Equity:Opening-Balances";
+/// let file = beancount_parser_2::parse::<f64>(raw).unwrap();
+/// let DirectiveContent::Pad(pad) = &file.directives[0].content else { unreachable!() };
+/// assert_eq!(pad.account.as_str(), "Assets:BofA:Checking");
+/// assert_eq!(pad.source_account.as_str(), "Equity:Opening-Balances");
+/// ```
+#[derive(Debug)]
+#[non_exhaustive]
+pub struct Pad<'a> {
+    pub account: Account<'a>,
+    pub source_account: Account<'a>,
+}
+
 pub(super) fn parse(input: Span<'_>) -> IResult<'_, Account<'_>> {
     let (input, name) = recognize(preceded(
         alt((
@@ -87,4 +107,17 @@ pub(super) fn balance<D: FromStr>(input: Span<'_>) -> IResult<'_, Balance<'_, D>
     let (input, _) = space1(input)?;
     let (input, amount) = amount::parse(input)?;
     Ok((input, Balance { account, amount }))
+}
+
+pub(super) fn pad(input: Span<'_>) -> IResult<'_, Pad<'_>> {
+    let (input, account) = parse(input)?;
+    let (input, _) = space1(input)?;
+    let (input, source_account) = parse(input)?;
+    Ok((
+        input,
+        Pad {
+            account,
+            source_account,
+        },
+    ))
 }

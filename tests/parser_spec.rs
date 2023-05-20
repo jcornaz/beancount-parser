@@ -56,6 +56,30 @@ fn should_parse_balance_assertion_account(#[case] input: &str, #[case] exepected
 
 #[rstest]
 #[case(
+    "2014-06-01 pad Assets:BofA:Checking Equity:Opening-Balances",
+    "Assets:BofA:Checking"
+)]
+fn should_parse_pad_account(#[case] input: &str, #[case] expected: &str) {
+    let DirectiveContent::Pad(pad) = parse_single_directive(input).content else {
+        panic!("was not a pad directive");
+    };
+    assert_eq!(pad.account.as_str(), expected);
+}
+
+#[rstest]
+#[case(
+    "2014-06-01 pad Assets:BofA:Checking Equity:Opening-Balances",
+    "Equity:Opening-Balances"
+)]
+fn should_parse_pad_source_account(#[case] input: &str, #[case] expected: &str) {
+    let DirectiveContent::Pad(pad) = parse_single_directive(input).content else {
+        panic!("was not a pad directive");
+    };
+    assert_eq!(pad.source_account.as_str(), expected);
+}
+
+#[rstest]
+#[case(
     "2020-04-10 balance Assets:US:BofA:Checking        2473 USD",
     2473,
     "USD"
@@ -280,7 +304,9 @@ fn should_reject_invalid_input(
         "2022-08-26 price VHT121.03 USD",
         "2022-08-26 price VHT 121.03USD",
         "2022-08-26 price VHT",
-        "2022-08-26 price 121.03 USD"
+        "2022-08-26 price 121.03 USD",
+        "2014-06-01 pad Assets:BofA:CheckingEquity:Opening-Balances",
+        "2014-06-01 padAssets:BofA:Checking Equity:Opening-Balances"
     )]
     input: &str,
 ) {

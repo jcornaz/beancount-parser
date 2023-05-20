@@ -7,6 +7,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Added
+
+* Support for the pad directive
+
+
 ### Documentation improvements
 
 * Some typo fixes and wordings improved

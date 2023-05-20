@@ -49,7 +49,7 @@ mod metadata;
 mod transaction;
 
 pub use crate::{
-    account::{Account, Balance, Close, Open},
+    account::{Account, Balance, Close, Open, Pad},
     amount::{Amount, Currency, Price},
     date::Date,
     event::Event,
@@ -104,6 +104,8 @@ pub enum DirectiveContent<'a, D> {
     Balance(account::Balance<'a, D>),
     Open(account::Open<'a>),
     Close(account::Close<'a>),
+    /// See [`Pad`]
+    Pad(account::Pad<'a>),
     Commodity(Currency<'a>),
     Event(event::Event<'a>),
 }
@@ -176,6 +178,10 @@ fn directive<D: FromStr>(input: Span<'_>) -> IResult<'_, Directive<'_, D>> {
                         map(
                             preceded(tag("close"), cut(preceded(space1, account::close))),
                             DirectiveContent::Close,
+                        ),
+                        map(
+                            preceded(tag("pad"), cut(preceded(space1, account::pad))),
+                            DirectiveContent::Pad,
                         ),
                         map(
                             preceded(tag("commodity"), cut(preceded(space1, amount::currency))),
