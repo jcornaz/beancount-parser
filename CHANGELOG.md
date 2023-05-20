@@ -28,5 +28,5 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 * Options
 * Directive metadata (string values only)
 
-[Unreleased]: https://github.com/jcornaz/beancount-parser-2/compare/...HEAD
+[Unreleased]: https://github.com/jcornaz/beancount_parser_2/compare/...HEAD
 

@@ -1,12 +1,12 @@
 [package]
-name = "beancount-parser-2"
+name = "beancount_parser_2"
 version = "1.0.0-alpha.0"
 license = "Unlicense"
 authors = ["Jonathan Cornaz"]
 edition = "2021"
 rust-version = "1.69.0"
 description = "A beancount file parser library for rust"
-repository = "https://github.com/jcornaz/beancount-parser-2"
+repository = "https://github.com/jcornaz/beancount_parser_2"
 categories = ["parser-implementations"]
 keywords = ["parsing", "beancount", "accounting"]
 
