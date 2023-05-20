@@ -10,7 +10,7 @@ use super::{IResult, Span};
 /// A date
 ///
 /// The parser has some sanity checks to make sure the date remotely makes sense
-/// but it doesn't verify if it is an actual real date valid date.
+/// but it doesn't verify if it is an actual real valid date.
 ///
 /// If that is important to you, you should use a date-time library to verify the validity.
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
