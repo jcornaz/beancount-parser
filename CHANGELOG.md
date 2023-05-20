@@ -7,6 +7,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+
+## [1.0.0-alpha.0] - 2023-05-20
+
 ### Supported beancount syntax
 
 * Transaction
@@ -28,5 +31,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 * Options
 * Directive metadata (string values only)
 
-[Unreleased]: https://github.com/jcornaz/beancount_parser_2/compare/...HEAD
+[Unreleased]: https://github.com/jcornaz/beancount_parser_2/compare/v1.0.0-alpha.0...HEAD
+[1.0.0-alpha.0]: https://github.com/jcornaz/beancount_parser_2/compare/...v1.0.0-alpha.0
 
