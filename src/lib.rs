@@ -1,6 +1,46 @@
 #![deny(future_incompatible, nonstandard_style, unsafe_code, private_in_public)]
 #![warn(rust_2018_idioms, clippy::pedantic)]
 
+//! A parsing library for the [beancount language](https://beancount.github.io/docs/beancount_language_syntax.htm)
+//!
+//! # Usage
+//!
+//! Use [`parse`] to get an instance of [`BeancountFile`].
+//!
+//! Note that it is generic over the decimal type.
+//! `Decimal` from the crate [rust_decimal](https://docs.rs/rust_decimal) is a solid choice, but it also works with `f64`
+//! or any other decimal type that implement `FromStr`.
+//!
+//! ```
+//! use beancount_parser_2::{BeancountFile, DirectiveContent};
+//!
+//! # fn main() -> Result<(), beancount_parser_2::Error<'static>> {
+//! let input = r#"
+//! 2023-05-20 * "Coffee beans"
+//!   Expenses:Groceries   10 CHF
+//!   Assets:Checking
+//! "#;
+//!
+//! // Parse into the `BeancountFile` struct:
+//! let beancount: BeancountFile<f64> = beancount_parser_2::parse::<f64>(input)?;
+//!
+//! let directive = &beancount.directives[0];
+//! assert_eq!(directive.date.year, 2023);
+//! assert_eq!(directive.date.month, 5);
+//! assert_eq!(directive.date.day, 20);
+//!
+//! let DirectiveContent::Transaction(trx) = &directive.content else {
+//!     panic!("was not a transaction")
+//! };
+//! assert_eq!(trx.narration, Some("Coffee beans"));
+//! assert_eq!(trx.postings[0].account.as_str(), "Expenses:Groceries");
+//! assert_eq!(trx.postings[0].amount.unwrap().value, 10.0);
+//! assert_eq!(trx.postings[0].amount.unwrap().currency.as_str(), "CHF");
+//! assert_eq!(trx.postings[1].account.as_str(), "Assets:Checking");
+//! assert_eq!(trx.postings[1].amount, None);
+//! # Ok(()) }
+//! ```
+
 mod account;
 mod amount;
 mod date;
