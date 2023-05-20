@@ -7,16 +7,26 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
-Can parse:
+### Supported beancount syntax
 
-* Transaction and postings
+* Transaction
+  * flag
+  * payee and description
+  * tags
+  * postings
+    * account
+    * amount
+    * price
+    * cost
+      * amount
+      * date
 * Price directive
 * Open and close directives
 * Balance assertion
 * Commodity declaration
 * Events
 * Options
-
+* Directive metadata (string values only)
 
 [unreleased]: https://github.com/jcornaz/beancount-parser-2/compare/...HEAD
 
