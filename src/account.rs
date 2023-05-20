@@ -17,6 +17,7 @@ use super::{IResult, Span};
 pub struct Account<'a>(&'a str);
 
 impl<'a> Account<'a> {
+    #[must_use]
     pub fn as_str(&self) -> &'a str {
         self.0
     }

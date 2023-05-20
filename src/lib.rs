@@ -8,9 +8,14 @@ mod event;
 mod metadata;
 mod transaction;
 
-use amount::Currency;
-pub use date::Date;
-pub use metadata::Value as MetadataValue;
+pub use crate::{
+    account::{Account, Balance, Close, Open},
+    amount::{Amount, Currency, Price},
+    date::Date,
+    event::Event,
+    metadata::Value as MetadataValue,
+    transaction::{Flag, Posting, Transaction},
+};
 use nom::{
     branch::alt,
     bytes::complete::{tag, take_till},
@@ -20,7 +25,6 @@ use nom::{
     Finish, Parser,
 };
 use std::{collections::HashMap, str::FromStr};
-pub use transaction::{Flag, Posting, Transaction};
 
 /// Parse the input beancount file and return an instance of [`BeancountFile`] on success
 ///

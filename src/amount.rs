@@ -20,6 +20,7 @@ pub struct Amount<'a, D> {
 pub struct Currency<'a>(&'a str);
 
 impl<'a> Currency<'a> {
+    #[must_use]
     pub fn as_str(&self) -> &'a str {
         self.0
     }
