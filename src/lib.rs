@@ -5,11 +5,12 @@ mod account;
 mod amount;
 mod date;
 mod event;
-pub mod metadata;
+mod metadata;
 mod transaction;
 
 use amount::Currency;
 pub use date::Date;
+pub use metadata::Value as MetadataValue;
 use nom::{
     branch::alt,
     bytes::complete::{tag, take_till},

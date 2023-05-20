@@ -1,4 +1,4 @@
-use beancount_parser_2::{metadata, parse, Directive, DirectiveContent};
+use beancount_parser_2::{parse, Directive, DirectiveContent, MetadataValue};
 use rstest::rstest;
 use rust_decimal::Decimal;
 
@@ -178,52 +178,52 @@ fn should_parse_price_amount() {
 #[case(
     "2022-05-18 open Assets:Cash\n  title: \"hello\"",
     "title",
-    metadata::Value::String("hello")
+    MetadataValue::String("hello")
 )]
 #[case(
     "2022-05-18 open Assets:Cash\n  title: \"hello\"\n  name: \"world\"",
     "title",
-    metadata::Value::String("hello")
+    MetadataValue::String("hello")
 )]
 #[case(
     "2022-05-18 open Assets:Cash\n  title: \"hello\"\n  name: \"world\"",
     "name",
-    metadata::Value::String("world")
+    MetadataValue::String("world")
 )]
 #[case(
     "2022-05-18 * \"a transaction\"\n  title: \"hello\"",
     "title",
-    metadata::Value::String("hello")
+    MetadataValue::String("hello")
 )]
 #[case(
     "2022-05-18 *\n  goodTitle: \"Hello world!\"",
     "goodTitle",
-    metadata::Value::String("Hello world!")
+    MetadataValue::String("Hello world!")
 )]
 #[case(
     "2022-05-18 *\n  good-title: \"Hello world!\"",
     "good-title",
-    metadata::Value::String("Hello world!")
+    MetadataValue::String("Hello world!")
 )]
 #[case(
     "2022-05-18 *\n  good_title: \"Hello world!\"",
     "good_title",
-    metadata::Value::String("Hello world!")
+    MetadataValue::String("Hello world!")
 )]
 #[case(
     "2022-05-18 *\n  good_title2: \"Hello world!\"",
     "good_title2",
-    metadata::Value::String("Hello world!")
+    MetadataValue::String("Hello world!")
 )]
 #[case(
     "2022-05-18 * \"a transaction\"\n  title: \"hello\"\n  Assets:Cash 10 CHF",
     "title",
-    metadata::Value::String("hello")
+    MetadataValue::String("hello")
 )]
 fn should_parse_metadata_entry(
     #[case] input: &str,
     #[case] key: &str,
-    #[case] expected_value: metadata::Value<'static>,
+    #[case] expected_value: MetadataValue<'static>,
 ) {
     let metdata = parse_single_directive(input).metadata;
     assert_eq!(metdata.get(key), Some(&expected_value));
