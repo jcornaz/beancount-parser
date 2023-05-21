@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 * Support for the pad directive
 * Line number in error
+* implement `std::error::Error` for `Error`
 
 
 ### Documentation improvements

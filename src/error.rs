@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 use crate::Span;
 
 /// Error returned in case of invalid beancount syntax found
@@ -23,3 +25,15 @@ impl<'a> Error<'a> {
         self.0.location_line()
     }
 }
+
+impl<'a> Display for Error<'a> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "invalid beancount syntax at line: {}",
+            self.line_number()
+        )
+    }
+}
+
+impl<'a> std::error::Error for Error<'a> {}
