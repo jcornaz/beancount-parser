@@ -71,9 +71,13 @@ use std::{collections::HashMap, str::FromStr};
 
 /// Parse the input beancount file and return an instance of [`BeancountFile`] on success
 ///
+/// Is is generic over the decimal type `D`, which can be anytype implementing `FromStr`.
+///
+/// See the root crate documentation for an example.
+///
 /// # Errors
 ///
-/// Returns an error in case of invalid beancount syntax found
+/// Returns an [`Error`] in case of invalid beancount syntax found.
 pub fn parse<D: FromStr>(input: &str) -> Result<BeancountFile<'_, D>, Error<'_>> {
     match all_consuming(beancount_file)(Span::new(input)).finish() {
         Ok((_, content)) => Ok(content),

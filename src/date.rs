@@ -13,6 +13,17 @@ use super::{IResult, Span};
 /// but it doesn't verify if it is an actual real valid date.
 ///
 /// If that is important to you, you should use a date-time library to verify the validity.
+///
+/// # Example
+///
+/// ```
+/// let input = "2022-05-21 event \"location\" \"Middle earth\"";
+/// let beancount = beancount_parser_2::parse::<f64>(input).unwrap();
+/// let date = beancount.directives[0].date;
+/// assert_eq!(date.year, 2022);
+/// assert_eq!(date.month, 5);
+/// assert_eq!(date.day, 21);
+/// ```
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub struct Date {
     pub year: u16,

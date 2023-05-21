@@ -14,10 +14,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 * Line number in directive
 * implement `std::error::Error` for `Error`
 
+### Documentation
 
-### Documentation improvements
-
-* Some typo fixes and wordings improved
+* Improve documentation for `paser`, `Error` and `Date`
 
 
 ## [1.0.0-alpha.0] - 2023-05-20
