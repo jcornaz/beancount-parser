@@ -314,6 +314,25 @@ fn should_reject_invalid_input(
     assert!(result.is_err(), "{result:#?}");
 }
 
+#[rstest]
+fn error_should_contain_relevant_line_number() {
+    let input = r#"
+2000-01-01 open Assets:AccountsReceivable:Michael  USD
+2000-01-01 open Liabilities:CreditCard:CapitalOne
+
+2014-10-05 * "Costco" "Shopping for birthday"
+  Liabilities:CreditCard:CapitalOne         -45.00    USD
+  Assets:AccountsReceivable:Michael
+
+2014-10-05 * oops
+
+2000-11-01 close Liabilities:CreditCard:CapitalOne"#
+        .trim();
+
+    let error_line = parse::<Decimal>(input).unwrap_err().line_number();
+    assert_eq!(error_line, 8);
+}
+
 fn parse_single_directive(input: &str) -> Directive<'_, Decimal> {
     let directives = parse(input).expect("parsing should succeed").directives;
     assert_eq!(

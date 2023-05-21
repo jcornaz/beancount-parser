@@ -44,6 +44,7 @@
 mod account;
 mod amount;
 mod date;
+mod error;
 mod event;
 mod metadata;
 mod transaction;
@@ -52,6 +53,7 @@ pub use crate::{
     account::{Account, Balance, Close, Open, Pad},
     amount::{Amount, Currency, Price},
     date::Date,
+    error::Error,
     event::Event,
     metadata::Value as MetadataValue,
     transaction::{Flag, Posting, Transaction},
@@ -74,12 +76,9 @@ use std::{collections::HashMap, str::FromStr};
 pub fn parse<D: FromStr>(input: &str) -> Result<BeancountFile<'_, D>, Error<'_>> {
     match all_consuming(beancount_file)(Span::new(input)).finish() {
         Ok((_, content)) => Ok(content),
-        Err(nom::error::Error { input, .. }) => Err(Error(input)),
+        Err(nom::error::Error { input, .. }) => Err(Error::new(input)),
     }
 }
-
-#[derive(Debug)]
-pub struct Error<'a>(Span<'a>);
 
 #[derive(Debug)]
 #[non_exhaustive]
