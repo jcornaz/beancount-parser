@@ -333,6 +333,28 @@ fn error_should_contain_relevant_line_number() {
     assert_eq!(error_line, 8);
 }
 
+#[rstest]
+fn directive_should_contain_relevant_line_number() {
+    let input = r#"
+2000-01-01 open Assets:AccountsReceivable:Michael  USD
+2000-01-01 open Liabilities:CreditCard:CapitalOne
+
+2014-10-05 * "Costco" "Shopping for birthday"
+  Liabilities:CreditCard:CapitalOne         -45.00    USD
+  Assets:AccountsReceivable:Michael
+
+2000-11-01 close Liabilities:CreditCard:CapitalOne"#
+        .trim();
+
+    let line_numbers: Vec<_> = parse::<Decimal>(input)
+        .unwrap()
+        .directives
+        .into_iter()
+        .map(|d| d.line_number)
+        .collect();
+    assert_eq!(line_numbers, vec![1, 2, 4, 8]);
+}
+
 fn parse_single_directive(input: &str) -> Directive<'_, Decimal> {
     let directives = parse(input).expect("parsing should succeed").directives;
     assert_eq!(

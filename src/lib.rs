@@ -66,6 +66,7 @@ use nom::{
     sequence::{delimited, preceded, terminated, tuple},
     Finish, Parser,
 };
+use nom_locate::position;
 use std::{collections::HashMap, str::FromStr};
 
 /// Parse the input beancount file and return an instance of [`BeancountFile`] on success
@@ -93,6 +94,7 @@ pub struct Directive<'a, D> {
     pub date: Date,
     pub content: DirectiveContent<'a, D>,
     pub metadata: HashMap<&'a str, metadata::Value<'a>>,
+    pub line_number: u32,
 }
 
 #[derive(Debug)]
@@ -152,49 +154,48 @@ fn entry<D: FromStr>(input: Span<'_>) -> IResult<'_, Entry<'_, D>> {
 }
 
 fn directive<D: FromStr>(input: Span<'_>) -> IResult<'_, Directive<'_, D>> {
+    let (input, position) = position(input)?;
     let (input, date) = date::parse(input)?;
-    let (input, (content, metadata)) = cut(preceded(
-        space1,
-        alt((
-            map(transaction::parse, |(t, m)| {
-                (DirectiveContent::Transaction(t), m)
-            }),
-            tuple((
-                terminated(
-                    alt((
-                        map(
-                            preceded(tag("price"), cut(preceded(space1, amount::price))),
-                            DirectiveContent::Price,
-                        ),
-                        map(
-                            preceded(tag("balance"), cut(preceded(space1, account::balance))),
-                            DirectiveContent::Balance,
-                        ),
-                        map(
-                            preceded(tag("open"), cut(preceded(space1, account::open))),
-                            DirectiveContent::Open,
-                        ),
-                        map(
-                            preceded(tag("close"), cut(preceded(space1, account::close))),
-                            DirectiveContent::Close,
-                        ),
-                        map(
-                            preceded(tag("pad"), cut(preceded(space1, account::pad))),
-                            DirectiveContent::Pad,
-                        ),
-                        map(
-                            preceded(tag("commodity"), cut(preceded(space1, amount::currency))),
-                            DirectiveContent::Commodity,
-                        ),
-                        map(
-                            preceded(tag("event"), cut(preceded(space1, event::parse))),
-                            DirectiveContent::Event,
-                        ),
-                    )),
-                    end_of_line,
-                ),
-                metadata::parse,
-            )),
+    let (input, _) = cut(space1)(input)?;
+    let (input, (content, metadata)) = alt((
+        map(transaction::parse, |(t, m)| {
+            (DirectiveContent::Transaction(t), m)
+        }),
+        tuple((
+            terminated(
+                alt((
+                    map(
+                        preceded(tag("price"), cut(preceded(space1, amount::price))),
+                        DirectiveContent::Price,
+                    ),
+                    map(
+                        preceded(tag("balance"), cut(preceded(space1, account::balance))),
+                        DirectiveContent::Balance,
+                    ),
+                    map(
+                        preceded(tag("open"), cut(preceded(space1, account::open))),
+                        DirectiveContent::Open,
+                    ),
+                    map(
+                        preceded(tag("close"), cut(preceded(space1, account::close))),
+                        DirectiveContent::Close,
+                    ),
+                    map(
+                        preceded(tag("pad"), cut(preceded(space1, account::pad))),
+                        DirectiveContent::Pad,
+                    ),
+                    map(
+                        preceded(tag("commodity"), cut(preceded(space1, amount::currency))),
+                        DirectiveContent::Commodity,
+                    ),
+                    map(
+                        preceded(tag("event"), cut(preceded(space1, event::parse))),
+                        DirectiveContent::Event,
+                    ),
+                )),
+                end_of_line,
+            ),
+            metadata::parse,
         )),
     ))(input)?;
     Ok((
@@ -203,6 +204,7 @@ fn directive<D: FromStr>(input: Span<'_>) -> IResult<'_, Directive<'_, D>> {
             date,
             content,
             metadata,
+            line_number: position.location_line(),
         },
     ))
 }
