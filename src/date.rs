@@ -26,8 +26,11 @@ use super::{IResult, Span};
 /// ```
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub struct Date {
+    /// Year
     pub year: u16,
+    /// Month (of year)
     pub month: u8,
+    /// Day (of month)
     pub day: u8,
 }
 

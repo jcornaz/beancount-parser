@@ -16,7 +16,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Documentation
 
-* Improve documentation for `paser`, `Error` and `Date`
+* Improve/write documentation for `parser`, `BeancountFile`, `Directive`, `Error` and `Date`
 
 
 ## [1.0.0-alpha.0] - 2023-05-20

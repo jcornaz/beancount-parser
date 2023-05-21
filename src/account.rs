@@ -1,3 +1,5 @@
+#![allow(missing_docs)]
+
 use std::str::FromStr;
 
 use nom::{
@@ -49,7 +51,7 @@ pub struct Balance<'a, D> {
 ///
 /// # Example
 /// ```
-/// use beancount_parser_2::DirectiveContent;
+/// # use beancount_parser_2::DirectiveContent;
 /// let raw = "2014-06-01 pad Assets:BofA:Checking Equity:Opening-Balances";
 /// let file = beancount_parser_2::parse::<f64>(raw).unwrap();
 /// let DirectiveContent::Pad(pad) = &file.directives[0].content else { unreachable!() };

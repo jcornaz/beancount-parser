@@ -1,7 +1,13 @@
-#![deny(future_incompatible, nonstandard_style, unsafe_code, private_in_public)]
+#![deny(
+    future_incompatible,
+    nonstandard_style,
+    unsafe_code,
+    private_in_public,
+    missing_docs
+)]
 #![warn(rust_2018_idioms, clippy::pedantic)]
 
-//! A parsing library for the [beancount language](https://beancount.github.io/docs/beancount_language_syntax.htm)
+//! A parsing library for the [beancount language](https://beancount.github.io/docs/beancount_language_syntax.html)
 //!
 //! # Usage
 //!
@@ -85,22 +91,68 @@ pub fn parse<D: FromStr>(input: &str) -> Result<BeancountFile<'_, D>, Error<'_>>
     }
 }
 
+/// Main struct representing a parsed beancount file.
+///
+/// It is generic over the decimal type `D`.
+///
+/// To get an instance of this, use [`parse`].
+///
+/// For an example, look at the root crate documentation.
 #[derive(Debug)]
 #[non_exhaustive]
 pub struct BeancountFile<'a, D> {
+    /// Map of options declared in the file
+    ///
+    /// See: <https://beancount.github.io/docs/beancount_language_syntax.html#options>
     pub options: HashMap<&'a str, &'a str>,
+    /// List of [`Directive`] found in the file
     pub directives: Vec<Directive<'a, D>>,
 }
 
+/// A beancount "directive"
+///
+/// It has fields common to all directives, and a [`Directive::content`] field with
+/// a different content for each directive type.
+///
+/// It is generic over the decimal type `D`.
+///
+/// ```
+/// # use beancount_parser_2::{BeancountFile, DirectiveContent};
+/// let input = r#"
+/// 2022-01-01 open Assets:Cash
+/// 2022-01-01 * "Grocery shopping"
+///   Expensses:Groceerices  10 CHF
+///   Assets:Cash
+/// "#;
+/// let beancount: BeancountFile<f64> = beancount_parser_2::parse(input).unwrap();
+/// assert_eq!(beancount.directives.len(), 2);
+/// for directive in beancount.directives {
+///    println!("line: {}", directive.line_number);
+///    println!("metadata: {:#?}", directive.metadata);
+///    match directive.content {
+///       DirectiveContent::Open(open) => println!("open account directive: {open:?}"),
+///       DirectiveContent::Transaction(trx) => println!("transaction: {trx:?}"),
+///       other => println!("unknown directive: {other:?}"),
+///    }
+/// }
+/// ```
 #[derive(Debug)]
 #[non_exhaustive]
 pub struct Directive<'a, D> {
+    /// Date of the directive
     pub date: Date,
+    /// Content of the directive that is specific to each directive type
     pub content: DirectiveContent<'a, D>,
+    /// Metadata associated to the directive
+    ///
+    /// See: <https://beancount.github.io/docs/beancount_language_syntax.html#metadata>
     pub metadata: HashMap<&'a str, metadata::Value<'a>>,
+    /// Line number where the directive was found in the input file
     pub line_number: u32,
 }
 
+/// Directive specific content
+#[allow(missing_docs)]
 #[derive(Debug)]
 #[non_exhaustive]
 pub enum DirectiveContent<'a, D> {
@@ -109,7 +161,6 @@ pub enum DirectiveContent<'a, D> {
     Balance(account::Balance<'a, D>),
     Open(account::Open<'a>),
     Close(account::Close<'a>),
-    /// See [`Pad`]
     Pad(account::Pad<'a>),
     Commodity(Currency<'a>),
     Event(event::Event<'a>),

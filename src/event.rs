@@ -1,3 +1,5 @@
+#![allow(missing_docs)]
+
 use nom::character::complete::space1;
 
 use crate::{string, IResult, Span};
