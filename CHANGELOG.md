@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Documentation
+
+Announce new status of the project in readme: The project is now in "maintenance mode"
+
 
 ## [1.16.0] - 2023-05-14
 
