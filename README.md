@@ -14,7 +14,7 @@ A [beancount] file parser library for rust
 A rewrite of this project is in progress at https://github.com/jcornaz/beancount_parser_2.
 
 This old implementation (`beancount-parser`) is now in maintenance mode.
-I'll fix reported bugs and I'll review/merge pull-requests, but I am no longer actively working on this project.
+I'll fix reported bugs and I'll review/merge pull-requests, but I am no longer actively working on it.
 
 
 ## Goal
