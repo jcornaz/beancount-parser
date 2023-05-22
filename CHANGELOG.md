@@ -343,7 +343,7 @@ Announce new status of the project in readme: The project is now in "maintenance
  - Parse directives
  - `Parser` iterator type
 
-[unreleased]: https://github.com/jcornaz/beancount-parser/compare/v1.16.0...HEAD
+[Unreleased]: https://github.com/jcornaz/beancount-parser/compare/v1.16.0...HEAD
 [1.16.0]: https://github.com/jcornaz/beancount-parser/compare/v1.15.0...v1.16.0
 [1.15.0]: https://github.com/jcornaz/beancount-parser/compare/v1.14.0...v1.15.0
 [1.14.0]: https://github.com/jcornaz/beancount-parser/compare/v1.13.0...v1.14.0

@@ -41,10 +41,7 @@ clean:
 install-dev-tools:
 	rustup install stable
 	rustup override set stable
-	cargo install cargo-hack cargo-watch cargo-msrv cargo-deny
+	cargo install cargo-hack cargo-watch cargo-msrv cargo-deny cargo-release
 
-# Install a git hook to run tests before every commits
-install-git-hooks:
-	echo '#!/usr/bin/env sh' > .git/hooks/pre-commit
-	echo 'just verify' >> .git/hooks/pre-commit
-	chmod +x .git/hooks/pre-commit
+release *args: verify
+	cargo release {{args}}
