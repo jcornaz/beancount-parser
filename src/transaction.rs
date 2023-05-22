@@ -20,13 +20,41 @@ use crate::{
     date, end_of_line, metadata, string, Date, IResult, Span,
 };
 
+/// Transaction
+///
+/// It is generic over the decimal type `D`.
+///
+/// # Example
+/// ```
+/// # use beancount_parser_2::{DirectiveContent, Flag};
+/// let input = r#"
+/// 2022-05-22 * "Grocery store" "Grocery shopping" #food
+///   Assets:Cash           -10 CHF
+///   Expenses:Groceries
+/// "#;
+///
+/// let beancount = beancount_parser_2::parse::<f64>(input).unwrap();
+/// let DirectiveContent::Transaction(trx) = &beancount.directives[0].content else {
+///   unreachable!("was not a transaction")
+/// };
+/// assert_eq!(trx.flag, Some(Flag::Completed));
+/// assert_eq!(trx.payee, Some("Grocery store"));
+/// assert_eq!(trx.narration, Some("Grocery shopping"));
+/// assert!(trx.tags.contains("food"));
+/// assert_eq!(trx.postings.len(), 2);
+/// ```
 #[derive(Debug, Clone)]
 #[non_exhaustive]
 pub struct Transaction<'a, D> {
+    /// Transaction flag (`*` or `!`, `None` when using `txn`)
     pub flag: Option<Flag>,
+    /// Payee (if present)
     pub payee: Option<&'a str>,
+    /// Narration (if present)
     pub narration: Option<&'a str>,
+    /// Set of tags
     pub tags: HashSet<&'a str>,
+    /// Postings
     pub postings: Vec<Posting<'a, D>>,
 }
 
