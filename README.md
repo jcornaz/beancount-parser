@@ -9,7 +9,7 @@ A [beancount] file parser library for rust
 
 [beancount]: https://beancount.github.io/docs/index.html
 
-This crate a a rewrite of [beancount-parser]. Not all features have been ported yet, and some of them may never be.
+This crate is a rewrite of [beancount-parser]. Not all features have been ported yet, and some of them may never be.
 
 If you're missing something, please open an issue.
 
