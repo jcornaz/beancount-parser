@@ -20,9 +20,12 @@ use crate::{
     date, end_of_line, metadata, string, Date, IResult, Span,
 };
 
-/// Transaction
+/// A transaction
 ///
 /// It is generic over the decimal type `D`.
+///
+/// It notably contains a list of [`Posting`]
+///
 ///
 /// # Example
 /// ```
@@ -46,7 +49,7 @@ use crate::{
 #[derive(Debug, Clone)]
 #[non_exhaustive]
 pub struct Transaction<'a, D> {
-    /// Transaction flag (`*` or `!`, `None` when using `txn`)
+    /// Transaction flag (`*` or `!` or `None` when using the `txn` keyword)
     pub flag: Option<Flag>,
     /// Payee (if present)
     pub payee: Option<&'a str>,
@@ -58,13 +61,47 @@ pub struct Transaction<'a, D> {
     pub postings: Vec<Posting<'a, D>>,
 }
 
+/// A transaction posting
+///
+/// It is generic over the decimal type `D`.
+///
+/// # Example
+/// ```
+/// # use beancount_parser_2::{DirectiveContent, Flag, PostingPrice};
+/// let input = r#"
+/// 2022-05-22 * "Grocery shopping"
+///   Assets:Cash           1 CHF {2 PLN} @ 3 EUR
+///   Expenses:Groceries
+/// "#;
+///
+/// let beancount = beancount_parser_2::parse::<f64>(input).unwrap();
+/// let DirectiveContent::Transaction(trx) = &beancount.directives[0].content else {
+///   unreachable!("was not a transaction")
+/// };
+/// let posting = &trx.postings[0];
+/// assert_eq!(posting.account.as_str(), "Assets:Cash");
+/// assert_eq!(posting.amount.as_ref().unwrap().value, 1.0);
+/// assert_eq!(posting.amount.as_ref().unwrap().currency.as_str(), "CHF");
+/// assert_eq!(posting.cost.as_ref().unwrap().amount.unwrap().value, 2.0);
+/// assert_eq!(posting.cost.as_ref().unwrap().amount.unwrap().currency.as_str(), "PLN");
+/// let Some(PostingPrice::Unit(price)) = &posting.price else {
+///   unreachable!("no price");
+/// };
+/// assert_eq!(price.value, 3.0);
+/// assert_eq!(price.currency.as_str(), "EUR");
+/// ```
 #[derive(Debug, Clone)]
 #[non_exhaustive]
 pub struct Posting<'a, D> {
+    /// Transaction flag (`*` or `!` or `None` when absent)
     pub flag: Option<Flag>,
+    /// Account modified by the posting
     pub account: Account<'a>,
+    /// Amount being added to the account
     pub amount: Option<Amount<'a, D>>,
+    /// Cost (`@` or `@@`) syntax
     pub cost: Option<Cost<'a, D>>,
+    /// Price (content within `{` and `}`)
     pub price: Option<PostingPrice<'a, D>>,
 }
 

@@ -10,8 +10,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Breaking changes
 
-* The type of `price` field in `Posting` has changed to `Option<PostingPrice<'a, D>>`.
-* The type `MetadataValue` no longer implement `Eq`
+* The type of the `price` field in `Posting` has changed to `Option<PostingPrice<'a, D>>`.
+* The type `MetadataValue` no longer implements `Eq`
 
 ### Added
 
@@ -21,7 +21,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Documentation
 
-* Write documentation for `Transaction` type
+* Write documentation for the `Transaction` and `Posting` types
 
 
 ## [1.0.0-alpha.1] - 2023-05-21
