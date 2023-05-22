@@ -8,6 +8,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Unreleased]
 
 
+### Breaking changes
+
+* The type of `price` field in `Posting` has changed to `Option<PostingPrice<'a, D>>`.
+
+### Added
+
+* Support for total price in posting (`@@` syntax)
+
+
 ## [1.0.0-alpha.1] - 2023-05-21
 
 ### Added

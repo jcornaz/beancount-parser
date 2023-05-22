@@ -1,6 +1,8 @@
 use std::collections::HashSet;
 
-use beancount_parser_2::{parse, Directive, DirectiveContent, Flag, Posting, Transaction};
+use beancount_parser_2::{
+    parse, Directive, DirectiveContent, Flag, Posting, PostingPrice, Transaction,
+};
 use rstest::rstest;
 use rust_decimal::Decimal;
 
@@ -164,13 +166,35 @@ fn should_parse_amount_if_set(
 #[case("1.2 PLN", Decimal::new(12, 1), "PLN")]
 #[case(".1 PLN", Decimal::new(1, 1), "PLN")]
 #[case("1. CHF", 1, "CHF")]
-fn should_parse_price_if_set(
+fn should_parse_unit_price(
     #[case] input: &str,
     #[case] expected_value: impl Into<Decimal>,
     #[case] expected_currency: &str,
 ) {
     let input = format!("2023-05-17 *\n  Assets:Cash 1 DKK @ {input}");
-    let amount = parse_single_posting(&input).price.unwrap();
+    let PostingPrice::Unit(amount) = parse_single_posting(&input).price.unwrap() else {
+        panic!("was not unit price");
+    };
+    assert_eq!(amount.value, expected_value.into());
+    assert_eq!(amount.currency.as_str(), expected_currency);
+}
+
+#[rstest]
+#[case("10 CHF", 10, "CHF")]
+#[case("0 USD", 0, "USD")]
+#[case("-1 EUR", -1, "EUR")]
+#[case("1.2 PLN", Decimal::new(12, 1), "PLN")]
+#[case(".1 PLN", Decimal::new(1, 1), "PLN")]
+#[case("1. CHF", 1, "CHF")]
+fn should_parse_total_price(
+    #[case] input: &str,
+    #[case] expected_value: impl Into<Decimal>,
+    #[case] expected_currency: &str,
+) {
+    let input = format!("2023-05-17 *\n  Assets:Cash 1 DKK @@ {input}");
+    let PostingPrice::Total(amount) = parse_single_posting(&input).price.unwrap() else {
+        panic!("was not unit price");
+    };
     assert_eq!(amount.value, expected_value.into());
     assert_eq!(amount.currency.as_str(), expected_currency);
 }

@@ -37,7 +37,7 @@ pub struct Posting<'a, D> {
     pub account: Account<'a>,
     pub amount: Option<Amount<'a, D>>,
     pub cost: Option<Cost<'a, D>>,
-    pub price: Option<Amount<'a, D>>,
+    pub price: Option<PostingPrice<'a, D>>,
 }
 
 #[derive(Debug)]
@@ -45,6 +45,17 @@ pub struct Posting<'a, D> {
 pub struct Cost<'a, D> {
     pub amount: Option<Amount<'a, D>>,
     pub date: Option<Date>,
+}
+
+/// Price of a posting
+///
+/// It is the amount following the `@` or `@@` symbols
+#[derive(Debug)]
+pub enum PostingPrice<'a, D> {
+    /// Unit cost (`@`)
+    Unit(Amount<'a, D>),
+    /// Total cost (`@@`)
+    Total(Amount<'a, D>),
 }
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Default)]
@@ -138,8 +149,17 @@ fn posting<D: FromStr>(input: Span<'_>) -> IResult<'_, Posting<'_, D>> {
         preceded(space1, amount::parse),
         opt(preceded(space1, cost)),
         opt(preceded(
-            delimited(space1, char('@'), space1),
-            amount::parse,
+            space1,
+            alt((
+                map(
+                    preceded(tuple((char('@'), space1)), amount::parse),
+                    PostingPrice::Unit,
+                ),
+                map(
+                    preceded(tuple((tag("@@"), space1)), amount::parse),
+                    PostingPrice::Total,
+                ),
+            )),
         )),
     )))(input)?;
     let (input, _) = end_of_line(input)?;
