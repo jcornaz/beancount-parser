@@ -11,7 +11,7 @@ use nom::{
 
 use crate::{end_of_line, string, IResult, Span};
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq)]
 #[non_exhaustive]
 pub enum Value<'a> {
     String(&'a str),

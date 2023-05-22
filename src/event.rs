@@ -4,7 +4,7 @@ use nom::character::complete::space1;
 
 use crate::{string, IResult, Span};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 #[non_exhaustive]
 pub struct Event<'a> {
     pub name: &'a str,

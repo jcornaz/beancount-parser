@@ -18,7 +18,7 @@ pub struct Amount<'a, D> {
     pub currency: Currency<'a>,
 }
 
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Copy, Clone, PartialOrd, Ord, PartialEq, Eq, Hash)]
 pub struct Currency<'a>(&'a str);
 
 impl<'a> Currency<'a> {
@@ -28,7 +28,7 @@ impl<'a> Currency<'a> {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Price<'a, D> {
     pub currency: Currency<'a>,
     pub amount: Amount<'a, D>,

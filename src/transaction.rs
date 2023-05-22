@@ -20,7 +20,7 @@ use crate::{
     date, end_of_line, metadata, string, Date, IResult, Span,
 };
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 #[non_exhaustive]
 pub struct Transaction<'a, D> {
     pub flag: Option<Flag>,
@@ -30,7 +30,7 @@ pub struct Transaction<'a, D> {
     pub postings: Vec<Posting<'a, D>>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 #[non_exhaustive]
 pub struct Posting<'a, D> {
     pub flag: Option<Flag>,
@@ -40,7 +40,7 @@ pub struct Posting<'a, D> {
     pub price: Option<PostingPrice<'a, D>>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 #[non_exhaustive]
 pub struct Cost<'a, D> {
     pub amount: Option<Amount<'a, D>>,
@@ -50,7 +50,7 @@ pub struct Cost<'a, D> {
 /// Price of a posting
 ///
 /// It is the amount following the `@` or `@@` symbols
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum PostingPrice<'a, D> {
     /// Unit cost (`@`)
     Unit(Amount<'a, D>),

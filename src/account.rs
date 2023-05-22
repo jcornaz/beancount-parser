@@ -15,7 +15,7 @@ use crate::amount::{self, Amount, Currency};
 
 use super::{IResult, Span};
 
-#[derive(Debug)]
+#[derive(Debug, Copy, Clone, PartialOrd, Ord, PartialEq, Eq, Hash)]
 pub struct Account<'a>(&'a str);
 
 impl<'a> Account<'a> {
@@ -25,20 +25,20 @@ impl<'a> Account<'a> {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 #[non_exhaustive]
 pub struct Open<'a> {
     pub account: Account<'a>,
     pub currencies: Vec<Currency<'a>>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 #[non_exhaustive]
 pub struct Close<'a> {
     pub account: Account<'a>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 #[non_exhaustive]
 pub struct Balance<'a, D> {
     pub account: Account<'a>,
@@ -58,7 +58,7 @@ pub struct Balance<'a, D> {
 /// assert_eq!(pad.account.as_str(), "Assets:BofA:Checking");
 /// assert_eq!(pad.source_account.as_str(), "Equity:Opening-Balances");
 /// ```
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 #[non_exhaustive]
 pub struct Pad<'a> {
     pub account: Account<'a>,

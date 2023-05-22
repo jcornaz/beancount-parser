@@ -98,7 +98,7 @@ pub fn parse<D: FromStr>(input: &str) -> Result<BeancountFile<'_, D>, Error<'_>>
 /// To get an instance of this, use [`parse`].
 ///
 /// For an example, look at the root crate documentation.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 #[non_exhaustive]
 pub struct BeancountFile<'a, D> {
     /// Map of options declared in the file
@@ -136,7 +136,7 @@ pub struct BeancountFile<'a, D> {
 ///    }
 /// }
 /// ```
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 #[non_exhaustive]
 pub struct Directive<'a, D> {
     /// Date of the directive
@@ -153,7 +153,7 @@ pub struct Directive<'a, D> {
 
 /// Directive specific content
 #[allow(missing_docs)]
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 #[non_exhaustive]
 pub enum DirectiveContent<'a, D> {
     Transaction(transaction::Transaction<'a, D>),

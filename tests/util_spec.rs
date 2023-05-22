@@ -1,5 +1,18 @@
-use beancount_parser_2::Flag;
+use std::fmt::Debug;
+
+use beancount_parser_2::{BeancountFile, Flag};
 use rstest::rstest;
+
+fn is_normal<T: Sized + Send + Sync + Unpin>() {}
+fn is_debug<T: Debug>() {}
+fn is_clone<T: Clone>() {}
+
+#[test]
+fn beancount_file_should_be_normal() {
+    is_normal::<BeancountFile<f32>>();
+    is_debug::<BeancountFile<f32>>();
+    is_clone::<BeancountFile<f32>>();
+}
 
 #[test]
 fn default_flag_is_completed() {
