@@ -14,8 +14,7 @@
 //! Use [`parse`] to get an instance of [`BeancountFile`].
 //!
 //! Note that it is generic over the decimal type.
-//! `Decimal` from the crate [rust_decimal](https://docs.rs/rust_decimal) is a solid choice, but it also works with `f64`
-//! or any other decimal type that implement `FromStr`.
+//! Currently only `f64` is supported.
 //!
 //! ```
 //! use beancount_parser_2::{BeancountFile, DirectiveContent};
@@ -57,7 +56,7 @@ mod transaction;
 
 pub use crate::{
     account::{Account, Balance, Close, Open, Pad},
-    amount::{Amount, Currency, Price},
+    amount::{Amount, Currency, Decimal, Price},
     date::Date,
     error::Error,
     event::Event,
@@ -77,14 +76,14 @@ use std::{collections::HashMap, str::FromStr};
 
 /// Parse the input beancount file and return an instance of [`BeancountFile`] on success
 ///
-/// Is is generic over the decimal type `D`, which can be anytype implementing `FromStr`.
+/// Is is generic over the [`Decimal`] type `D`.
 ///
 /// See the root crate documentation for an example.
 ///
 /// # Errors
 ///
 /// Returns an [`Error`] in case of invalid beancount syntax found.
-pub fn parse<D: FromStr>(input: &str) -> Result<BeancountFile<'_, D>, Error<'_>> {
+pub fn parse<D: Decimal>(input: &str) -> Result<BeancountFile<'_, D>, Error<'_>> {
     match all_consuming(beancount_file)(Span::new(input)).finish() {
         Ok((_, content)) => Ok(content),
         Err(nom::error::Error { input, .. }) => Err(Error::new(input)),

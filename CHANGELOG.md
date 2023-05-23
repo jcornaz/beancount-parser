@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Breaking changes
+
+* The decimal type must now implement the `beancount_parser_2::Decimal` *sealed* trait.
+
 
 ## [1.0.0-alpha.2] - 2023-05-22
 

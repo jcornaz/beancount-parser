@@ -11,6 +11,20 @@ use nom::{
 
 use crate::{IResult, Span};
 
+/// Decimal type to which amount values and expressions will be parsed into.
+///
+/// # Notable implementations
+///
+/// * `f64`
+pub trait Decimal: FromStr + private::Sealed {}
+
+mod private {
+    pub trait Sealed {}
+}
+
+impl private::Sealed for f64 {}
+impl Decimal for f64 {}
+
 #[derive(Debug, Clone, Copy, PartialEq)]
 #[non_exhaustive]
 pub struct Amount<'a, D> {

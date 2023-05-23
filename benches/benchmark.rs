@@ -11,8 +11,7 @@ pub fn run_bench(c: &mut Criterion) {
     group.significance_level(0.01);
     group.throughput(Throughput::Bytes(SAMPLE.len() as u64));
     group.measurement_time(Duration::from_secs(10));
-    group.bench_function("parse f64", |b| b.iter(|| parse::<f64>(SAMPLE)));
-    group.bench_function("parse f32", |b| b.iter(|| parse::<f32>(SAMPLE)));
+    group.bench_function("parse", |b| b.iter(|| parse::<f64>(SAMPLE)));
     group.finish();
 }
 
