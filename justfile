@@ -13,7 +13,8 @@ watch:
 
 # Run the tests
 test:
-	cargo hack --feature-powerset --optional-deps rust_decimal test
+	cargo hack test --tests --feature-powerset --optional-deps rust_decimal
+	cargo test --doc --all-features
 
 # Run the static code analysis
 lint:
