@@ -6,6 +6,7 @@
     missing_docs
 )]
 #![warn(rust_2018_idioms, clippy::pedantic)]
+#![cfg_attr(has_doc_auto_cfg, feature(doc_auto_cfg))]
 
 //! A parsing library for the [beancount language](https://beancount.github.io/docs/beancount_language_syntax.html)
 //!
