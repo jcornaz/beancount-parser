@@ -45,9 +45,7 @@ pub struct Balance<'a, D> {
     pub amount: Amount<'a, D>,
 }
 
-/// [pad] directive
-///
-/// [pad]: https://beancount.github.io/docs/beancount_language_syntax.html#pad
+/// Pad directive
 ///
 /// # Example
 /// ```
