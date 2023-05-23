@@ -20,7 +20,6 @@ nom_locate = { version = "4.1", default-features = false }
 [dev-dependencies]
 criterion = "0.4.0"
 rstest = { version = "0.17.0", default-features = false }
-rust_decimal = { version = "1.29", default-features = false }
 
 [[bench]]
 name = "benchmark"

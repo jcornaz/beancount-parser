@@ -4,7 +4,6 @@ use beancount_parser_2::{
     parse, Directive, DirectiveContent, Flag, Posting, PostingPrice, Transaction,
 };
 use rstest::rstest;
-use rust_decimal::Decimal;
 
 const COMMENTS: &str = include_str!("samples/comments.beancount");
 const SIMPLE: &str = include_str!("samples/simple.beancount");
@@ -16,7 +15,7 @@ const OFFICIAL: &str = include_str!("samples/official.beancount");
 #[case(SIMPLE, 3)]
 #[case(OFFICIAL, 1096)]
 fn should_find_all_transactions(#[case] input: &str, #[case] expected_count: usize) {
-    let actual_count = parse::<Decimal>(input)
+    let actual_count = parse::<f64>(input)
         .expect("parsing should succeed")
         .directives
         .into_iter()
@@ -31,7 +30,7 @@ fn should_find_all_transactions(#[case] input: &str, #[case] expected_count: usi
 #[case(SIMPLE, 12)]
 #[case(OFFICIAL, 3385)]
 fn should_find_all_postings(#[case] input: &str, #[case] expected_count: usize) {
-    let actual_count: usize = parse::<Decimal>(input)
+    let actual_count: usize = parse::<f64>(input)
         .expect("parsing should succeed")
         .directives
         .into_iter()
@@ -145,12 +144,12 @@ fn price_should_be_empty_if_absent(
 #[case("10 CHF", 10, "CHF")]
 #[case("0 USD", 0, "USD")]
 #[case("-1 EUR", -1, "EUR")]
-#[case("1.2 PLN", Decimal::new(12, 1), "PLN")]
-#[case(".1 PLN", Decimal::new(1, 1), "PLN")]
+#[case("1.2 PLN", 1.2, "PLN")]
+#[case(".1 PLN", 0.1, "PLN")]
 #[case("1. CHF", 1, "CHF")]
 fn should_parse_amount_if_set(
     #[case] input: &str,
-    #[case] expected_value: impl Into<Decimal>,
+    #[case] expected_value: impl Into<f64>,
     #[case] expected_currency: &str,
 ) {
     let input = format!("2023-05-17 *\n  Assets:Cash {input}");
@@ -163,12 +162,12 @@ fn should_parse_amount_if_set(
 #[case("10 CHF", 10, "CHF")]
 #[case("0 USD", 0, "USD")]
 #[case("-1 EUR", -1, "EUR")]
-#[case("1.2 PLN", Decimal::new(12, 1), "PLN")]
-#[case(".1 PLN", Decimal::new(1, 1), "PLN")]
+#[case("1.2 PLN", 1.2, "PLN")]
+#[case(".1 PLN", 0.1, "PLN")]
 #[case("1. CHF", 1, "CHF")]
 fn should_parse_unit_price(
     #[case] input: &str,
-    #[case] expected_value: impl Into<Decimal>,
+    #[case] expected_value: impl Into<f64>,
     #[case] expected_currency: &str,
 ) {
     let input = format!("2023-05-17 *\n  Assets:Cash 1 DKK @ {input}");
@@ -183,12 +182,12 @@ fn should_parse_unit_price(
 #[case("10 CHF", 10, "CHF")]
 #[case("0 USD", 0, "USD")]
 #[case("-1 EUR", -1, "EUR")]
-#[case("1.2 PLN", Decimal::new(12, 1), "PLN")]
-#[case(".1 PLN", Decimal::new(1, 1), "PLN")]
+#[case("1.2 PLN", 1.2, "PLN")]
+#[case(".1 PLN", 0.1, "PLN")]
 #[case("1. CHF", 1, "CHF")]
 fn should_parse_total_price(
     #[case] input: &str,
-    #[case] expected_value: impl Into<Decimal>,
+    #[case] expected_value: impl Into<f64>,
     #[case] expected_currency: &str,
 ) {
     let input = format!("2023-05-17 *\n  Assets:Cash 1 DKK @@ {input}");
@@ -226,7 +225,7 @@ fn cost_should_be_empty_if_absent(
 #[case("Assets:Cash 1 CHF {1 EUR} @ 4 PLN", 1, "EUR")]
 fn should_parse_cost(
     #[case] input: &str,
-    #[case] expected_value: impl Into<Decimal>,
+    #[case] expected_value: impl Into<f64>,
     #[case] expected_currency: &str,
 ) {
     let input = format!("2023-05-17 *\n  {input}",);
@@ -287,11 +286,11 @@ fn should_reject_invalid_input(
     )]
     input: &str,
 ) {
-    let result = parse::<Decimal>(input);
+    let result = parse::<f64>(input);
     assert!(result.is_err(), "{result:#?}");
 }
 
-fn parse_single_directive(input: &str) -> Directive<Decimal> {
+fn parse_single_directive(input: &str) -> Directive<f64> {
     let directives = parse(input).expect("parsing should succeed").directives;
     assert_eq!(
         directives.len(),
@@ -302,7 +301,7 @@ fn parse_single_directive(input: &str) -> Directive<Decimal> {
     directives.into_iter().next().unwrap()
 }
 
-fn parse_single_posting(input: &str) -> Posting<'_, Decimal> {
+fn parse_single_posting(input: &str) -> Posting<'_, f64> {
     let trx = parse_single_transaction(input);
     assert_eq!(
         trx.postings.len(),
@@ -313,7 +312,7 @@ fn parse_single_posting(input: &str) -> Posting<'_, Decimal> {
     trx.postings.into_iter().next().unwrap()
 }
 
-fn parse_single_transaction(input: &str) -> Transaction<Decimal> {
+fn parse_single_transaction(input: &str) -> Transaction<f64> {
     let directive_content = parse_single_directive(input).content;
     let DirectiveContent::Transaction(trx) = directive_content else {
         panic!("was not a transaction but: {directive_content:?}");

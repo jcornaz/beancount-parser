@@ -1,6 +1,5 @@
 use beancount_parser_2::{parse, Directive, DirectiveContent, MetadataValue};
 use rstest::rstest;
-use rust_decimal::Decimal;
 
 const COMMENTS: &str = include_str!("samples/comments.beancount");
 const SIMPLE: &str = include_str!("samples/simple.beancount");
@@ -8,14 +7,14 @@ const OFFICIAL: &str = include_str!("samples/official.beancount");
 
 #[rstest]
 fn should_succeed_for_valid_input(#[values("", "\n", COMMENTS, SIMPLE, OFFICIAL)] input: &str) {
-    parse::<Decimal>(input).expect("parsing should succeed");
+    parse::<f64>(input).expect("parsing should succeed");
 }
 
 #[rstest]
 #[case("", 0)]
 #[case(SIMPLE, 10)]
 fn should_find_all_open_directives(#[case] input: &str, #[case] expected_count: usize) {
-    let actual_count = parse::<Decimal>(input)
+    let actual_count = parse::<f64>(input)
         .expect("parsing should succeed")
         .directives
         .into_iter()
@@ -86,7 +85,7 @@ fn should_parse_pad_source_account(#[case] input: &str, #[case] expected: &str) 
 )]
 fn should_parse_balance_assertion_amount(
     #[case] input: &str,
-    #[case] expected_value: impl Into<Decimal>,
+    #[case] expected_value: impl Into<f64>,
     #[case] expected_currency: &str,
 ) {
     let DirectiveContent::Balance(assertion) = parse_single_directive(input).content else {
@@ -154,9 +153,7 @@ fn should_parse_close_account(#[case] input: &str, #[case] expected_account: &st
 
 #[rstest]
 fn should_parse_option() {
-    let options = parse::<Decimal>(r#"option "Hello" "world!""#)
-        .unwrap()
-        .options;
+    let options = parse::<f64>(r#"option "Hello" "world!""#).unwrap().options;
     assert_eq!(options.get("Hello"), Some(&"world!"));
 }
 
@@ -194,7 +191,7 @@ fn should_parse_price_amount() {
     let DirectiveContent::Price(price) = parse_single_directive(input).content else {
     panic!("was not an price directive");
 };
-    assert_eq!(price.amount.value, Decimal::new(12103, 2));
+    assert_eq!(price.amount.value, 121.03);
     assert_eq!(price.amount.currency.as_str(), "USD");
 }
 
@@ -310,7 +307,7 @@ fn should_reject_invalid_input(
     )]
     input: &str,
 ) {
-    let result = parse::<Decimal>(input);
+    let result = parse::<f64>(input);
     assert!(result.is_err(), "{result:#?}");
 }
 
@@ -329,7 +326,7 @@ fn error_should_contain_relevant_line_number() {
 2000-11-01 close Liabilities:CreditCard:CapitalOne"#
         .trim();
 
-    let error_line = parse::<Decimal>(input).unwrap_err().line_number();
+    let error_line = parse::<f64>(input).unwrap_err().line_number();
     assert_eq!(error_line, 8);
 }
 
@@ -346,7 +343,7 @@ fn directive_should_contain_relevant_line_number() {
 2000-11-01 close Liabilities:CreditCard:CapitalOne"#
         .trim();
 
-    let line_numbers: Vec<_> = parse::<Decimal>(input)
+    let line_numbers: Vec<_> = parse::<f64>(input)
         .unwrap()
         .directives
         .into_iter()
@@ -355,7 +352,7 @@ fn directive_should_contain_relevant_line_number() {
     assert_eq!(line_numbers, vec![1, 2, 4, 8]);
 }
 
-fn parse_single_directive(input: &str) -> Directive<'_, Decimal> {
+fn parse_single_directive(input: &str) -> Directive<'_, f64> {
     let directives = parse(input).expect("parsing should succeed").directives;
     assert_eq!(
         directives.len(),
