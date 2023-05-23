@@ -147,7 +147,7 @@ fn price_should_be_empty_if_absent(
 #[case("1.2 PLN", 1.2, "PLN")]
 #[case(".1 PLN", 0.1, "PLN")]
 #[case("1. CHF", 1, "CHF")]
-fn should_parse_amount_if_set(
+fn should_parse_amount(
     #[case] input: &str,
     #[case] expected_value: impl Into<f64>,
     #[case] expected_currency: &str,

@@ -13,8 +13,11 @@
 //!
 //! Use [`parse`] to get an instance of [`BeancountFile`].
 //!
-//! Note that it is generic over the decimal type.
-//! Currently only `f64` is supported.
+//! This is generic over the decimal type. The examples use `f64` as a decimal type.
+//! You may enable the `rust_decimal` feature flag to be able to use `Decimal` from the
+//! [rust_decimal] crate.
+//!
+//! [rust_decimal]: https://docs.rs/rust_decimal
 //!
 //! ```
 //! use beancount_parser_2::{BeancountFile, DirectiveContent};

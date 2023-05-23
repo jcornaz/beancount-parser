@@ -16,6 +16,10 @@ use crate::{IResult, Span};
 /// # Notable implementations
 ///
 /// * `f64`
+/// * `Decimal` of the crate [rust_decimal] (requires the feature flag `rust_decimal`)
+///
+/// [rust_decimal]: https://docs.rs/rust_decimal
+///
 pub trait Decimal: FromStr + private::Sealed {}
 
 mod private {
@@ -24,6 +28,11 @@ mod private {
 
 impl private::Sealed for f64 {}
 impl Decimal for f64 {}
+
+#[cfg(feature = "rust_decimal")]
+impl private::Sealed for rust_decimal::Decimal {}
+#[cfg(feature = "rust_decimal")]
+impl Decimal for rust_decimal::Decimal {}
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 #[non_exhaustive]
