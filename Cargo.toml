@@ -14,9 +14,12 @@ keywords = ["parsing", "beancount", "accounting"]
 all-features = true
 
 [dependencies]
+# Public
+rust_decimal = { version = "1.29", default-features = false, optional = true }
+
+# Private
 nom = { version = "7.1", default-features = false, features = ["std"] }
 nom_locate = { version = "4.1", default-features = false }
-rust_decimal = { version = "1.29.1", default-features = false, optional = true }
 
 [dev-dependencies]
 criterion = "0.4.0"
