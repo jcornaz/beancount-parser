@@ -49,6 +49,11 @@
 //! assert_eq!(trx.postings[1].amount, None);
 //! # Ok(()) }
 //! ```
+//!
+//! # Features flags
+//!
+//! * `rust_decimal`: Provide an implementation of `Decimal` for `rust_decimal::Decimal`
+//!
 
 mod account;
 mod amount;
