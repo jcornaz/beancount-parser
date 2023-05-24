@@ -79,7 +79,7 @@ use std::collections::HashMap;
 
 /// Parse the input beancount file and return an instance of [`BeancountFile`] on success
 ///
-/// Is is generic over the [`Decimal`] type `D`.
+/// It is generic over the [`Decimal`] type `D`.
 ///
 /// See the root crate documentation for an example.
 ///
@@ -94,8 +94,6 @@ pub fn parse<D: Decimal>(input: &str) -> Result<BeancountFile<'_, D>, Error<'_>>
 }
 
 /// Main struct representing a parsed beancount file.
-///
-/// It is generic over the decimal type `D`.
 ///
 /// To get an instance of this, use [`parse`].
 ///
@@ -115,8 +113,6 @@ pub struct BeancountFile<'a, D> {
 ///
 /// It has fields common to all directives, and a [`Directive::content`] field with
 /// a different content for each directive type.
-///
-/// It is generic over the decimal type `D`.
 ///
 /// ```
 /// # use beancount_parser_2::{BeancountFile, DirectiveContent};

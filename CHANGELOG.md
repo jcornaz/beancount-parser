@@ -19,6 +19,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 * Amount value expressions
 
 
+### Documentation
+
+* Document `Account` and related directives (`Open`, `Close`, `Balance` and `Pad`)
+
+
 ## [1.0.0-alpha.2] - 2023-05-22
 
 

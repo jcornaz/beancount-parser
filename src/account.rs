@@ -1,5 +1,3 @@
-#![allow(missing_docs)]
-
 use nom::{
     branch::alt,
     bytes::{complete::tag, complete::take_while},
@@ -16,33 +14,84 @@ use crate::{
 
 use super::{IResult, Span};
 
+/// Account
+///
+/// You may convert it into a string slice with [`Account::as_str`]
+///
+/// # Example
+/// ```
+/// use beancount_parser_2::DirectiveContent;
+/// let input = "2022-05-24 open Assets:Bank:Checking";
+/// let beancount = beancount_parser_2::parse::<f64>(input).unwrap();
+/// let DirectiveContent::Open(open) = &beancount.directives[0].content else { unreachable!() };
+/// assert_eq!(open.account.as_str(), "Assets:Bank:Checking");
+/// ```
 #[derive(Debug, Copy, Clone, PartialOrd, Ord, PartialEq, Eq, Hash)]
 pub struct Account<'a>(&'a str);
 
 impl<'a> Account<'a> {
+    /// Returns the account name
     #[must_use]
     pub fn as_str(&self) -> &'a str {
         self.0
     }
 }
 
+/// Open account directive
+///
+/// # Example
+/// ```
+/// use beancount_parser_2::DirectiveContent;
+/// let input = "2022-05-24 open Assets:Bank:Checking    CHF";
+/// let beancount = beancount_parser_2::parse::<f64>(input).unwrap();
+/// let DirectiveContent::Open(open) = &beancount.directives[0].content else { unreachable!() };
+/// assert_eq!(open.account.as_str(), "Assets:Bank:Checking");
+/// assert_eq!(open.currencies[0].as_str(), "CHF");
+/// ```
 #[derive(Debug, Clone)]
 #[non_exhaustive]
 pub struct Open<'a> {
+    /// Account being open
     pub account: Account<'a>,
+    /// Currency constraints
     pub currencies: Vec<Currency<'a>>,
 }
 
+/// Close account directive
+///
+/// # Example
+/// ```
+/// use beancount_parser_2::DirectiveContent;
+/// let input = "2022-05-24 close Assets:Bank:Checking";
+/// let beancount = beancount_parser_2::parse::<f64>(input).unwrap();
+/// let DirectiveContent::Close(close) = &beancount.directives[0].content else { unreachable!() };
+/// assert_eq!(close.account.as_str(), "Assets:Bank:Checking");
+/// ```
 #[derive(Debug, Clone)]
 #[non_exhaustive]
 pub struct Close<'a> {
+    /// Account being closed
     pub account: Account<'a>,
 }
 
+/// Balance assertion
+///
+/// # Example
+/// ```
+/// use beancount_parser_2::DirectiveContent;
+/// let input = "2022-05-24 balance Assets:Bank:Checking 10 CHF";
+/// let beancount = beancount_parser_2::parse::<f64>(input).unwrap();
+/// let DirectiveContent::Balance(balance) = &beancount.directives[0].content else { unreachable!() };
+/// assert_eq!(balance.account.as_str(), "Assets:Bank:Checking");
+/// assert_eq!(balance.amount.value, 10.0);
+/// assert_eq!(balance.amount.currency.as_str(), "CHF");
+/// ```
 #[derive(Debug, Clone)]
 #[non_exhaustive]
 pub struct Balance<'a, D> {
+    /// Account being asserted
     pub account: Account<'a>,
+    /// Amount the amount should have on the date
     pub amount: Amount<'a, D>,
 }
 
@@ -60,7 +109,9 @@ pub struct Balance<'a, D> {
 #[derive(Debug, Clone)]
 #[non_exhaustive]
 pub struct Pad<'a> {
+    /// Account being padded
     pub account: Account<'a>,
+    /// Source account from which take the money
     pub source_account: Account<'a>,
 }
 

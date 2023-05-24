@@ -19,10 +19,7 @@ use crate::{
 
 /// A transaction
 ///
-/// It is generic over the decimal type `D`.
-///
 /// It notably contains a list of [`Posting`]
-///
 ///
 /// # Example
 /// ```
@@ -59,8 +56,6 @@ pub struct Transaction<'a, D> {
 }
 
 /// A transaction posting
-///
-/// It is generic over the decimal type `D`.
 ///
 /// # Example
 /// ```
