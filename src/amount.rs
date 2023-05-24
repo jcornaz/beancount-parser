@@ -65,10 +65,11 @@ fn exp_p1<D: Decimal>(input: Span<'_>) -> IResult<'_, D> {
     let (input, value) = exp_p0(input)?;
     let mut iter = iterator(
         input,
-        tuple((delimited(space0, one_of("*"), space0), exp_p0)),
+        tuple((delimited(space0, one_of("*/"), space0), exp_p0)),
     );
     let value = iter.fold(value, |a, (op, b)| match op {
         '*' => a * b,
+        '/' => a / b,
         op => unreachable!("unsupported operator: {op}"),
     });
     let (input, _) = iter.finish()?;
