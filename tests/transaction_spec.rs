@@ -141,23 +141,28 @@ fn price_should_be_empty_if_absent(
 }
 
 #[rstest]
-#[case("10 CHF", 10, "CHF")]
-#[case("0 USD", 0, "USD")]
-#[case("-1 EUR", -1, "EUR")]
+#[case("10 CHF", 10.0, "CHF")]
+#[case("0 USD", 0.0, "USD")]
+#[case("-1 EUR", -1.0, "EUR")]
 #[case("1.2 PLN", 1.2, "PLN")]
 #[case(".1 PLN", 0.1, "PLN")]
-#[case("1. CHF", 1, "CHF")]
-#[case("1 + 1 CHF", 1 + 1, "CHF")]
-#[case("1 + 1 + 2 CHF", 1 + 1 + 2, "CHF")]
-#[case("1+1 CHF", 1 + 1, "CHF")]
+#[case("1. CHF", 1.0, "CHF")]
+#[case("1 + 1 CHF", 1.0 + 1.0, "CHF")]
+#[case("1 + 1 + 2 CHF", 1.0 + 1.0 + 2.0, "CHF")]
+#[case("1+1 CHF", 1.0 + 1.0, "CHF")]
+#[case("2 - 1 CHF", 2.0 - 1.0, "CHF")]
+#[case("2 + 10 - 5 CHF", 2.0 + 10.0 - 5.0, "CHF")]
+#[case("2+10-5 CHF", 2.0 + 10.0 - 5.0, "CHF")]
+#[case("-2+10-5 CHF", -2.0 + 10.0 - 5.0, "CHF")]
+#[case("10--2 CHF", 10.0 - -2.0, "CHF")]
 fn should_parse_amount(
     #[case] input: &str,
-    #[case] expected_value: impl Into<f64>,
+    #[case] expected_value: f64,
     #[case] expected_currency: &str,
 ) {
     let input = format!("2023-05-17 *\n  Assets:Cash {input}");
     let amount = parse_single_posting(&input).amount.unwrap();
-    assert_eq!(amount.value, expected_value.into());
+    assert_eq!(amount.value, expected_value);
     assert_eq!(amount.currency.as_str(), expected_currency);
 }
 

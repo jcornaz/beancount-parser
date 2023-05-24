@@ -9,9 +9,9 @@ use std::{
 
 use nom::{
     bytes::complete::{take_while, take_while1},
-    character::complete::{char, satisfy, space0, space1},
-    combinator::{iterator, map_res, recognize, verify},
-    sequence::{delimited, preceded, tuple},
+    character::complete::{char, one_of, satisfy, space0, space1},
+    combinator::{iterator, map_res, opt, recognize, verify},
+    sequence::{delimited, tuple},
 };
 
 use crate::{IResult, Span};
@@ -50,16 +50,23 @@ fn expression<D: Decimal>(input: Span<'_>) -> IResult<'_, D> {
     let (input, value) = literal(input)?;
     let mut iter = iterator(
         input,
-        preceded(delimited(space0, char('+'), space0), literal),
+        tuple((delimited(space0, one_of("+-"), space0), literal)),
     );
-    let value = iter.fold(value, |a, b| a + b);
+    let value = iter.fold(value, |a, (op, b)| match op {
+        '+' => a + b,
+        '-' => a - b,
+        op => unreachable!("unsupported operator: {op}"),
+    });
     let (input, _) = iter.finish()?;
     Ok((input, value))
 }
 
 fn literal<D: Decimal>(input: Span<'_>) -> IResult<'_, D> {
     map_res(
-        take_while1(|c: char| c.is_numeric() || c == '-' || c == '.'),
+        recognize(tuple((
+            opt(char('-')),
+            take_while1(|c: char| c.is_numeric() || c == '.'),
+        ))),
         |s: Span<'_>| s.fragment().parse(),
     )(input)
 }
