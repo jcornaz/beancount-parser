@@ -9,13 +9,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Breaking changes
 
-* The decimal type must now implement the `beancount_parser_2::Decimal` *sealed* trait.
-  At the moment, only `f64` and `rust_decimal::Decimal` implements it. The later requires the `rust_decimal` feature flag.
-
-
-### Added
-
-* `rust_decimal` feature flag providing an implementation of `beancount_parser_2::Decimal` for `rust_decimal::Decimal`
+* The decimal type must now implement the `beancount_parser_2::Decimal` trait.
+  That trait is a blanket implementation for all types `D` where
+  `D: FromStr + Default + Copy + Add<Output = Self> + AddAssign + Sub<Output = Self> + SubAssign + Mul<Output = Self> + MulAssign + Div<Output = Self> + DivAssign + Neg<Output = Self>`
+  Which notably includes `f64` and `Decimal` from the crate `rust_decimal`
 
 
 ## [1.0.0-alpha.2] - 2023-05-22

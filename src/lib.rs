@@ -15,10 +15,9 @@
 //! Use [`parse`] to get an instance of [`BeancountFile`].
 //!
 //! This is generic over the decimal type. The examples use `f64` as a decimal type.
-//! You may enable the `rust_decimal` feature flag to be able to use `Decimal` from the
-//! [rust_decimal] crate.
+//! You may also use `Decimal` from the [rust_decimal crate].
 //!
-//! [rust_decimal]: https://docs.rs/rust_decimal
+//! [rust_decimal crate]: https://docs.rs/rust_decimal
 //!
 //! ```
 //! use beancount_parser_2::{BeancountFile, DirectiveContent};
@@ -49,11 +48,6 @@
 //! assert_eq!(trx.postings[1].amount, None);
 //! # Ok(()) }
 //! ```
-//!
-//! # Features flags
-//!
-//! * `rust_decimal`: Provide an implementation of `Decimal` for `rust_decimal::Decimal`
-//!
 
 mod account;
 mod amount;
@@ -81,7 +75,7 @@ use nom::{
     Finish, Parser,
 };
 use nom_locate::position;
-use std::{collections::HashMap, str::FromStr};
+use std::collections::HashMap;
 
 /// Parse the input beancount file and return an instance of [`BeancountFile`] on success
 ///
@@ -177,7 +171,7 @@ pub enum DirectiveContent<'a, D> {
 type Span<'a> = nom_locate::LocatedSpan<&'a str>;
 type IResult<'a, O> = nom::IResult<Span<'a>, O>;
 
-fn beancount_file<D: FromStr>(input: Span<'_>) -> IResult<'_, BeancountFile<'_, D>> {
+fn beancount_file<D: Decimal>(input: Span<'_>) -> IResult<'_, BeancountFile<'_, D>> {
     let mut iter = iterator(input, entry);
     let mut options = HashMap::new();
     let mut directives = Vec::new();
@@ -208,7 +202,7 @@ enum Entry<'a, D> {
     Comment,
 }
 
-fn entry<D: FromStr>(input: Span<'_>) -> IResult<'_, Entry<'_, D>> {
+fn entry<D: Decimal>(input: Span<'_>) -> IResult<'_, Entry<'_, D>> {
     alt((
         directive.map(Entry::Directive),
         line.map(|_| Entry::Comment),
@@ -216,7 +210,7 @@ fn entry<D: FromStr>(input: Span<'_>) -> IResult<'_, Entry<'_, D>> {
     ))(input)
 }
 
-fn directive<D: FromStr>(input: Span<'_>) -> IResult<'_, Directive<'_, D>> {
+fn directive<D: Decimal>(input: Span<'_>) -> IResult<'_, Directive<'_, D>> {
     let (input, position) = position(input)?;
     let (input, date) = date::parse(input)?;
     let (input, _) = cut(space1)(input)?;

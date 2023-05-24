@@ -1,9 +1,6 @@
 #![allow(missing_docs)]
 
-use std::{
-    collections::{HashMap, HashSet},
-    str::FromStr,
-};
+use std::collections::{HashMap, HashSet};
 
 use nom::{
     branch::alt,
@@ -17,7 +14,7 @@ use nom::{
 use crate::{
     account::{self, Account},
     amount::{self, Amount},
-    date, end_of_line, metadata, string, Date, IResult, Span,
+    date, end_of_line, metadata, string, Date, Decimal, IResult, Span,
 };
 
 /// A transaction
@@ -139,7 +136,7 @@ impl From<Flag> for char {
     }
 }
 
-pub(crate) fn parse<D: FromStr>(
+pub(crate) fn parse<D: Decimal>(
     input: Span<'_>,
 ) -> IResult<'_, (Transaction<'_, D>, HashMap<&str, metadata::Value<'_>>)> {
     let (input, flag) = alt((map(flag, Some), value(None, tag("txn"))))(input)?;
@@ -153,7 +150,7 @@ fn flag(input: Span<'_>) -> IResult<'_, Flag> {
     ))(input)
 }
 
-fn do_parse<D: FromStr>(
+fn do_parse<D: Decimal>(
     flag: Option<Flag>,
 ) -> impl Fn(Span<'_>) -> IResult<'_, (Transaction<'_, D>, HashMap<&str, metadata::Value<'_>>)> {
     move |input| {
@@ -206,7 +203,7 @@ fn payee_and_narration(input: Span<'_>) -> IResult<'_, (Option<&str>, &str)> {
     ))
 }
 
-fn posting<D: FromStr>(input: Span<'_>) -> IResult<'_, Posting<'_, D>> {
+fn posting<D: Decimal>(input: Span<'_>) -> IResult<'_, Posting<'_, D>> {
     let (input, _) = space1(input)?;
     let (input, flag) = opt(terminated(flag, space1))(input)?;
     let (input, account) = account::parse(input)?;
@@ -244,7 +241,7 @@ fn posting<D: FromStr>(input: Span<'_>) -> IResult<'_, Posting<'_, D>> {
     ))
 }
 
-fn cost<D: FromStr>(input: Span<'_>) -> IResult<'_, Cost<'_, D>> {
+fn cost<D: Decimal>(input: Span<'_>) -> IResult<'_, Cost<'_, D>> {
     let (input, _) = terminated(char('{'), space0)(input)?;
     let (input, (cost, date)) = alt((
         map(

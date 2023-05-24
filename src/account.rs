@@ -1,7 +1,5 @@
 #![allow(missing_docs)]
 
-use std::str::FromStr;
-
 use nom::{
     branch::alt,
     bytes::{complete::tag, complete::take_while},
@@ -11,7 +9,10 @@ use nom::{
     sequence::{delimited, preceded},
 };
 
-use crate::amount::{self, Amount, Currency};
+use crate::{
+    amount::{self, Amount, Currency},
+    Decimal,
+};
 
 use super::{IResult, Span};
 
@@ -102,7 +103,7 @@ pub(super) fn close(input: Span<'_>) -> IResult<'_, Close<'_>> {
     Ok((input, Close { account }))
 }
 
-pub(super) fn balance<D: FromStr>(input: Span<'_>) -> IResult<'_, Balance<'_, D>> {
+pub(super) fn balance<D: Decimal>(input: Span<'_>) -> IResult<'_, Balance<'_, D>> {
     let (input, account) = parse(input)?;
     let (input, _) = space1(input)?;
     let (input, amount) = amount::parse(input)?;

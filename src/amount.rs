@@ -1,6 +1,9 @@
 #![allow(missing_docs)]
 
-use std::str::FromStr;
+use std::{
+    ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssign},
+    str::FromStr,
+};
 
 use nom::{
     bytes::complete::{take_while, take_while1},
@@ -16,23 +19,41 @@ use crate::{IResult, Span};
 /// # Notable implementations
 ///
 /// * `f64`
-/// * `Decimal` of the crate [rust_decimal] (requires the feature flag `rust_decimal`)
+/// * `Decimal` of the crate [rust_decimal]
 ///
 /// [rust_decimal]: https://docs.rs/rust_decimal
 ///
-pub trait Decimal: FromStr + private::Sealed {}
-
-mod private {
-    pub trait Sealed {}
+pub trait Decimal:
+    FromStr
+    + Default
+    + Copy
+    + Add<Output = Self>
+    + AddAssign
+    + Sub<Output = Self>
+    + SubAssign
+    + Mul<Output = Self>
+    + MulAssign
+    + Div<Output = Self>
+    + DivAssign
+    + Neg<Output = Self>
+{
 }
 
-impl private::Sealed for f64 {}
-impl Decimal for f64 {}
-
-#[cfg(feature = "rust_decimal")]
-impl private::Sealed for rust_decimal::Decimal {}
-#[cfg(feature = "rust_decimal")]
-impl Decimal for rust_decimal::Decimal {}
+impl<D> Decimal for D where
+    D: FromStr
+        + Default
+        + Copy
+        + Add<Output = Self>
+        + AddAssign
+        + Sub<Output = Self>
+        + SubAssign
+        + Mul<Output = Self>
+        + MulAssign
+        + Div<Output = Self>
+        + DivAssign
+        + Neg<Output = Self>
+{
+}
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 #[non_exhaustive]
@@ -57,21 +78,21 @@ pub struct Price<'a, D> {
     pub amount: Amount<'a, D>,
 }
 
-pub(crate) fn parse<D: FromStr>(input: Span<'_>) -> IResult<'_, Amount<'_, D>> {
+pub(crate) fn parse<D: Decimal>(input: Span<'_>) -> IResult<'_, Amount<'_, D>> {
     let (input, value) = value(input)?;
     let (input, _) = space1(input)?;
     let (input, currency) = currency(input)?;
     Ok((input, Amount { value, currency }))
 }
 
-fn value<D: FromStr>(input: Span<'_>) -> IResult<'_, D> {
+fn value<D: Decimal>(input: Span<'_>) -> IResult<'_, D> {
     map_res(
         take_while1(|c: char| c.is_numeric() || c == '-' || c == '.'),
         |s: Span<'_>| s.fragment().parse(),
     )(input)
 }
 
-pub(crate) fn price<D: FromStr>(input: Span<'_>) -> IResult<'_, Price<'_, D>> {
+pub(crate) fn price<D: Decimal>(input: Span<'_>) -> IResult<'_, Price<'_, D>> {
     let (input, currency) = currency(input)?;
     let (input, _) = space1(input)?;
     let (input, amount) = parse(input)?;

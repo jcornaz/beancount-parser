@@ -1,5 +1,3 @@
-#![cfg(feature = "rust_decimal")]
-
 use beancount_parser_2::{parse, Directive, DirectiveContent, Posting, Transaction};
 use rstest::rstest;
 use rust_decimal::Decimal;
