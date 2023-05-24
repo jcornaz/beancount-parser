@@ -36,6 +36,8 @@ pub trait Decimal:
     + Div<Output = Self>
     + DivAssign
     + Neg<Output = Self>
+    + PartialEq
+    + PartialOrd
 {
 }
 
@@ -52,6 +54,8 @@ impl<D> Decimal for D where
         + Div<Output = Self>
         + DivAssign
         + Neg<Output = Self>
+        + PartialEq
+        + PartialOrd
 {
 }
 
