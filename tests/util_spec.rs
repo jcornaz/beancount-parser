@@ -8,7 +8,7 @@ fn is_debug<T: Debug>() {}
 fn is_clone<T: Clone>() {}
 
 #[test]
-fn beancount_file_should_be_normal() {
+fn beancount_file_type_should_be_normal() {
     is_normal::<BeancountFile<f32>>();
     is_debug::<BeancountFile<f32>>();
     is_clone::<BeancountFile<f32>>();
