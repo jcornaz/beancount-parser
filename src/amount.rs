@@ -8,10 +8,11 @@ use std::{
 };
 
 use nom::{
+    branch::alt,
     bytes::complete::{take_while, take_while1},
     character::complete::{char, one_of, satisfy, space0, space1},
     combinator::{iterator, map_res, opt, recognize, verify},
-    sequence::{delimited, tuple},
+    sequence::{delimited, preceded, terminated, tuple},
 };
 
 use crate::{IResult, Span};
@@ -77,6 +78,17 @@ fn exp_p1<D: Decimal>(input: Span<'_>) -> IResult<'_, D> {
 }
 
 fn exp_p0<D: Decimal>(input: Span<'_>) -> IResult<'_, D> {
+    alt((
+        litteral,
+        delimited(
+            terminated(char('('), space0),
+            exp_p2,
+            preceded(space0, char(')')),
+        ),
+    ))(input)
+}
+
+fn litteral<D: Decimal>(input: Span<'_>) -> IResult<'_, D> {
     map_res(
         recognize(tuple((
             opt(char('-')),
