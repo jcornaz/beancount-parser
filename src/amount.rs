@@ -1,6 +1,8 @@
 #![allow(missing_docs)]
 
 use std::{
+    fmt::Debug,
+    iter::{Product, Sum},
     ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssign},
     str::FromStr,
 };
@@ -27,14 +29,17 @@ pub trait Decimal:
     FromStr
     + Default
     + Copy
+    + Debug
     + Add<Output = Self>
     + AddAssign
     + Sub<Output = Self>
     + SubAssign
+    + Sum
     + Mul<Output = Self>
     + MulAssign
     + Div<Output = Self>
     + DivAssign
+    + Product
     + Neg<Output = Self>
     + PartialEq
     + PartialOrd
@@ -45,14 +50,17 @@ impl<D> Decimal for D where
     D: FromStr
         + Default
         + Copy
+        + Debug
         + Add<Output = Self>
         + AddAssign
         + Sub<Output = Self>
         + SubAssign
+        + Sum
         + Mul<Output = Self>
         + MulAssign
         + Div<Output = Self>
         + DivAssign
+        + Product
         + Neg<Output = Self>
         + PartialEq
         + PartialOrd
