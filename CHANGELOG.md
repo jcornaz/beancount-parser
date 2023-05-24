@@ -14,6 +14,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   including `f64` and `rust_decimal::Decimal`
 
 
+### New syntax supported
+
+* Addition in amount value (e.g `1 + 2 CHF`)
+
+
 ## [1.0.0-alpha.2] - 2023-05-22
 
 
