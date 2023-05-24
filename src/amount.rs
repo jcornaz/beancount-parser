@@ -40,17 +40,17 @@ pub struct Price<'a, D> {
 }
 
 pub(crate) fn parse<D: Decimal>(input: Span<'_>) -> IResult<'_, Amount<'_, D>> {
-    let (input, value) = expression(input)?;
+    let (input, value) = exp_p2(input)?;
     let (input, _) = space1(input)?;
     let (input, currency) = currency(input)?;
     Ok((input, Amount { value, currency }))
 }
 
-fn expression<D: Decimal>(input: Span<'_>) -> IResult<'_, D> {
-    let (input, value) = literal(input)?;
+fn exp_p2<D: Decimal>(input: Span<'_>) -> IResult<'_, D> {
+    let (input, value) = exp_p1(input)?;
     let mut iter = iterator(
         input,
-        tuple((delimited(space0, one_of("+-"), space0), literal)),
+        tuple((delimited(space0, one_of("+-"), space0), exp_p1)),
     );
     let value = iter.fold(value, |a, (op, b)| match op {
         '+' => a + b,
@@ -61,7 +61,21 @@ fn expression<D: Decimal>(input: Span<'_>) -> IResult<'_, D> {
     Ok((input, value))
 }
 
-fn literal<D: Decimal>(input: Span<'_>) -> IResult<'_, D> {
+fn exp_p1<D: Decimal>(input: Span<'_>) -> IResult<'_, D> {
+    let (input, value) = exp_p0(input)?;
+    let mut iter = iterator(
+        input,
+        tuple((delimited(space0, one_of("*"), space0), exp_p0)),
+    );
+    let value = iter.fold(value, |a, (op, b)| match op {
+        '*' => a * b,
+        op => unreachable!("unsupported operator: {op}"),
+    });
+    let (input, _) = iter.finish()?;
+    Ok((input, value))
+}
+
+fn exp_p0<D: Decimal>(input: Span<'_>) -> IResult<'_, D> {
     map_res(
         recognize(tuple((
             opt(char('-')),

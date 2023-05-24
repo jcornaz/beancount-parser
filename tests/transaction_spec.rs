@@ -155,6 +155,13 @@ fn price_should_be_empty_if_absent(
 #[case("2+10-5 CHF", 2.0 + 10.0 - 5.0, "CHF")]
 #[case("-2+10-5 CHF", -2.0 + 10.0 - 5.0, "CHF")]
 #[case("10--2 CHF", 10.0 - -2.0, "CHF")]
+#[case("2 + 10 + -5 CHF", 2.0 + 10.0 + -5.0, "CHF")]
+#[case("2 * 3 CHF", 2.0 * 3.0, "CHF")]
+#[case("2 * 3 + 4 CHF", 2.0 * 3.0 + 4.0, "CHF")]
+#[case("2*3+4 CHF", 2.0 * 3.0 + 4.0, "CHF")]
+#[case("2 + 3 * 4 CHF", 2.0 + 3.0 * 4.0, "CHF")]
+#[case("2 * 3 * 4 CHF", 2.0 * 3.0 * 4.0, "CHF")]
+#[case("2*3*4 CHF", 2.0 * 3.0 * 4.0, "CHF")]
 fn should_parse_amount(
     #[case] input: &str,
     #[case] expected_value: f64,

@@ -16,7 +16,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### New syntax supported
 
-* Addition and Substraction in amount values (e.g `1 + 2 - 3 CHF`)
+* Addition, Substraction and multiplication in amount values (e.g `1 + 2 - 3 * 4 CHF`)
 
 
 ## [1.0.0-alpha.2] - 2023-05-22
