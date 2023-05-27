@@ -1,11 +1,5 @@
-#![deny(
-    future_incompatible,
-    nonstandard_style,
-    unsafe_code,
-    private_in_public,
-    missing_docs
-)]
-#![warn(rust_2018_idioms, clippy::pedantic)]
+#![deny(future_incompatible, nonstandard_style, unsafe_code, private_in_public)]
+#![warn(rust_2018_idioms, clippy::pedantic, missing_docs)]
 #![cfg_attr(docsrs, feature(doc_auto_cfg))]
 
 //! A parsing library for the [beancount language](https://beancount.github.io/docs/beancount_language_syntax.html)
