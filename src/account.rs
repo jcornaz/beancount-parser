@@ -1,9 +1,11 @@
+use std::collections::HashSet;
+
 use nom::{
     branch::alt,
     bytes::{complete::tag, complete::take_while},
     character::complete::{char, satisfy, space0, space1},
-    combinator::{cut, recognize},
-    multi::{many1_count, separated_list0},
+    combinator::{cut, iterator, opt, recognize},
+    multi::many1_count,
     sequence::{delimited, preceded},
 };
 
@@ -46,7 +48,7 @@ impl<'a> Account<'a> {
 /// let beancount = beancount_parser_2::parse::<f64>(input).unwrap();
 /// let DirectiveContent::Open(open) = &beancount.directives[0].content else { unreachable!() };
 /// assert_eq!(open.account.as_str(), "Assets:Bank:Checking");
-/// assert_eq!(open.currencies[0].as_str(), "CHF");
+/// assert_eq!(open.currencies.iter().next().unwrap().as_str(), "CHF");
 /// ```
 #[derive(Debug, Clone)]
 #[non_exhaustive]
@@ -54,7 +56,7 @@ pub struct Open<'a> {
     /// Account being open
     pub account: Account<'a>,
     /// Currency constraints
-    pub currencies: Vec<Currency<'a>>,
+    pub currencies: HashSet<Currency<'a>>,
 }
 
 /// Close account directive
@@ -138,15 +140,25 @@ pub(super) fn parse(input: Span<'_>) -> IResult<'_, Account<'_>> {
 pub(super) fn open(input: Span<'_>) -> IResult<'_, Open<'_>> {
     let (input, account) = parse(input)?;
     let (input, _) = space0(input)?;
-    let sep = delimited(space0, char(','), space0);
-    let (input, currencies) = separated_list0(sep, amount::currency)(input)?;
+    let (input, currencies) = opt(currencies)(input)?;
     Ok((
         input,
         Open {
             account,
-            currencies,
+            currencies: currencies.unwrap_or_default(),
         },
     ))
+}
+
+fn currencies(input: Span<'_>) -> IResult<'_, HashSet<Currency<'_>>> {
+    let (input, first) = amount::currency(input)?;
+    let sep = delimited(space0, char(','), space0);
+    let mut iter = iterator(input, preceded(sep, amount::currency));
+    let mut currencies = HashSet::new();
+    currencies.insert(first);
+    currencies.extend(iter.into_iter());
+    let (input, _) = iter.finish()?;
+    Ok((input, currencies))
 }
 
 pub(super) fn close(input: Span<'_>) -> IResult<'_, Close<'_>> {

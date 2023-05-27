@@ -133,8 +133,9 @@ fn should_parse_open_account_currency(#[case] input: &str, #[case] exepcted_curr
     let DirectiveContent::Open(open) = parse_single_directive(input).content else {
         panic!("was not an open directive");
     };
-    let actual_currencies: Vec<&str> = open.currencies.iter().map(|c| c.as_str()).collect();
-    assert_eq!(&actual_currencies, exepcted_currencies);
+    let expected: HashSet<&str> = exepcted_currencies.iter().copied().collect();
+    let actual: HashSet<&str> = open.currencies.iter().map(|c| c.as_str()).collect();
+    assert_eq!(actual, expected);
 }
 
 #[rstest]

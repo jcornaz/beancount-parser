@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Beaking changes
 
 * `MetadataValue` is now generic over the decimal type `D`
+* The `currencies` in the `Open` directive is now a `HashSet` instead of `Vec`
 
 
 ### New syntax supported
