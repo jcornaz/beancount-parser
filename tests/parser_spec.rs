@@ -160,10 +160,29 @@ fn should_parse_option() {
 }
 
 #[rstest]
+fn should_parse_option_with_comment() {
+    let options = parse::<f64>(r#"option "Hello" "world!" ; This is great"#)
+        .unwrap()
+        .options;
+    assert_eq!(options.get("Hello"), Some(&"world!"));
+}
+
+#[rstest]
 fn should_parse_include() {
     let includes = parse::<f64>(r#"include "./a/path/to/file.beancount""#)
         .unwrap()
         .includes;
+    let mut expected = HashSet::new();
+    expected.insert(Path::new("./a/path/to/file.beancount"));
+    assert_eq!(includes, expected);
+}
+
+#[rstest]
+fn should_parse_include_with_comment() {
+    let includes =
+        parse::<f64>(r#"include "./a/path/to/file.beancount" ; Everything is in the other file"#)
+            .unwrap()
+            .includes;
     let mut expected = HashSet::new();
     expected.insert(Path::new("./a/path/to/file.beancount"));
     assert_eq!(includes, expected);
@@ -250,6 +269,11 @@ fn should_parse_price_amount() {
 )]
 #[case(
     "2022-05-18 * \"a transaction\"\n  title: \"hello\"\n  Assets:Cash 10 CHF",
+    "title",
+    MetadataValue::String("hello")
+)]
+#[case(
+    "2022-05-18 * \"a transaction\"\n  title: \"hello\"\n  Assets:Cash 10 CHF ; With comment",
     "title",
     MetadataValue::String("hello")
 )]

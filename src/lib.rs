@@ -280,12 +280,14 @@ fn option(input: Span<'_>) -> IResult<'_, (&str, &str)> {
     let (input, _) = tag("option")(input)?;
     let (input, key) = preceded(space1, string)(input)?;
     let (input, value) = preceded(space1, string)(input)?;
+    let (input, _) = end_of_line(input)?;
     Ok((input, (key, value)))
 }
 
 fn include(input: Span<'_>) -> IResult<'_, &Path> {
     let (input, _) = tag("include")(input)?;
     let (input, path) = cut(preceded(space0, string))(input)?;
+    let (input, _) = end_of_line(input)?;
     Ok((input, Path::new(path)))
 }
 
