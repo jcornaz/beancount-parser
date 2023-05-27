@@ -24,6 +24,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 * Accept comment on `option` directive
 
 
+### Documentation
+
+* Document `MetadataValue`
+
+
 ## [1.0.0-alpha.3] - 2023-05-24
 
 ### Breaking changes

@@ -1,5 +1,3 @@
-#![allow(missing_docs)]
-
 use std::collections::HashMap;
 
 use nom::{
@@ -12,10 +10,26 @@ use nom::{
 
 use crate::{amount, end_of_line, string, Decimal, IResult, Span};
 
+/// Metadata value
+///
+/// # Example
+///
+/// ```
+/// # use beancount_parser_2::MetadataValue;
+/// let input = r#"
+/// 2023-05-27 commodity CHF
+///     title: "Swiss Franc"
+/// "#;
+/// let beancount = beancount_parser_2::parse::<f64>(input).unwrap();
+/// let directive_metadata = &beancount.directives[0].metadata;
+/// assert_eq!(directive_metadata.get("title"), Some(&MetadataValue::String("Swiss Franc")));
+/// ```
 #[derive(Debug, Clone, PartialEq)]
 #[non_exhaustive]
 pub enum Value<'a, D> {
+    /// String value
     String(&'a str),
+    /// A number or number expression
     Number(D),
 }
 
