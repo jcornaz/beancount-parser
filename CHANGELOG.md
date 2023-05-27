@@ -16,7 +16,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 * `include` directive
 * `pushtag` and `poptag` operations
-* number in metadata value
+* number and currency as metadata value
 
 
 ### Fixed

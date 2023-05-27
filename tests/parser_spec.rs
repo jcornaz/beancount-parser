@@ -292,6 +292,15 @@ fn should_parse_metadata_entry(
 }
 
 #[rstest]
+fn should_parse_metadata_currency() {
+    let metadata = parse_single_directive("2023-05-27 *\n foo: CHF").metadata;
+    let Some(MetadataValue::Currency(currency)) = metadata.get("foo") else {
+        panic!("was not a currency: {metadata:?}");
+    };
+    assert_eq!(currency.as_str(), "CHF");
+}
+
+#[rstest]
 fn should_reject_invalid_input(
     #[values(
         "14-05-01 open Assets:Cash",

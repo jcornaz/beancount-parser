@@ -8,7 +8,7 @@ use nom::{
     sequence::preceded,
 };
 
-use crate::{amount, end_of_line, string, Decimal, IResult, Span};
+use crate::{amount, end_of_line, string, Currency, Decimal, IResult, Span};
 
 /// Metadata value
 ///
@@ -31,6 +31,8 @@ pub enum Value<'a, D> {
     String(&'a str),
     /// A number or number expression
     Number(D),
+    /// A [`Currency`]
+    Currency(Currency<'a>),
 }
 
 pub(crate) fn parse<D: Decimal>(input: Span<'_>) -> IResult<'_, HashMap<&str, Value<'_, D>>> {
@@ -51,6 +53,7 @@ fn entry<D: Decimal>(input: Span<'_>) -> IResult<'_, (&str, Value<'_, D>)> {
     let (input, value) = alt((
         map(string, Value::String),
         map(amount::expression, Value::Number),
+        map(amount::currency, Value::Currency),
     ))(input)?;
     let (input, _) = end_of_line(input)?;
     Ok((input, (*key.fragment(), value)))
