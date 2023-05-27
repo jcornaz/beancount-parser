@@ -278,6 +278,38 @@ fn should_parse_cost_date(
 }
 
 #[rstest]
+fn should_include_tag_stack() {
+    let input = r#"
+pushtag #foo
+pushtag #bar
+2022-05-27 * #baz
+poptag #foo
+2022-05-28 *"#;
+    let beancount = parse::<f64>(input).unwrap();
+    let transactions: Vec<_> = beancount
+        .directives
+        .into_iter()
+        .map(|d| match d.content {
+            DirectiveContent::Transaction(trx) => trx,
+            _ => panic!("was not a transaction: {d:?}"),
+        })
+        .collect();
+    assert_eq!(
+        transactions.len(),
+        2,
+        "unexpected number of transactions: {transactions:?}"
+    );
+    assert_eq!(
+        transactions[0].tags,
+        ["foo", "bar", "baz"].into_iter().collect::<HashSet<_>>()
+    );
+    assert_eq!(
+        transactions[1].tags,
+        ["bar"].into_iter().collect::<HashSet<_>>()
+    );
+}
+
+#[rstest]
 fn should_reject_invalid_input(
     #[values(
         "2023-05-15txn \"narration\"",
@@ -307,7 +339,15 @@ fn should_reject_invalid_input(
         "2023-05-19 *\n  Assets:Cash 1 CHF {, 2023-05-19}",
         "2023-05-19 *\n  Assets:Cash 1 CHF {,}",
         "2014-04-23 * #hello-world#2023_05",
-        "2014-04-23 *#hello-world #2023_05"
+        "2014-04-23 *#hello-world #2023_05",
+        "pushtag#test",
+        "pushtag test",
+        "pushtag",
+        "poptagtest",
+        "poptag#test",
+        "poptag test",
+        "poptag",
+        "poptagtest"
     )]
     input: &str,
 ) {

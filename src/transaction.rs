@@ -170,18 +170,19 @@ fn do_parse<D: Decimal>(
     }
 }
 
-fn tags(input: Span<'_>) -> IResult<'_, HashSet<&str>> {
-    let mut tags_iter = iterator(
-        input,
+pub(super) fn parse_tag(input: Span<'_>) -> IResult<'_, &str> {
+    map(
         preceded(
-            space1,
-            preceded(
-                char('#'),
-                take_while(|c: char| c.is_alphanumeric() || c == '-' || c == '_'),
-            ),
+            char('#'),
+            take_while(|c: char| c.is_alphanumeric() || c == '-' || c == '_'),
         ),
-    );
-    let tags = tags_iter.map(|s: Span<'_>| *s.fragment()).collect();
+        |s: Span<'_>| *s.fragment(),
+    )(input)
+}
+
+fn tags(input: Span<'_>) -> IResult<'_, HashSet<&str>> {
+    let mut tags_iter = iterator(input, preceded(space1, parse_tag));
+    let tags = tags_iter.collect();
     let (input, _) = tags_iter.finish()?;
     Ok((input, tags))
 }

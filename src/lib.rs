@@ -178,10 +178,14 @@ fn beancount_file<D: Decimal>(input: Span<'_>) -> IResult<'_, BeancountFile<'_, 
     let mut iter = iterator(input, entry);
     let mut options = HashMap::new();
     let mut includes = HashSet::new();
+    let mut tag_stack = HashSet::new();
     let mut directives = Vec::new();
     for entry in &mut iter {
         match entry {
-            Entry::Directive(d) => {
+            Entry::Directive(mut d) => {
+                if let DirectiveContent::Transaction(trx) = &mut d.content {
+                    trx.tags.extend(tag_stack.iter());
+                }
                 directives.push(d);
             }
             Entry::Option { key, value } => {
@@ -189,6 +193,12 @@ fn beancount_file<D: Decimal>(input: Span<'_>) -> IResult<'_, BeancountFile<'_, 
             }
             Entry::Include(path) => {
                 includes.insert(path);
+            }
+            Entry::PushTag(tag) => {
+                tag_stack.insert(tag);
+            }
+            Entry::PopTag(tag) => {
+                tag_stack.remove(tag);
             }
             Entry::Comment => (),
         }
@@ -208,6 +218,8 @@ enum Entry<'a, D> {
     Directive(Directive<'a, D>),
     Option { key: &'a str, value: &'a str },
     Include(&'a Path),
+    PushTag(&'a str),
+    PopTag(&'a str),
     Comment,
 }
 
@@ -216,6 +228,7 @@ fn entry<D: Decimal>(input: Span<'_>) -> IResult<'_, Entry<'_, D>> {
         directive.map(Entry::Directive),
         option.map(|(key, value)| Entry::Option { key, value }),
         include.map(|p| Entry::Include(p)),
+        tag_stack_operation,
         line.map(|_| Entry::Comment),
     ))(input)
 }
@@ -288,6 +301,13 @@ fn include(input: Span<'_>) -> IResult<'_, &Path> {
     let (input, _) = tag("include")(input)?;
     let (input, path) = cut(delimited(space1, string, end_of_line))(input)?;
     Ok((input, Path::new(path)))
+}
+
+fn tag_stack_operation<D>(input: Span<'_>) -> IResult<'_, Entry<'_, D>> {
+    alt((
+        preceded(tuple((tag("pushtag"), space1)), transaction::parse_tag).map(Entry::PushTag),
+        preceded(tuple((tag("poptag"), space1)), transaction::parse_tag).map(Entry::PopTag),
+    ))(input)
 }
 
 fn end_of_line(input: Span<'_>) -> IResult<'_, ()> {
