@@ -339,7 +339,8 @@ fn should_reject_invalid_input(
         "2022-08-26 price VHT",
         "2022-08-26 price 121.03 USD",
         "2014-06-01 pad Assets:BofA:CheckingEquity:Opening-Balances",
-        "2014-06-01 padAssets:BofA:Checking Equity:Opening-Balances"
+        "2014-06-01 padAssets:BofA:Checking Equity:Opening-Balances",
+        r#"include"./a/path/to/file.beancount""#
     )]
     input: &str,
 ) {

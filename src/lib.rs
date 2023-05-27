@@ -286,8 +286,7 @@ fn option(input: Span<'_>) -> IResult<'_, (&str, &str)> {
 
 fn include(input: Span<'_>) -> IResult<'_, &Path> {
     let (input, _) = tag("include")(input)?;
-    let (input, path) = cut(preceded(space0, string))(input)?;
-    let (input, _) = end_of_line(input)?;
+    let (input, path) = cut(delimited(space1, string, end_of_line))(input)?;
     Ok((input, Path::new(path)))
 }
 
