@@ -233,6 +233,11 @@ fn should_parse_price_amount() {
     MetadataValue::String("hello")
 )]
 #[case(
+    "2022-05-18 commodity CHF\n  value: 1.2",
+    "value",
+    MetadataValue::Number(1.2)
+)]
+#[case(
     "2022-05-18 open Assets:Cash\n  title: \"hello\"\n  name: \"world\"",
     "title",
     MetadataValue::String("hello")
@@ -280,7 +285,7 @@ fn should_parse_price_amount() {
 fn should_parse_metadata_entry(
     #[case] input: &str,
     #[case] key: &str,
-    #[case] expected_value: MetadataValue<'static>,
+    #[case] expected_value: MetadataValue<'static, f64>,
 ) {
     let metdata = parse_single_directive(input).metadata;
     assert_eq!(metdata.get(key), Some(&expected_value));

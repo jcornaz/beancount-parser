@@ -41,10 +41,14 @@ pub struct Price<'a, D> {
 }
 
 pub(crate) fn parse<D: Decimal>(input: Span<'_>) -> IResult<'_, Amount<'_, D>> {
-    let (input, value) = exp_p2(input)?;
+    let (input, value) = expression(input)?;
     let (input, _) = space1(input)?;
     let (input, currency) = currency(input)?;
     Ok((input, Amount { value, currency }))
+}
+
+pub(super) fn expression<D: Decimal>(input: Span<'_>) -> IResult<'_, D> {
+    exp_p2(input)
 }
 
 fn exp_p2<D: Decimal>(input: Span<'_>) -> IResult<'_, D> {
@@ -82,7 +86,7 @@ fn exp_p0<D: Decimal>(input: Span<'_>) -> IResult<'_, D> {
         litteral,
         delimited(
             terminated(char('('), space0),
-            exp_p2,
+            expression,
             preceded(space0, char(')')),
         ),
     ))(input)

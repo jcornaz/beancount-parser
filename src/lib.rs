@@ -151,7 +151,7 @@ pub struct Directive<'a, D> {
     /// Metadata associated to the directive
     ///
     /// See: <https://beancount.github.io/docs/beancount_language_syntax.html#metadata>
-    pub metadata: HashMap<&'a str, metadata::Value<'a>>,
+    pub metadata: HashMap<&'a str, metadata::Value<'a, D>>,
     /// Line number where the directive was found in the input file
     pub line_number: u32,
 }

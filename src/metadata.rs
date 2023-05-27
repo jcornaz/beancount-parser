@@ -3,28 +3,30 @@
 use std::collections::HashMap;
 
 use nom::{
+    branch::alt,
     bytes::complete::take_while,
     character::complete::{char, satisfy, space1},
     combinator::{iterator, map, recognize},
     sequence::preceded,
 };
 
-use crate::{end_of_line, string, IResult, Span};
+use crate::{amount, end_of_line, string, Decimal, IResult, Span};
 
 #[derive(Debug, Clone, PartialEq)]
 #[non_exhaustive]
-pub enum Value<'a> {
+pub enum Value<'a, D> {
     String(&'a str),
+    Number(D),
 }
 
-pub(crate) fn parse(input: Span<'_>) -> IResult<'_, HashMap<&str, Value<'_>>> {
+pub(crate) fn parse<D: Decimal>(input: Span<'_>) -> IResult<'_, HashMap<&str, Value<'_, D>>> {
     let mut iter = iterator(input, entry);
     let map: HashMap<_, _> = iter.collect();
     let (input, _) = iter.finish()?;
     Ok((input, map))
 }
 
-fn entry(input: Span<'_>) -> IResult<'_, (&str, Value<'_>)> {
+fn entry<D: Decimal>(input: Span<'_>) -> IResult<'_, (&str, Value<'_, D>)> {
     let (input, _) = space1(input)?;
     let (input, key) = recognize(preceded(
         satisfy(char::is_lowercase),
@@ -32,7 +34,10 @@ fn entry(input: Span<'_>) -> IResult<'_, (&str, Value<'_>)> {
     ))(input)?;
     let (input, _) = char(':')(input)?;
     let (input, _) = space1(input)?;
-    let (input, value) = map(string, Value::String)(input)?;
+    let (input, value) = alt((
+        map(string, Value::String),
+        map(amount::expression, Value::Number),
+    ))(input)?;
     let (input, _) = end_of_line(input)?;
     Ok((input, (*key.fragment(), value)))
 }

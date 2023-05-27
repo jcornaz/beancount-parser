@@ -131,9 +131,10 @@ impl From<Flag> for char {
     }
 }
 
+#[allow(clippy::type_complexity)]
 pub(crate) fn parse<D: Decimal>(
     input: Span<'_>,
-) -> IResult<'_, (Transaction<'_, D>, HashMap<&str, metadata::Value<'_>>)> {
+) -> IResult<'_, (Transaction<'_, D>, HashMap<&str, metadata::Value<'_, D>>)> {
     let (input, flag) = alt((map(flag, Some), value(None, tag("txn"))))(input)?;
     cut(do_parse(flag))(input)
 }
@@ -147,7 +148,7 @@ fn flag(input: Span<'_>) -> IResult<'_, Flag> {
 
 fn do_parse<D: Decimal>(
     flag: Option<Flag>,
-) -> impl Fn(Span<'_>) -> IResult<'_, (Transaction<'_, D>, HashMap<&str, metadata::Value<'_>>)> {
+) -> impl Fn(Span<'_>) -> IResult<'_, (Transaction<'_, D>, HashMap<&str, metadata::Value<'_, D>>)> {
     move |input| {
         let (input, payee_and_narration) = opt(preceded(space1, payee_and_narration))(input)?;
         let (input, tags) = tags(input)?;
