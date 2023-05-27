@@ -26,7 +26,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Documentation
 
-* Document `MetadataValue`
+* Document `Price`, `Amount`, `Currency` and `MetadataValue` types
 
 
 ## [1.0.0-alpha.3] - 2023-05-24

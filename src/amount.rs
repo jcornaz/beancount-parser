@@ -1,5 +1,3 @@
-#![allow(missing_docs)]
-
 use std::{
     fmt::Debug,
     iter::{Product, Sum},
@@ -17,27 +15,55 @@ use nom::{
 
 use crate::{IResult, Span};
 
+/// Price directive
+///
+/// # Example
+///
+/// ```
+/// use beancount_parser_2::DirectiveContent;
+/// let input = "2023-05-27 price CHF  4 PLN";
+/// let beancount = beancount_parser_2::parse::<f64>(input).unwrap();
+/// let DirectiveContent::Price(price) = &beancount.directives[0].content else { unreachable!() };
+/// assert_eq!(price.currency.as_str(), "CHF");
+/// assert_eq!(price.amount.value, 4.0);
+/// assert_eq!(price.amount.currency.as_str(), "PLN");
+/// ```
+#[derive(Debug, Clone)]
+pub struct Price<'a, D> {
+    /// Currency
+    pub currency: Currency<'a>,
+    /// Price of the currency
+    pub amount: Amount<'a, D>,
+}
+
+/// Amount
+///
+/// Where `D` is the decimal type (like `f64` or `rust_decimal::Decimal`)
+///
+/// For an example, look at the [`Price`] directive
 #[derive(Debug, Clone, Copy, PartialEq)]
 #[non_exhaustive]
 pub struct Amount<'a, D> {
+    /// The value (decimal) part
     pub value: D,
+    /// Currency
     pub currency: Currency<'a>,
 }
 
+/// Currency
+///
+/// One may use [`Currency::as_str`] to get the string representation of the currency
+///
+/// For an example, look at the [`Price`] directive
 #[derive(Debug, Copy, Clone, PartialOrd, Ord, PartialEq, Eq, Hash)]
 pub struct Currency<'a>(&'a str);
 
 impl<'a> Currency<'a> {
+    /// Returns the string representation of the currency
     #[must_use]
     pub fn as_str(&self) -> &'a str {
         self.0
     }
-}
-
-#[derive(Debug, Clone)]
-pub struct Price<'a, D> {
-    pub currency: Currency<'a>,
-    pub amount: Amount<'a, D>,
 }
 
 pub(crate) fn parse<D: Decimal>(input: Span<'_>) -> IResult<'_, Amount<'_, D>> {
