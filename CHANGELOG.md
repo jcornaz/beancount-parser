@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### New syntax supported
+
+* `include` directive
+
 
 ## [1.0.0-alpha.3] - 2023-05-24
 

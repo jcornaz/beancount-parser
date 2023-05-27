@@ -75,7 +75,10 @@ use nom::{
     Finish, Parser,
 };
 use nom_locate::position;
-use std::collections::HashMap;
+use std::{
+    collections::{HashMap, HashSet},
+    path::Path,
+};
 
 /// Parse the input beancount file and return an instance of [`BeancountFile`] on success
 ///
@@ -105,6 +108,10 @@ pub struct BeancountFile<'a, D> {
     ///
     /// See: <https://beancount.github.io/docs/beancount_language_syntax.html#options>
     pub options: HashMap<&'a str, &'a str>,
+    /// Pathes of include directives
+    ///
+    /// See: <https://beancount.github.io/docs/beancount_language_syntax.html#includes>
+    pub includes: HashSet<&'a Path>,
     /// List of [`Directive`] found in the file
     pub directives: Vec<Directive<'a, D>>,
 }
@@ -170,6 +177,7 @@ type IResult<'a, O> = nom::IResult<Span<'a>, O>;
 fn beancount_file<D: Decimal>(input: Span<'_>) -> IResult<'_, BeancountFile<'_, D>> {
     let mut iter = iterator(input, entry);
     let mut options = HashMap::new();
+    let mut includes = HashSet::new();
     let mut directives = Vec::new();
     for entry in &mut iter {
         match entry {
@@ -179,6 +187,9 @@ fn beancount_file<D: Decimal>(input: Span<'_>) -> IResult<'_, BeancountFile<'_, 
             Entry::Option { key, value } => {
                 options.insert(key, value);
             }
+            Entry::Include(path) => {
+                includes.insert(path);
+            }
             Entry::Comment => (),
         }
     }
@@ -187,6 +198,7 @@ fn beancount_file<D: Decimal>(input: Span<'_>) -> IResult<'_, BeancountFile<'_, 
         input,
         BeancountFile {
             options,
+            includes,
             directives,
         },
     ))
@@ -195,14 +207,16 @@ fn beancount_file<D: Decimal>(input: Span<'_>) -> IResult<'_, BeancountFile<'_, 
 enum Entry<'a, D> {
     Directive(Directive<'a, D>),
     Option { key: &'a str, value: &'a str },
+    Include(&'a Path),
     Comment,
 }
 
 fn entry<D: Decimal>(input: Span<'_>) -> IResult<'_, Entry<'_, D>> {
     alt((
         directive.map(Entry::Directive),
-        line.map(|_| Entry::Comment),
         option.map(|(key, value)| Entry::Option { key, value }),
+        include.map(|p| Entry::Include(p)),
+        line.map(|_| Entry::Comment),
     ))(input)
 }
 
@@ -267,6 +281,12 @@ fn option(input: Span<'_>) -> IResult<'_, (&str, &str)> {
     let (input, key) = preceded(space1, string)(input)?;
     let (input, value) = preceded(space1, string)(input)?;
     Ok((input, (key, value)))
+}
+
+fn include(input: Span<'_>) -> IResult<'_, &Path> {
+    let (input, _) = tag("include")(input)?;
+    let (input, path) = cut(preceded(space0, string))(input)?;
+    Ok((input, Path::new(path)))
 }
 
 fn end_of_line(input: Span<'_>) -> IResult<'_, ()> {

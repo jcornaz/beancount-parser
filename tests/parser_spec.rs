@@ -1,3 +1,5 @@
+use std::{collections::HashSet, path::Path};
+
 use beancount_parser_2::{parse, Directive, DirectiveContent, MetadataValue};
 use rstest::rstest;
 
@@ -155,6 +157,16 @@ fn should_parse_close_account(#[case] input: &str, #[case] expected_account: &st
 fn should_parse_option() {
     let options = parse::<f64>(r#"option "Hello" "world!""#).unwrap().options;
     assert_eq!(options.get("Hello"), Some(&"world!"));
+}
+
+#[rstest]
+fn should_parse_include() {
+    let includes = parse::<f64>(r#"include "./a/path/to/file.beancount""#)
+        .unwrap()
+        .includes;
+    let mut expected = HashSet::new();
+    expected.insert(Path::new("./a/path/to/file.beancount"));
+    assert_eq!(includes, expected);
 }
 
 #[rstest]
