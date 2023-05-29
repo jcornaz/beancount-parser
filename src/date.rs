@@ -18,7 +18,7 @@ use super::{IResult, Span};
 ///
 /// ```
 /// let input = "2022-05-21 event \"location\" \"Middle earth\"";
-/// let beancount = beancount_parser_2::parse::<f64>(input).unwrap();
+/// let beancount = beancount_parser_2::parse::<&str, f64>(input).unwrap();
 /// let date = beancount.directives[0].date;
 /// assert_eq!(date.year, 2022);
 /// assert_eq!(date.month, 5);

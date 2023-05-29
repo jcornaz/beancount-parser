@@ -20,7 +20,7 @@ fn should_parse_amount(
     assert_eq!(amount.currency.as_str(), expected_currency);
 }
 
-fn parse_single_directive(input: &str) -> Directive<Decimal> {
+fn parse_single_directive(input: &str) -> Directive<&str, Decimal> {
     let directives = parse(input).expect("parsing should succeed").directives;
     assert_eq!(
         directives.len(),
@@ -31,7 +31,7 @@ fn parse_single_directive(input: &str) -> Directive<Decimal> {
     directives.into_iter().next().unwrap()
 }
 
-fn parse_single_posting(input: &str) -> Posting<'_, Decimal> {
+fn parse_single_posting(input: &str) -> Posting<&str, Decimal> {
     let trx = parse_single_transaction(input);
     assert_eq!(
         trx.postings.len(),
@@ -42,7 +42,7 @@ fn parse_single_posting(input: &str) -> Posting<'_, Decimal> {
     trx.postings.into_iter().next().unwrap()
 }
 
-fn parse_single_transaction(input: &str) -> Transaction<Decimal> {
+fn parse_single_transaction(input: &str) -> Transaction<&str, Decimal> {
     let directive_content = parse_single_directive(input).content;
     let DirectiveContent::Transaction(trx) = directive_content else {
         panic!("was not a transaction but: {directive_content:?}");

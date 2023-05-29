@@ -1,6 +1,9 @@
 #![allow(missing_docs)]
 
-use std::collections::{HashMap, HashSet};
+use std::{
+    collections::{HashMap, HashSet},
+    hash::Hash,
+};
 
 use nom::{
     branch::alt,
@@ -30,7 +33,7 @@ use crate::{
 ///   Expenses:Groceries
 /// "#;
 ///
-/// let beancount = beancount_parser_2::parse::<f64>(input).unwrap();
+/// let beancount = beancount_parser_2::parse::<&str, f64>(input).unwrap();
 /// let DirectiveContent::Transaction(trx) = &beancount.directives[0].content else {
 ///   unreachable!("was not a transaction")
 /// };
@@ -42,17 +45,17 @@ use crate::{
 /// ```
 #[derive(Debug, Clone)]
 #[non_exhaustive]
-pub struct Transaction<'a, D> {
+pub struct Transaction<S, D> {
     /// Transaction flag (`*` or `!` or `None` when using the `txn` keyword)
     pub flag: Option<Flag>,
     /// Payee (if present)
-    pub payee: Option<&'a str>,
+    pub payee: Option<S>,
     /// Narration (if present)
-    pub narration: Option<&'a str>,
+    pub narration: Option<S>,
     /// Set of tags
-    pub tags: HashSet<&'a str>,
+    pub tags: HashSet<S>,
     /// Postings
-    pub postings: Vec<Posting<'a, D>>,
+    pub postings: Vec<Posting<S, D>>,
 }
 
 /// A transaction posting
@@ -66,7 +69,7 @@ pub struct Transaction<'a, D> {
 ///   Expenses:Groceries
 /// "#;
 ///
-/// let beancount = beancount_parser_2::parse::<f64>(input).unwrap();
+/// let beancount = beancount_parser_2::parse::<&str, f64>(input).unwrap();
 /// let DirectiveContent::Transaction(trx) = &beancount.directives[0].content else {
 ///   unreachable!("was not a transaction")
 /// };
@@ -84,23 +87,23 @@ pub struct Transaction<'a, D> {
 /// ```
 #[derive(Debug, Clone)]
 #[non_exhaustive]
-pub struct Posting<'a, D> {
+pub struct Posting<S, D> {
     /// Transaction flag (`*` or `!` or `None` when absent)
     pub flag: Option<Flag>,
     /// Account modified by the posting
-    pub account: Account<'a>,
+    pub account: Account<S>,
     /// Amount being added to the account
-    pub amount: Option<Amount<'a, D>>,
+    pub amount: Option<Amount<S, D>>,
     /// Cost (`@` or `@@`) syntax
-    pub cost: Option<Cost<'a, D>>,
+    pub cost: Option<Cost<S, D>>,
     /// Price (content within `{` and `}`)
-    pub price: Option<PostingPrice<'a, D>>,
+    pub price: Option<PostingPrice<S, D>>,
 }
 
 #[derive(Debug, Clone)]
 #[non_exhaustive]
-pub struct Cost<'a, D> {
-    pub amount: Option<Amount<'a, D>>,
+pub struct Cost<S, D> {
+    pub amount: Option<Amount<S, D>>,
     pub date: Option<Date>,
 }
 
@@ -108,11 +111,11 @@ pub struct Cost<'a, D> {
 ///
 /// It is the amount following the `@` or `@@` symbols
 #[derive(Debug, Clone)]
-pub enum PostingPrice<'a, D> {
+pub enum PostingPrice<S, D> {
     /// Unit cost (`@`)
-    Unit(Amount<'a, D>),
+    Unit(Amount<S, D>),
     /// Total cost (`@@`)
-    Total(Amount<'a, D>),
+    Total(Amount<S, D>),
 }
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Default)]
@@ -132,9 +135,9 @@ impl From<Flag> for char {
 }
 
 #[allow(clippy::type_complexity)]
-pub(crate) fn parse<D: Decimal>(
-    input: Span<'_>,
-) -> IResult<'_, (Transaction<'_, D>, HashMap<&str, metadata::Value<'_, D>>)> {
+pub(crate) fn parse<'a, S: From<&'a str> + Eq + Hash, D: Decimal>(
+    input: Span<'a>,
+) -> IResult<'a, (Transaction<S, D>, HashMap<S, metadata::Value<S, D>>)> {
     let (input, flag) = alt((map(flag, Some), value(None, tag("txn"))))(input)?;
     cut(do_parse(flag))(input)
 }
@@ -146,22 +149,26 @@ fn flag(input: Span<'_>) -> IResult<'_, Flag> {
     ))(input)
 }
 
-fn do_parse<D: Decimal>(
+fn do_parse<'a, S: From<&'a str> + Eq + Hash, D: Decimal>(
     flag: Option<Flag>,
-) -> impl Fn(Span<'_>) -> IResult<'_, (Transaction<'_, D>, HashMap<&str, metadata::Value<'_, D>>)> {
+) -> impl Fn(Span<'a>) -> IResult<'a, (Transaction<S, D>, HashMap<S, metadata::Value<S, D>>)> {
     move |input| {
         let (input, payee_and_narration) = opt(preceded(space1, payee_and_narration))(input)?;
         let (input, tags) = tags(input)?;
         let (input, _) = end_of_line(input)?;
         let (input, metadata) = metadata::parse(input)?;
         let (input, postings) = many0(posting)(input)?;
+        let (payee, narration) = match payee_and_narration {
+            Some((payee, narration)) => (payee, Some(narration)),
+            None => (None, None),
+        };
         Ok((
             input,
             (
                 Transaction {
                     flag,
-                    payee: payee_and_narration.and_then(|(p, _)| p),
-                    narration: payee_and_narration.map(|(_, n)| n),
+                    payee,
+                    narration,
                     tags,
                     postings,
                 },
@@ -171,24 +178,24 @@ fn do_parse<D: Decimal>(
     }
 }
 
-pub(super) fn parse_tag(input: Span<'_>) -> IResult<'_, &str> {
+pub(super) fn parse_tag<'a, S: From<&'a str>>(input: Span<'a>) -> IResult<'a, S> {
     map(
         preceded(
             char('#'),
             take_while(|c: char| c.is_alphanumeric() || c == '-' || c == '_'),
         ),
-        |s: Span<'_>| *s.fragment(),
+        |s: Span<'_>| (*s.fragment()).into(),
     )(input)
 }
 
-fn tags(input: Span<'_>) -> IResult<'_, HashSet<&str>> {
+fn tags<'a, S: From<&'a str> + Eq + Hash>(input: Span<'a>) -> IResult<'a, HashSet<S>> {
     let mut tags_iter = iterator(input, preceded(space1, parse_tag));
     let tags = tags_iter.collect();
     let (input, _) = tags_iter.finish()?;
     Ok((input, tags))
 }
 
-fn payee_and_narration(input: Span<'_>) -> IResult<'_, (Option<&str>, &str)> {
+fn payee_and_narration<'a, S: From<&'a str>>(input: Span<'a>) -> IResult<'a, (Option<S>, S)> {
     let (input, s1) = string(input)?;
     let (input, s2) = opt(preceded(space1, string))(input)?;
     Ok((
@@ -200,7 +207,7 @@ fn payee_and_narration(input: Span<'_>) -> IResult<'_, (Option<&str>, &str)> {
     ))
 }
 
-fn posting<D: Decimal>(input: Span<'_>) -> IResult<'_, Posting<'_, D>> {
+fn posting<'a, S: From<&'a str>, D: Decimal>(input: Span<'a>) -> IResult<'a, Posting<S, D>> {
     let (input, _) = space1(input)?;
     let (input, flag) = opt(terminated(flag, space1))(input)?;
     let (input, account) = account::parse(input)?;
@@ -238,7 +245,7 @@ fn posting<D: Decimal>(input: Span<'_>) -> IResult<'_, Posting<'_, D>> {
     ))
 }
 
-fn cost<D: Decimal>(input: Span<'_>) -> IResult<'_, Cost<'_, D>> {
+fn cost<'a, S: From<&'a str>, D: Decimal>(input: Span<'a>) -> IResult<'a, Cost<S, D>> {
     let (input, _) = terminated(char('{'), space0)(input)?;
     let (input, (cost, date)) = alt((
         map(

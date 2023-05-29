@@ -2,6 +2,7 @@ use std::fmt::Debug;
 
 use beancount_parser_2::{BeancountFile, Flag};
 use rstest::rstest;
+use rust_decimal::Decimal;
 
 fn is_normal<T: Sized + Send + Sync + Unpin>() {}
 fn is_debug<T: Debug>() {}
@@ -9,9 +10,15 @@ fn is_clone<T: Clone>() {}
 
 #[test]
 fn beancount_file_type_should_be_normal() {
-    is_normal::<BeancountFile<f32>>();
-    is_debug::<BeancountFile<f32>>();
-    is_clone::<BeancountFile<f32>>();
+    is_normal::<BeancountFile<&str, f64>>();
+    is_debug::<BeancountFile<&str, f64>>();
+    is_clone::<BeancountFile<&str, f64>>();
+    is_normal::<BeancountFile<&str, Decimal>>();
+    is_debug::<BeancountFile<&str, Decimal>>();
+    is_clone::<BeancountFile<&str, Decimal>>();
+    is_normal::<BeancountFile<String, f64>>();
+    is_debug::<BeancountFile<String, f64>>();
+    is_clone::<BeancountFile<String, f64>>();
 }
 
 #[test]

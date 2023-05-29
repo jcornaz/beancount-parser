@@ -1,4 +1,4 @@
-use std::{collections::HashSet, path::Path};
+use std::collections::HashSet;
 
 use beancount_parser_2::{parse, Directive, DirectiveContent, MetadataValue};
 use rstest::rstest;
@@ -9,14 +9,14 @@ const OFFICIAL: &str = include_str!("samples/official.beancount");
 
 #[rstest]
 fn should_succeed_for_valid_input(#[values("", "\n", COMMENTS, SIMPLE, OFFICIAL)] input: &str) {
-    parse::<f64>(input).expect("parsing should succeed");
+    parse::<&str, f64>(input).expect("parsing should succeed");
 }
 
 #[rstest]
 #[case("", 0)]
 #[case(SIMPLE, 10)]
 fn should_find_all_open_directives(#[case] input: &str, #[case] expected_count: usize) {
-    let actual_count = parse::<f64>(input)
+    let actual_count = parse::<&str, f64>(input)
         .expect("parsing should succeed")
         .directives
         .into_iter()
@@ -156,13 +156,15 @@ fn should_parse_close_account(#[case] input: &str, #[case] expected_account: &st
 
 #[rstest]
 fn should_parse_option() {
-    let options = parse::<f64>(r#"option "Hello" "world!""#).unwrap().options;
+    let options = parse::<&str, f64>(r#"option "Hello" "world!""#)
+        .unwrap()
+        .options;
     assert_eq!(options.get("Hello"), Some(&"world!"));
 }
 
 #[rstest]
 fn should_parse_option_with_comment() {
-    let options = parse::<f64>(r#"option "Hello" "world!" ; This is great"#)
+    let options = parse::<&str, f64>(r#"option "Hello" "world!" ; This is great"#)
         .unwrap()
         .options;
     assert_eq!(options.get("Hello"), Some(&"world!"));
@@ -170,22 +172,21 @@ fn should_parse_option_with_comment() {
 
 #[rstest]
 fn should_parse_include() {
-    let includes = parse::<f64>(r#"include "./a/path/to/file.beancount""#)
+    let includes = parse::<&str, f64>(r#"include "./a/path/to/file.beancount""#)
         .unwrap()
         .includes;
-    let mut expected = HashSet::new();
-    expected.insert(Path::new("./a/path/to/file.beancount"));
+    let expected: HashSet<_> = ["./a/path/to/file.beancount"].into();
     assert_eq!(includes, expected);
 }
 
 #[rstest]
 fn should_parse_include_with_comment() {
-    let includes =
-        parse::<f64>(r#"include "./a/path/to/file.beancount" ; Everything is in the other file"#)
-            .unwrap()
-            .includes;
-    let mut expected = HashSet::new();
-    expected.insert(Path::new("./a/path/to/file.beancount"));
+    let includes = parse::<&str, f64>(
+        r#"include "./a/path/to/file.beancount" ; Everything is in the other file"#,
+    )
+    .unwrap()
+    .includes;
+    let expected: HashSet<_> = ["./a/path/to/file.beancount"].into();
     assert_eq!(includes, expected);
 }
 
@@ -286,7 +287,7 @@ fn should_parse_price_amount() {
 fn should_parse_metadata_entry(
     #[case] input: &str,
     #[case] key: &str,
-    #[case] expected_value: MetadataValue<'static, f64>,
+    #[case] expected_value: MetadataValue<&str, f64>,
 ) {
     let metdata = parse_single_directive(input).metadata;
     assert_eq!(metdata.get(key), Some(&expected_value));
@@ -359,7 +360,7 @@ fn should_reject_invalid_input(
     )]
     input: &str,
 ) {
-    let result = parse::<f64>(input);
+    let result = parse::<&str, f64>(input);
     assert!(result.is_err(), "{result:#?}");
 }
 
@@ -378,7 +379,7 @@ fn error_should_contain_relevant_line_number() {
 2000-11-01 close Liabilities:CreditCard:CapitalOne"#
         .trim();
 
-    let error_line = parse::<f64>(input).unwrap_err().line_number();
+    let error_line = parse::<&str, f64>(input).unwrap_err().line_number();
     assert_eq!(error_line, 8);
 }
 
@@ -395,7 +396,7 @@ fn directive_should_contain_relevant_line_number() {
 2000-11-01 close Liabilities:CreditCard:CapitalOne"#
         .trim();
 
-    let line_numbers: Vec<_> = parse::<f64>(input)
+    let line_numbers: Vec<_> = parse::<&str, f64>(input)
         .unwrap()
         .directives
         .into_iter()
@@ -404,7 +405,7 @@ fn directive_should_contain_relevant_line_number() {
     assert_eq!(line_numbers, vec![1, 2, 4, 8]);
 }
 
-fn parse_single_directive(input: &str) -> Directive<'_, f64> {
+fn parse_single_directive(input: &str) -> Directive<&str, f64> {
     let directives = parse(input).expect("parsing should succeed").directives;
     assert_eq!(
         directives.len(),

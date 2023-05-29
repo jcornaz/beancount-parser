@@ -15,7 +15,7 @@ const OFFICIAL: &str = include_str!("samples/official.beancount");
 #[case(SIMPLE, 3)]
 #[case(OFFICIAL, 1096)]
 fn should_find_all_transactions(#[case] input: &str, #[case] expected_count: usize) {
-    let actual_count = parse::<f64>(input)
+    let actual_count = parse::<&str, f64>(input)
         .expect("parsing should succeed")
         .directives
         .into_iter()
@@ -30,7 +30,7 @@ fn should_find_all_transactions(#[case] input: &str, #[case] expected_count: usi
 #[case(SIMPLE, 12)]
 #[case(OFFICIAL, 3385)]
 fn should_find_all_postings(#[case] input: &str, #[case] expected_count: usize) {
-    let actual_count: usize = parse::<f64>(input)
+    let actual_count: usize = parse::<&str, f64>(input)
         .expect("parsing should succeed")
         .directives
         .into_iter()
@@ -285,7 +285,7 @@ pushtag #bar
 2022-05-27 * #baz
 poptag #foo
 2022-05-28 *"#;
-    let beancount = parse::<f64>(input).unwrap();
+    let beancount = parse::<&str, f64>(input).unwrap();
     let transactions: Vec<_> = beancount
         .directives
         .into_iter()
@@ -351,11 +351,11 @@ fn should_reject_invalid_input(
     )]
     input: &str,
 ) {
-    let result = parse::<f64>(input);
+    let result = parse::<&str, f64>(input);
     assert!(result.is_err(), "{result:#?}");
 }
 
-fn parse_single_directive(input: &str) -> Directive<f64> {
+fn parse_single_directive(input: &str) -> Directive<&str, f64> {
     let directives = parse(input).expect("parsing should succeed").directives;
     assert_eq!(
         directives.len(),
@@ -366,7 +366,7 @@ fn parse_single_directive(input: &str) -> Directive<f64> {
     directives.into_iter().next().unwrap()
 }
 
-fn parse_single_posting(input: &str) -> Posting<'_, f64> {
+fn parse_single_posting(input: &str) -> Posting<&str, f64> {
     let trx = parse_single_transaction(input);
     assert_eq!(
         trx.postings.len(),
@@ -377,7 +377,7 @@ fn parse_single_posting(input: &str) -> Posting<'_, f64> {
     trx.postings.into_iter().next().unwrap()
 }
 
-fn parse_single_transaction(input: &str) -> Transaction<f64> {
+fn parse_single_transaction(input: &str) -> Transaction<&str, f64> {
     let directive_content = parse_single_directive(input).content;
     let DirectiveContent::Transaction(trx) = directive_content else {
         panic!("was not a transaction but: {directive_content:?}");

@@ -24,7 +24,7 @@
 //! "#;
 //!
 //! // Parse into the `BeancountFile` struct:
-//! let beancount: BeancountFile<f64> = beancount_parser_2::parse::<f64>(input)?;
+//! let beancount: BeancountFile<&str, f64> = beancount_parser_2::parse::<&str, f64>(input)?;
 //!
 //! let directive = &beancount.directives[0];
 //! assert_eq!(directive.date.year, 2023);
@@ -71,7 +71,7 @@ use nom::{
 use nom_locate::position;
 use std::{
     collections::{HashMap, HashSet},
-    path::Path,
+    hash::Hash,
 };
 
 /// Parse the input beancount file and return an instance of [`BeancountFile`] on success
@@ -83,7 +83,9 @@ use std::{
 /// # Errors
 ///
 /// Returns an [`Error`] in case of invalid beancount syntax found.
-pub fn parse<D: Decimal>(input: &str) -> Result<BeancountFile<'_, D>, Error<'_>> {
+pub fn parse<'a, S: From<&'a str> + Eq + Hash + Clone, D: Decimal>(
+    input: &'a str,
+) -> Result<BeancountFile<S, D>, Error<'_>> {
     match all_consuming(beancount_file)(Span::new(input)).finish() {
         Ok((_, content)) => Ok(content),
         Err(nom::error::Error { input, .. }) => Err(Error::new(input)),
@@ -97,17 +99,17 @@ pub fn parse<D: Decimal>(input: &str) -> Result<BeancountFile<'_, D>, Error<'_>>
 /// For an example, look at the root crate documentation.
 #[derive(Debug, Clone)]
 #[non_exhaustive]
-pub struct BeancountFile<'a, D> {
+pub struct BeancountFile<S, D> {
     /// Map of options declared in the file
     ///
     /// See: <https://beancount.github.io/docs/beancount_language_syntax.html#options>
-    pub options: HashMap<&'a str, &'a str>,
+    pub options: HashMap<S, S>,
     /// Pathes of include directives
     ///
     /// See: <https://beancount.github.io/docs/beancount_language_syntax.html#includes>
-    pub includes: HashSet<&'a Path>,
+    pub includes: HashSet<S>,
     /// List of [`Directive`] found in the file
-    pub directives: Vec<Directive<'a, D>>,
+    pub directives: Vec<Directive<S, D>>,
 }
 
 /// A beancount "directive"
@@ -123,7 +125,7 @@ pub struct BeancountFile<'a, D> {
 ///   Expensses:Groceerices  10 CHF
 ///   Assets:Cash
 /// "#;
-/// let beancount: BeancountFile<f64> = beancount_parser_2::parse(input).unwrap();
+/// let beancount: BeancountFile<&str, f64> = beancount_parser_2::parse(input).unwrap();
 /// assert_eq!(beancount.directives.len(), 2);
 /// for directive in beancount.directives {
 ///    println!("line: {}", directive.line_number);
@@ -137,15 +139,15 @@ pub struct BeancountFile<'a, D> {
 /// ```
 #[derive(Debug, Clone)]
 #[non_exhaustive]
-pub struct Directive<'a, D> {
+pub struct Directive<S, D> {
     /// Date of the directive
     pub date: Date,
     /// Content of the directive that is specific to each directive type
-    pub content: DirectiveContent<'a, D>,
+    pub content: DirectiveContent<S, D>,
     /// Metadata associated to the directive
     ///
     /// See: <https://beancount.github.io/docs/beancount_language_syntax.html#metadata>
-    pub metadata: HashMap<&'a str, metadata::Value<'a, D>>,
+    pub metadata: HashMap<S, metadata::Value<S, D>>,
     /// Line number where the directive was found in the input file
     pub line_number: u32,
 }
@@ -154,49 +156,49 @@ pub struct Directive<'a, D> {
 #[allow(missing_docs)]
 #[derive(Debug, Clone)]
 #[non_exhaustive]
-pub enum DirectiveContent<'a, D> {
-    Transaction(transaction::Transaction<'a, D>),
-    Price(amount::Price<'a, D>),
-    Balance(account::Balance<'a, D>),
-    Open(account::Open<'a>),
-    Close(account::Close<'a>),
-    Pad(account::Pad<'a>),
-    Commodity(Currency<'a>),
-    Event(event::Event<'a>),
+pub enum DirectiveContent<S, D> {
+    Transaction(transaction::Transaction<S, D>),
+    Price(amount::Price<S, D>),
+    Balance(account::Balance<S, D>),
+    Open(account::Open<S>),
+    Close(account::Close<S>),
+    Pad(account::Pad<S>),
+    Commodity(Currency<S>),
+    Event(event::Event<S>),
 }
 
 type Span<'a> = nom_locate::LocatedSpan<&'a str>;
 type IResult<'a, O> = nom::IResult<Span<'a>, O>;
 
-fn beancount_file<D: Decimal>(input: Span<'_>) -> IResult<'_, BeancountFile<'_, D>> {
-    let mut iter = iterator(input, entry);
-    let mut options = HashMap::new();
-    let mut includes = HashSet::new();
-    let mut tag_stack = HashSet::new();
-    let mut directives = Vec::new();
-    for entry in &mut iter {
-        match entry {
-            Entry::Directive(mut d) => {
-                if let DirectiveContent::Transaction(trx) = &mut d.content {
-                    trx.tags.extend(tag_stack.iter());
-                }
-                directives.push(d);
+fn beancount_file<'a, S: From<&'a str> + Eq + Hash + Clone, D: Decimal>(
+    input: Span<'a>,
+) -> IResult<'a, BeancountFile<S, D>> {
+    let mut iter = iterator(input, entry::<S, D>);
+    let mut options = HashMap::<S, S>::new();
+    let mut includes = HashSet::<S>::new();
+    let mut tag_stack = HashSet::<S>::new();
+    let mut directives = Vec::<Directive<S, D>>::new();
+    iter.for_each(|entry| match entry {
+        Entry::Directive(mut d) => {
+            if let DirectiveContent::Transaction(trx) = &mut d.content {
+                trx.tags.extend(tag_stack.iter().cloned());
             }
-            Entry::Option { key, value } => {
-                options.insert(key, value);
-            }
-            Entry::Include(path) => {
-                includes.insert(path);
-            }
-            Entry::PushTag(tag) => {
-                tag_stack.insert(tag);
-            }
-            Entry::PopTag(tag) => {
-                tag_stack.remove(tag);
-            }
-            Entry::Comment => (),
+            directives.push(d);
         }
-    }
+        Entry::Option { key, value } => {
+            options.insert(key, value);
+        }
+        Entry::Include(path) => {
+            includes.insert(path);
+        }
+        Entry::PushTag(tag) => {
+            tag_stack.insert(tag);
+        }
+        Entry::PopTag(tag) => {
+            tag_stack.remove(&tag);
+        }
+        Entry::Comment => (),
+    });
     let (input, _) = iter.finish()?;
     Ok((
         input,
@@ -208,16 +210,18 @@ fn beancount_file<D: Decimal>(input: Span<'_>) -> IResult<'_, BeancountFile<'_, 
     ))
 }
 
-enum Entry<'a, D> {
-    Directive(Directive<'a, D>),
-    Option { key: &'a str, value: &'a str },
-    Include(&'a Path),
-    PushTag(&'a str),
-    PopTag(&'a str),
+enum Entry<S, D> {
+    Directive(Directive<S, D>),
+    Option { key: S, value: S },
+    Include(S),
+    PushTag(S),
+    PopTag(S),
     Comment,
 }
 
-fn entry<D: Decimal>(input: Span<'_>) -> IResult<'_, Entry<'_, D>> {
+fn entry<'a, S: From<&'a str> + Eq + Hash, D: Decimal>(
+    input: Span<'a>,
+) -> IResult<'a, Entry<S, D>> {
     alt((
         directive.map(Entry::Directive),
         option.map(|(key, value)| Entry::Option { key, value }),
@@ -227,7 +231,9 @@ fn entry<D: Decimal>(input: Span<'_>) -> IResult<'_, Entry<'_, D>> {
     ))(input)
 }
 
-fn directive<D: Decimal>(input: Span<'_>) -> IResult<'_, Directive<'_, D>> {
+fn directive<'a, S: From<&'a str> + Eq + Hash, D: Decimal>(
+    input: Span<'a>,
+) -> IResult<'a, Directive<S, D>> {
     let (input, position) = position(input)?;
     let (input, date) = date::parse(input)?;
     let (input, _) = cut(space1)(input)?;
@@ -283,7 +289,7 @@ fn directive<D: Decimal>(input: Span<'_>) -> IResult<'_, Directive<'_, D>> {
     ))
 }
 
-fn option(input: Span<'_>) -> IResult<'_, (&str, &str)> {
+fn option<'a, S: From<&'a str>>(input: Span<'a>) -> IResult<'a, (S, S)> {
     let (input, _) = tag("option")(input)?;
     let (input, key) = preceded(space1, string)(input)?;
     let (input, value) = preceded(space1, string)(input)?;
@@ -291,13 +297,13 @@ fn option(input: Span<'_>) -> IResult<'_, (&str, &str)> {
     Ok((input, (key, value)))
 }
 
-fn include(input: Span<'_>) -> IResult<'_, &Path> {
+fn include<'a, S: From<&'a str>>(input: Span<'a>) -> IResult<'a, S> {
     let (input, _) = tag("include")(input)?;
     let (input, path) = cut(delimited(space1, string, end_of_line))(input)?;
-    Ok((input, Path::new(path)))
+    Ok((input, path))
 }
 
-fn tag_stack_operation<D>(input: Span<'_>) -> IResult<'_, Entry<'_, D>> {
+fn tag_stack_operation<'a, S: From<&'a str>, D>(input: Span<'a>) -> IResult<'a, Entry<S, D>> {
     alt((
         preceded(tuple((tag("pushtag"), space1)), transaction::parse_tag).map(Entry::PushTag),
         preceded(tuple((tag("poptag"), space1)), transaction::parse_tag).map(Entry::PopTag),
@@ -323,9 +329,9 @@ fn line(input: Span<'_>) -> IResult<'_, ()> {
     Ok((input, ()))
 }
 
-fn string(input: Span<'_>) -> IResult<'_, &str> {
+fn string<'a, S: From<&'a str>>(input: Span<'a>) -> IResult<'a, S> {
     map(
         delimited(char('"'), take_till(|c: char| c == '"'), char('"')),
-        |s: Span<'_>| *s.fragment(),
+        |s: Span<'_>| (*s.fragment()).into(),
     )(input)
 }

@@ -6,12 +6,12 @@ use crate::{string, IResult, Span};
 
 #[derive(Debug, Clone)]
 #[non_exhaustive]
-pub struct Event<'a> {
-    pub name: &'a str,
-    pub value: &'a str,
+pub struct Event<S> {
+    pub name: S,
+    pub value: S,
 }
 
-pub(super) fn parse(input: Span<'_>) -> IResult<'_, Event<'_>> {
+pub(super) fn parse<'a, S: From<&'a str>>(input: Span<'a>) -> IResult<'a, Event<S>> {
     let (input, name) = string(input)?;
     let (input, _) = space1(input)?;
     let (input, value) = string(input)?;

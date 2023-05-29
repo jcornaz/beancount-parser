@@ -22,18 +22,18 @@ use crate::{IResult, Span};
 /// ```
 /// use beancount_parser_2::DirectiveContent;
 /// let input = "2023-05-27 price CHF  4 PLN";
-/// let beancount = beancount_parser_2::parse::<f64>(input).unwrap();
+/// let beancount = beancount_parser_2::parse::<&str, f64>(input).unwrap();
 /// let DirectiveContent::Price(price) = &beancount.directives[0].content else { unreachable!() };
 /// assert_eq!(price.currency.as_str(), "CHF");
 /// assert_eq!(price.amount.value, 4.0);
 /// assert_eq!(price.amount.currency.as_str(), "PLN");
 /// ```
 #[derive(Debug, Clone)]
-pub struct Price<'a, D> {
+pub struct Price<S, D> {
     /// Currency
-    pub currency: Currency<'a>,
+    pub currency: Currency<S>,
     /// Price of the currency
-    pub amount: Amount<'a, D>,
+    pub amount: Amount<S, D>,
 }
 
 /// Amount
@@ -43,11 +43,11 @@ pub struct Price<'a, D> {
 /// For an example, look at the [`Price`] directive
 #[derive(Debug, Clone, Copy, PartialEq)]
 #[non_exhaustive]
-pub struct Amount<'a, D> {
+pub struct Amount<S, D> {
     /// The value (decimal) part
     pub value: D,
     /// Currency
-    pub currency: Currency<'a>,
+    pub currency: Currency<S>,
 }
 
 /// Currency
@@ -56,9 +56,9 @@ pub struct Amount<'a, D> {
 ///
 /// For an example, look at the [`Price`] directive
 #[derive(Debug, Copy, Clone, PartialOrd, Ord, PartialEq, Eq, Hash)]
-pub struct Currency<'a>(&'a str);
+pub struct Currency<S>(S);
 
-impl<'a> Currency<'a> {
+impl<'a> Currency<&'a str> {
     /// Returns the string representation of the currency
     #[must_use]
     pub fn as_str(&self) -> &'a str {
@@ -66,7 +66,9 @@ impl<'a> Currency<'a> {
     }
 }
 
-pub(crate) fn parse<D: Decimal>(input: Span<'_>) -> IResult<'_, Amount<'_, D>> {
+pub(crate) fn parse<'a, S: From<&'a str>, D: Decimal>(
+    input: Span<'a>,
+) -> IResult<'a, Amount<S, D>> {
     let (input, value) = expression(input)?;
     let (input, _) = space1(input)?;
     let (input, currency) = currency(input)?;
@@ -128,14 +130,14 @@ fn litteral<D: Decimal>(input: Span<'_>) -> IResult<'_, D> {
     )(input)
 }
 
-pub(crate) fn price<D: Decimal>(input: Span<'_>) -> IResult<'_, Price<'_, D>> {
+pub(crate) fn price<'a, S: From<&'a str>, D: Decimal>(input: Span<'a>) -> IResult<'a, Price<S, D>> {
     let (input, currency) = currency(input)?;
     let (input, _) = space1(input)?;
     let (input, amount) = parse(input)?;
     Ok((input, Price { currency, amount }))
 }
 
-pub(crate) fn currency(input: Span<'_>) -> IResult<'_, Currency<'_>> {
+pub(crate) fn currency<'a, S: From<&'a str>>(input: Span<'a>) -> IResult<'a, Currency<S>> {
     let (input, currency) = recognize(tuple((
         satisfy(char::is_uppercase),
         verify(
@@ -145,7 +147,7 @@ pub(crate) fn currency(input: Span<'_>) -> IResult<'_, Currency<'_>> {
             |s: &Span<'_>| s.fragment().chars().last().map_or(true, char::is_uppercase),
         ),
     )))(input)?;
-    Ok((input, Currency(currency.fragment())))
+    Ok((input, Currency((*currency.fragment()).into())))
 }
 
 /// Decimal type to which amount values and expressions will be parsed into.

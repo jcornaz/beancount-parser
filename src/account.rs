@@ -1,4 +1,4 @@
-use std::collections::HashSet;
+use std::{collections::HashSet, hash::Hash};
 
 use nom::{
     branch::alt,
@@ -24,14 +24,14 @@ use super::{IResult, Span};
 /// ```
 /// use beancount_parser_2::DirectiveContent;
 /// let input = "2022-05-24 open Assets:Bank:Checking";
-/// let beancount = beancount_parser_2::parse::<f64>(input).unwrap();
+/// let beancount = beancount_parser_2::parse::<&str, f64>(input).unwrap();
 /// let DirectiveContent::Open(open) = &beancount.directives[0].content else { unreachable!() };
 /// assert_eq!(open.account.as_str(), "Assets:Bank:Checking");
 /// ```
 #[derive(Debug, Copy, Clone, PartialOrd, Ord, PartialEq, Eq, Hash)]
-pub struct Account<'a>(&'a str);
+pub struct Account<S>(S);
 
-impl<'a> Account<'a> {
+impl<'a> Account<&'a str> {
     /// Returns the account name
     #[must_use]
     pub fn as_str(&self) -> &'a str {
@@ -45,18 +45,18 @@ impl<'a> Account<'a> {
 /// ```
 /// use beancount_parser_2::DirectiveContent;
 /// let input = "2022-05-24 open Assets:Bank:Checking    CHF";
-/// let beancount = beancount_parser_2::parse::<f64>(input).unwrap();
+/// let beancount = beancount_parser_2::parse::<&str, f64>(input).unwrap();
 /// let DirectiveContent::Open(open) = &beancount.directives[0].content else { unreachable!() };
 /// assert_eq!(open.account.as_str(), "Assets:Bank:Checking");
 /// assert_eq!(open.currencies.iter().next().unwrap().as_str(), "CHF");
 /// ```
 #[derive(Debug, Clone)]
 #[non_exhaustive]
-pub struct Open<'a> {
+pub struct Open<S> {
     /// Account being open
-    pub account: Account<'a>,
+    pub account: Account<S>,
     /// Currency constraints
-    pub currencies: HashSet<Currency<'a>>,
+    pub currencies: HashSet<Currency<S>>,
 }
 
 /// Close account directive
@@ -65,15 +65,15 @@ pub struct Open<'a> {
 /// ```
 /// use beancount_parser_2::DirectiveContent;
 /// let input = "2022-05-24 close Assets:Bank:Checking";
-/// let beancount = beancount_parser_2::parse::<f64>(input).unwrap();
+/// let beancount = beancount_parser_2::parse::<&str, f64>(input).unwrap();
 /// let DirectiveContent::Close(close) = &beancount.directives[0].content else { unreachable!() };
 /// assert_eq!(close.account.as_str(), "Assets:Bank:Checking");
 /// ```
 #[derive(Debug, Clone)]
 #[non_exhaustive]
-pub struct Close<'a> {
+pub struct Close<S> {
     /// Account being closed
-    pub account: Account<'a>,
+    pub account: Account<S>,
 }
 
 /// Balance assertion
@@ -82,7 +82,7 @@ pub struct Close<'a> {
 /// ```
 /// use beancount_parser_2::DirectiveContent;
 /// let input = "2022-05-24 balance Assets:Bank:Checking 10 CHF";
-/// let beancount = beancount_parser_2::parse::<f64>(input).unwrap();
+/// let beancount = beancount_parser_2::parse::<&str, f64>(input).unwrap();
 /// let DirectiveContent::Balance(balance) = &beancount.directives[0].content else { unreachable!() };
 /// assert_eq!(balance.account.as_str(), "Assets:Bank:Checking");
 /// assert_eq!(balance.amount.value, 10.0);
@@ -90,11 +90,11 @@ pub struct Close<'a> {
 /// ```
 #[derive(Debug, Clone)]
 #[non_exhaustive]
-pub struct Balance<'a, D> {
+pub struct Balance<S, D> {
     /// Account being asserted
-    pub account: Account<'a>,
+    pub account: Account<S>,
     /// Amount the amount should have on the date
-    pub amount: Amount<'a, D>,
+    pub amount: Amount<S, D>,
 }
 
 /// Pad directive
@@ -103,21 +103,21 @@ pub struct Balance<'a, D> {
 /// ```
 /// # use beancount_parser_2::DirectiveContent;
 /// let raw = "2014-06-01 pad Assets:BofA:Checking Equity:Opening-Balances";
-/// let file = beancount_parser_2::parse::<f64>(raw).unwrap();
+/// let file = beancount_parser_2::parse::<&str, f64>(raw).unwrap();
 /// let DirectiveContent::Pad(pad) = &file.directives[0].content else { unreachable!() };
 /// assert_eq!(pad.account.as_str(), "Assets:BofA:Checking");
 /// assert_eq!(pad.source_account.as_str(), "Equity:Opening-Balances");
 /// ```
 #[derive(Debug, Clone)]
 #[non_exhaustive]
-pub struct Pad<'a> {
+pub struct Pad<S> {
     /// Account being padded
-    pub account: Account<'a>,
+    pub account: Account<S>,
     /// Source account from which take the money
-    pub source_account: Account<'a>,
+    pub source_account: Account<S>,
 }
 
-pub(super) fn parse(input: Span<'_>) -> IResult<'_, Account<'_>> {
+pub(super) fn parse<'a, S: From<&'a str>>(input: Span<'a>) -> IResult<'a, Account<S>> {
     let (input, name) = recognize(preceded(
         alt((
             tag("Expenses"),
@@ -134,10 +134,10 @@ pub(super) fn parse(input: Span<'_>) -> IResult<'_, Account<'_>> {
             ),
         ))),
     ))(input)?;
-    Ok((input, Account(name.fragment())))
+    Ok((input, Account((*name.fragment()).into())))
 }
 
-pub(super) fn open(input: Span<'_>) -> IResult<'_, Open<'_>> {
+pub(super) fn open<'a, S: From<&'a str> + Eq + Hash>(input: Span<'a>) -> IResult<'a, Open<S>> {
     let (input, account) = parse(input)?;
     let (input, _) = space0(input)?;
     let (input, currencies) = opt(currencies)(input)?;
@@ -150,7 +150,9 @@ pub(super) fn open(input: Span<'_>) -> IResult<'_, Open<'_>> {
     ))
 }
 
-fn currencies(input: Span<'_>) -> IResult<'_, HashSet<Currency<'_>>> {
+fn currencies<'a, S: From<&'a str> + Eq + Hash>(
+    input: Span<'a>,
+) -> IResult<'a, HashSet<Currency<S>>> {
     let (input, first) = amount::currency(input)?;
     let sep = delimited(space0, char(','), space0);
     let mut iter = iterator(input, preceded(sep, amount::currency));
@@ -161,19 +163,21 @@ fn currencies(input: Span<'_>) -> IResult<'_, HashSet<Currency<'_>>> {
     Ok((input, currencies))
 }
 
-pub(super) fn close(input: Span<'_>) -> IResult<'_, Close<'_>> {
+pub(super) fn close<'a, S: From<&'a str>>(input: Span<'a>) -> IResult<'a, Close<S>> {
     let (input, account) = parse(input)?;
     Ok((input, Close { account }))
 }
 
-pub(super) fn balance<D: Decimal>(input: Span<'_>) -> IResult<'_, Balance<'_, D>> {
+pub(super) fn balance<'a, S: From<&'a str>, D: Decimal>(
+    input: Span<'a>,
+) -> IResult<'a, Balance<S, D>> {
     let (input, account) = parse(input)?;
     let (input, _) = space1(input)?;
     let (input, amount) = amount::parse(input)?;
     Ok((input, Balance { account, amount }))
 }
 
-pub(super) fn pad(input: Span<'_>) -> IResult<'_, Pad<'_>> {
+pub(super) fn pad<'a, S: From<&'a str>>(input: Span<'a>) -> IResult<'a, Pad<S>> {
     let (input, account) = parse(input)?;
     let (input, _) = space1(input)?;
     let (input, source_account) = parse(input)?;

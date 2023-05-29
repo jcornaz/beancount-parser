@@ -7,6 +7,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Breaking changes
+
+The `parse` method and all structs are now generics over the string type `S`.
+One must choose how to store strings in the results, with either `&str` or `String`.
+
+With `parse::<&str, D>` the results will contains string slices from the input string.
+This is very performant but a bit less convenient to use as one cannot move nor discard the input string until done working with the results.
+
+With `parse::<String, D>` more memory will be allocated to copy strings from the input.
+This is less performant but allow continue using the results after discarding the input string.
+
 
 ## [1.0.0-alpha.4] - 2023-05-27
 
