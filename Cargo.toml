@@ -22,7 +22,7 @@ nom = { version = "7.1", default-features = false, features = ["std"] }
 nom_locate = { version = "4.1", default-features = false }
 
 [dev-dependencies]
-criterion = "0.4.0"
+criterion = "0.5.1"
 rstest = { version = "0.17.0", default-features = false }
 rust_decimal = { version = "1.29", default-features = false }
 
