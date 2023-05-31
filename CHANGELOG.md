@@ -18,6 +18,10 @@ This is very performant but a bit less convenient to use as one cannot move nor 
 With `parse::<String, D>` more memory will be allocated to copy strings from the input.
 This is less performant but allow continue using the results after discarding the input string.
 
+### Relaxed requirements
+
+* Require less traits for the `Decimal` type, and extend the blanket implementation accordingly
+
 
 ## [1.0.0-alpha.4] - 2023-05-27
 

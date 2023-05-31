@@ -1,7 +1,6 @@
 use std::{
     fmt::Debug,
-    iter::{Product, Sum},
-    ops::{Add, AddAssign, Div, DivAssign, Mul, MulAssign, Neg, Sub, SubAssign},
+    ops::{Add, Div, Mul, Neg, Sub},
     str::FromStr,
 };
 
@@ -162,18 +161,12 @@ pub(crate) fn currency<'a, S: From<&'a str>>(input: Span<'a>) -> IResult<'a, Cur
 pub trait Decimal:
     FromStr
     + Default
-    + Copy
+    + Clone
     + Debug
     + Add<Output = Self>
-    + AddAssign
     + Sub<Output = Self>
-    + SubAssign
-    + Sum
     + Mul<Output = Self>
-    + MulAssign
     + Div<Output = Self>
-    + DivAssign
-    + Product
     + Neg<Output = Self>
     + PartialEq
     + PartialOrd
@@ -183,18 +176,12 @@ pub trait Decimal:
 impl<D> Decimal for D where
     D: FromStr
         + Default
-        + Copy
+        + Clone
         + Debug
         + Add<Output = Self>
-        + AddAssign
         + Sub<Output = Self>
-        + SubAssign
-        + Sum
         + Mul<Output = Self>
-        + MulAssign
         + Div<Output = Self>
-        + DivAssign
-        + Product
         + Neg<Output = Self>
         + PartialEq
         + PartialOrd
