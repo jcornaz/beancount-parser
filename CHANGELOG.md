@@ -7,6 +7,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+
+## [1.0.0-alpha.5] - 2023-05-31
+
 ### Breaking changes
 
 The `parse` method and all structs are now generics over the string type `S`.
@@ -130,7 +133,8 @@ This is less performant but allow continue using the results after discarding th
 * Options
 * Directive metadata (string values only)
 
-[Unreleased]: https://github.com/jcornaz/beancount_parser_2/compare/v1.0.0-alpha.4...HEAD
+[Unreleased]: https://github.com/jcornaz/beancount_parser_2/compare/v1.0.0-alpha.5...HEAD
+[1.0.0-alpha.5]: https://github.com/jcornaz/beancount_parser_2/compare/v1.0.0-alpha.4...v1.0.0-alpha.5
 [1.0.0-alpha.4]: https://github.com/jcornaz/beancount_parser_2/compare/v1.0.0-alpha.3...v1.0.0-alpha.4
 [1.0.0-alpha.3]: https://github.com/jcornaz/beancount_parser_2/compare/v1.0.0-alpha.2...v1.0.0-alpha.3
 [1.0.0-alpha.2]: https://github.com/jcornaz/beancount_parser_2/compare/v1.0.0-alpha.1...v1.0.0-alpha.2
