@@ -1,5 +1,3 @@
-#![allow(missing_docs)]
-
 use std::{
     collections::{HashMap, HashSet},
     hash::Hash,
@@ -118,10 +116,24 @@ pub enum PostingPrice<S, D> {
     Total(Amount<S, D>),
 }
 
+/// Enum representing the flag (`*` or `!`) of a transaction or posting
+///
+/// # Example
+/// ```
+/// # use beancount_parser_2::{DirectiveContent, Flag};
+/// let input = "2022-05-22 * \"A transaction\"";
+/// let beancount = beancount_parser_2::parse::<&str, f64>(input).unwrap();
+/// let DirectiveContent::Transaction(trx) = &beancount.directives[0].content else {
+///   unreachable!("was not a transaction")
+/// };
+/// assert_eq!(trx.flag, Some(Flag::Completed));
+/// ```
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Default)]
 pub enum Flag {
+    /// Completed (the char '*')
     #[default]
     Completed,
+    /// Incomplete (the char '!')
     Incomplete,
 }
 
