@@ -20,6 +20,9 @@ pub fn run_bench(c: &mut Criterion) {
     group.bench_function("parse::<String, f64>", |b| {
         b.iter(|| parse::<String, f64>(SAMPLE))
     });
+    group.bench_function("parse::<String, rust_decimal::Decimal>", |b| {
+        b.iter(|| parse::<String, f64>(SAMPLE))
+    });
     group.finish();
 }
 
