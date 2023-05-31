@@ -23,6 +23,11 @@ This is less performant but allow continue using the results after discarding th
 * Require less traits for the `Decimal` type, and extend the blanket implementation accordingly
 
 
+### Documentation
+
+* Document `Event` directive
+
+
 ## [1.0.0-alpha.4] - 2023-05-27
 
 ### Breaking changes
