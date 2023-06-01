@@ -2,7 +2,7 @@
 
 [![License](https://img.shields.io/crates/l/beancount_parser_2)](#Unlicense)
 [![Crates.io](https://img.shields.io/crates/v/beancount_parser_2)](https://crates.io/crates/beancount_parser_2)
-![rustc](https://img.shields.io/badge/rustc-1.69+-blue?logo=rust)
+![rustc](https://img.shields.io/badge/rustc-1.70+-blue?logo=rust)
 [![Docs](https://docs.rs/beancount_parser_2/badge.svg)](https://docs.rs/beancount_parser_2)
 
 A [beancount] file parser library for rust
@@ -29,7 +29,7 @@ Do not provide any "business" logic to analyze or manipulate the ledger. No bala
 
 ## MSRV
 
-The minimum supported rust version is currently `1.69`.
+The minimum supported rust version is currently `1.70`.
 
 It can be updated to a newer stable version when required, and that will not be considered a breaking change.
 
