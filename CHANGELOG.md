@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Breaking changes
 
 * Rust requirement (MSRV) bumped to 1.70
+* Remove public `options` field from `BeancountFile`. Use the new `option` getter instead.
 
 
 ### Added

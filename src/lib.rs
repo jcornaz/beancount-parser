@@ -104,7 +104,7 @@ pub struct BeancountFile<S, D> {
     /// Map of options declared in the file
     ///
     /// See: <https://beancount.github.io/docs/beancount_language_syntax.html#options>
-    pub options: HashMap<S, S>,
+    options: HashMap<S, S>,
     /// Pathes of include directives
     ///
     /// See: <https://beancount.github.io/docs/beancount_language_syntax.html#includes>
