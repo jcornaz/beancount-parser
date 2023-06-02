@@ -73,6 +73,7 @@ use std::{
     borrow::Borrow,
     collections::{HashMap, HashSet},
     hash::Hash,
+    mem,
 };
 
 /// Parse the input beancount file and return an instance of [`BeancountFile`] on success
@@ -101,14 +102,8 @@ pub fn parse<'a, S: From<&'a str> + Eq + Hash + Clone, D: Decimal>(
 #[derive(Debug, Clone)]
 #[non_exhaustive]
 pub struct BeancountFile<S, D> {
-    /// Map of options declared in the file
-    ///
-    /// See: <https://beancount.github.io/docs/beancount_language_syntax.html#options>
     options: HashMap<S, S>,
-    /// Pathes of include directives
-    ///
-    /// See: <https://beancount.github.io/docs/beancount_language_syntax.html#includes>
-    pub includes: HashSet<S>,
+    includes: HashSet<S>,
     /// List of [`Directive`] found in the file
     pub directives: Vec<Directive<S, D>>,
 }
@@ -118,12 +113,34 @@ where
     S: Eq + Hash,
 {
     /// Returns the value for of the option if defined
+    ///
+    /// See: <https://beancount.github.io/docs/beancount_language_syntax.html#options>
     pub fn option<Q>(&self, key: &Q) -> Option<&S>
     where
         S: Borrow<Q>,
         Q: ?Sized + Eq + Hash,
     {
         self.options.get(key)
+    }
+}
+
+impl<S, D> BeancountFile<S, D> {
+    /// Return an iterator over references of the include directives
+    ///
+    /// To get an iterator with ownership over the include pathes, see [`BeancountFile::take_includes`]
+    ///
+    /// See: <https://beancount.github.io/docs/beancount_language_syntax.html#includes>
+    pub fn includes(&self) -> impl Iterator<Item = &S> {
+        self.includes.iter()
+    }
+
+    /// Remove the inlude directives and return an iterator over them with ownership
+    ///
+    /// To get the include pathes without removing them, see [`BeancountFile::includes`]
+    ///
+    /// See: <https://beancount.github.io/docs/beancount_language_syntax.html#includes>
+    pub fn take_includes(&mut self) -> impl Iterator<Item = S> {
+        mem::take(&mut self.includes).into_iter()
     }
 }
 

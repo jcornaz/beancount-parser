@@ -170,7 +170,8 @@ fn should_parse_option_with_comment() {
 fn should_parse_include() {
     let includes = parse::<&str, f64>(r#"include "./a/path/to/file.beancount""#)
         .unwrap()
-        .includes;
+        .take_includes()
+        .collect::<HashSet<_>>();
     let expected: HashSet<_> = ["./a/path/to/file.beancount"].into();
     assert_eq!(includes, expected);
 }
@@ -181,7 +182,8 @@ fn should_parse_include_with_comment() {
         r#"include "./a/path/to/file.beancount" ; Everything is in the other file"#,
     )
     .unwrap()
-    .includes;
+    .take_includes()
+    .collect::<HashSet<_>>();
     let expected: HashSet<_> = ["./a/path/to/file.beancount"].into();
     assert_eq!(includes, expected);
 }
