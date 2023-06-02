@@ -70,6 +70,7 @@ use nom::{
 };
 use nom_locate::position;
 use std::{
+    borrow::Borrow,
     collections::{HashMap, HashSet},
     hash::Hash,
 };
@@ -110,6 +111,20 @@ pub struct BeancountFile<S, D> {
     pub includes: HashSet<S>,
     /// List of [`Directive`] found in the file
     pub directives: Vec<Directive<S, D>>,
+}
+
+impl<S, D> BeancountFile<S, D>
+where
+    S: Eq + Hash,
+{
+    /// Returns the value for of the option if defined
+    pub fn option<Q>(&self, key: &Q) -> Option<&S>
+    where
+        S: Borrow<Q>,
+        Q: ?Sized + Eq + Hash,
+    {
+        self.options.get(key)
+    }
 }
 
 /// A beancount "directive"

@@ -12,6 +12,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 * Rust requirement (MSRV) bumped to 1.70
 
 
+### Added
+
+* `BeancountFile::option` getter
+
+
 ## [1.0.0-alpha.5] - 2023-05-31
 
 ### Breaking changes

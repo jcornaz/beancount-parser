@@ -156,18 +156,14 @@ fn should_parse_close_account(#[case] input: &str, #[case] expected_account: &st
 
 #[rstest]
 fn should_parse_option() {
-    let options = parse::<&str, f64>(r#"option "Hello" "world!""#)
-        .unwrap()
-        .options;
-    assert_eq!(options.get("Hello"), Some(&"world!"));
+    let beancount = parse::<&str, f64>(r#"option "Hello" "world!""#).unwrap();
+    assert_eq!(beancount.option("Hello"), Some(&"world!"));
 }
 
 #[rstest]
 fn should_parse_option_with_comment() {
-    let options = parse::<&str, f64>(r#"option "Hello" "world!" ; This is great"#)
-        .unwrap()
-        .options;
-    assert_eq!(options.get("Hello"), Some(&"world!"));
+    let beancount = parse::<&str, f64>(r#"option "Hello" "world!" ; This is great"#).unwrap();
+    assert_eq!(beancount.option("Hello"), Some(&"world!"));
 }
 
 #[rstest]
