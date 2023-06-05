@@ -9,9 +9,22 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Breaking changes
 
-* Rust requirement (MSRV) bumped to 1.70
+This Release reverts the change made on the last release which made the parser generic over the string type.
+The function `parse` and all structs have now one less generic argment, and instead are bound to the lifetime of the input.
+
+The change turned out to not be as beneficial as anticipated for a higher cost in complexity than anticipated.
+
+
+#### Other breaking changes
+
 * Make private the field `options` from `BeancountFile`. Use the new `option` getter instead.
+* Make private the field `includes` from `BeancountFile`. Use the new `includes` iterator instead.
 * Make private the field `directives` from `BeancountFile`. Use the new `directives` or `take_directives` methods instead.
+
+
+### Dependencies
+
+* Rust requirement (MSRV) bumped to 1.70
 
 
 ### Added

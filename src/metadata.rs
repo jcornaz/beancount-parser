@@ -1,4 +1,4 @@
-use std::{collections::HashMap, hash::Hash};
+use std::collections::HashMap;
 
 use nom::{
     branch::alt,
@@ -20,31 +20,29 @@ use crate::{amount, end_of_line, string, Currency, Decimal, IResult, Span};
 /// 2023-05-27 commodity CHF
 ///     title: "Swiss Franc"
 /// "#;
-/// let beancount = beancount_parser_2::parse::<&str, f64>(input).unwrap();
+/// let beancount = beancount_parser_2::parse::<f64>(input).unwrap();
 /// let directive_metadata = &beancount.directives[0].metadata;
 /// assert_eq!(directive_metadata.get("title"), Some(&MetadataValue::String("Swiss Franc")));
 /// ```
 #[derive(Debug, Clone, PartialEq)]
 #[non_exhaustive]
-pub enum Value<S, D> {
+pub enum Value<'a, D> {
     /// String value
-    String(S),
+    String(&'a str),
     /// A number or number expression
     Number(D),
     /// A [`Currency`]
-    Currency(Currency<S>),
+    Currency(Currency<'a>),
 }
 
-pub(crate) fn parse<'a, S: From<&'a str> + Eq + Hash, D: Decimal>(
-    input: Span<'a>,
-) -> IResult<'a, HashMap<S, Value<S, D>>> {
+pub(crate) fn parse<D: Decimal>(input: Span<'_>) -> IResult<'_, HashMap<&str, Value<'_, D>>> {
     let mut iter = iterator(input, entry);
     let map: HashMap<_, _> = iter.collect();
     let (input, _) = iter.finish()?;
     Ok((input, map))
 }
 
-fn entry<'a, S: From<&'a str>, D: Decimal>(input: Span<'a>) -> IResult<'a, (S, Value<S, D>)> {
+fn entry<D: Decimal>(input: Span<'_>) -> IResult<'_, (&str, Value<'_, D>)> {
     let (input, _) = space1(input)?;
     let (input, key) = recognize(preceded(
         satisfy(char::is_lowercase),
@@ -58,5 +56,5 @@ fn entry<'a, S: From<&'a str>, D: Decimal>(input: Span<'a>) -> IResult<'a, (S, V
         map(amount::currency, Value::Currency),
     ))(input)?;
     let (input, _) = end_of_line(input)?;
-    Ok((input, ((*key.fragment()).into(), value)))
+    Ok((input, (*key.fragment(), value)))
 }
