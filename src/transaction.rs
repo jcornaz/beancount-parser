@@ -49,6 +49,8 @@ pub struct Transaction<'a, D> {
     pub narration: Option<&'a str>,
     /// Set of tags
     pub tags: HashSet<&'a str>,
+    /// Set of links
+    pub links: HashSet<&'a str>,
     /// Postings
     pub postings: Vec<Posting<'a, D>>,
 }
@@ -163,7 +165,7 @@ fn do_parse<D: Decimal>(
 ) -> impl Fn(Span<'_>) -> IResult<'_, (Transaction<'_, D>, HashMap<&str, metadata::Value<'_, D>>)> {
     move |input| {
         let (input, payee_and_narration) = opt(preceded(space1, payee_and_narration))(input)?;
-        let (input, tags) = tags(input)?;
+        let (input, (tags, links)) = tags_and_links(input)?;
         let (input, _) = end_of_line(input)?;
         let (input, metadata) = metadata::parse(input)?;
         let (input, postings) = many0(posting)(input)?;
@@ -175,12 +177,18 @@ fn do_parse<D: Decimal>(
                     payee: payee_and_narration.and_then(|(p, _)| p),
                     narration: payee_and_narration.map(|(_, n)| n),
                     tags,
+                    links,
                     postings,
                 },
                 metadata,
             ),
         ))
     }
+}
+
+pub(super) enum TagOrLink<'a> {
+    Tag(&'a str),
+    Link(&'a str),
 }
 
 pub(super) fn parse_tag(input: Span<'_>) -> IResult<'_, &str> {
@@ -193,11 +201,37 @@ pub(super) fn parse_tag(input: Span<'_>) -> IResult<'_, &str> {
     )(input)
 }
 
-fn tags(input: Span<'_>) -> IResult<'_, HashSet<&str>> {
-    let mut tags_iter = iterator(input, preceded(space1, parse_tag));
-    let tags = tags_iter.collect();
-    let (input, _) = tags_iter.finish()?;
-    Ok((input, tags))
+pub(super) fn parse_link(input: Span<'_>) -> IResult<'_, &str> {
+    map(
+        preceded(
+            char('^'),
+            take_while(|c: char| c.is_alphanumeric() || c == '-' || c == '_'),
+        ),
+        |s: Span<'_>| *s.fragment(),
+    )(input)
+}
+
+pub(super) fn parse_tag_or_link(input: Span<'_>) -> IResult<'_, TagOrLink<'_>> {
+    alt((
+        map(parse_tag, TagOrLink::Tag),
+        map(parse_link, TagOrLink::Link),
+    ))(input)
+}
+
+fn tags_and_links(input: Span<'_>) -> IResult<'_, (HashSet<&str>, HashSet<&str>)> {
+    let mut tags_and_links_iter = iterator(input, preceded(space1, parse_tag_or_link));
+    let (tags, links) = tags_and_links_iter.fold(
+        (HashSet::new(), HashSet::new()),
+        |(mut tags, mut links), x| {
+            match x {
+                TagOrLink::Tag(tag) => tags.insert(tag),
+                TagOrLink::Link(link) => links.insert(link),
+            };
+            (tags, links)
+        },
+    );
+    let (input, _) = tags_and_links_iter.finish()?;
+    Ok((input, (tags, links)))
 }
 
 fn payee_and_narration(input: Span<'_>) -> IResult<'_, (Option<&str>, &str)> {

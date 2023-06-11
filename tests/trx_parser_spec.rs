@@ -73,6 +73,38 @@ fn should_parse_transaction_payee(#[case] input: &str, #[case] expected: Option<
 }
 
 #[rstest]
+#[case("2023-05-15 txn \"Hello world!\"", &[])]
+#[case("2023-05-15 txn \"Hello world!\" ^a", &["a"])]
+#[case("2023-05-15 txn \"Hello world!\" #a", &[])]
+#[case("2023-05-15 txn \"Hello world!\" ^link-a ^link-b", &["link-a", "link-b"])]
+#[case("2023-05-15 txn \"Hello world!\" ^link-a #tag ^link-b", &["link-a", "link-b"])]
+fn should_parse_transaction_links(#[case] input: &str, #[case] expected: &[&str]) {
+    let DirectiveContent::Transaction(trx) = parse_single_directive(input).content else {
+        panic!("was not a transaction");
+    };
+    assert_eq!(
+        trx.links,
+        expected.iter().cloned().collect::<HashSet<&str>>()
+    )
+}
+
+#[rstest]
+#[case("2023-05-15 txn \"Hello world!\"", &[])]
+#[case("2023-05-15 txn \"Hello world!\" ^a", &[])]
+#[case("2023-05-15 txn \"Hello world!\" #a", &["a"])]
+#[case("2023-05-15 txn \"Hello world!\" #tag-a #tag-b", &["tag-a", "tag-b"])]
+#[case("2023-05-15 txn \"Hello world!\" #tag-a ^link #tag-b", &["tag-a", "tag-b"])]
+fn should_parse_transaction_tags(#[case] input: &str, #[case] expected: &[&str]) {
+    let DirectiveContent::Transaction(trx) = parse_single_directive(input).content else {
+        panic!("was not a transaction");
+    };
+    assert_eq!(
+        trx.tags,
+        expected.iter().cloned().collect::<HashSet<&str>>()
+    )
+}
+
+#[rstest]
 #[case("2023-05-15 txn", None)]
 #[case("2023-05-15 txn \"hello\"", None)]
 #[case("2023-05-15 *", Some(Flag::Completed))]
