@@ -7,6 +7,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+
+## [1.0.0-alpha.7] - 2023-06-11
+
 ### Improved
 
 * Don't dump the full end-of-input when debugging the content of an error
@@ -164,7 +167,8 @@ This is less performant but allow continue using the results after discarding th
 * Options
 * Directive metadata (string values only)
 
-[Unreleased]: https://github.com/jcornaz/beancount_parser_2/compare/v1.0.0-alpha.6...HEAD
+[Unreleased]: https://github.com/jcornaz/beancount_parser_2/compare/v1.0.0-alpha.7...HEAD
+[1.0.0-alpha.7]: https://github.com/jcornaz/beancount_parser_2/compare/v1.0.0-alpha.6...v1.0.0-alpha.7
 [1.0.0-alpha.6]: https://github.com/jcornaz/beancount_parser_2/compare/v1.0.0-alpha.5...v1.0.0-alpha.6
 [1.0.0-alpha.5]: https://github.com/jcornaz/beancount_parser_2/compare/v1.0.0-alpha.4...v1.0.0-alpha.5
 [1.0.0-alpha.4]: https://github.com/jcornaz/beancount_parser_2/compare/v1.0.0-alpha.3...v1.0.0-alpha.4
