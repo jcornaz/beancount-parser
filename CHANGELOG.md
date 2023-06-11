@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Improved
+
+* Don't dump the full end-of-input when debugging the content of an error
+
 
 ## [1.0.0-alpha.6] - 2023-06-05
 

@@ -1,4 +1,4 @@
-use std::fmt::Display;
+use std::fmt::{Debug, Display, Formatter};
 
 use crate::Span;
 
@@ -11,8 +11,15 @@ use crate::Span;
 /// let error = result.unwrap_err();
 /// assert_eq!(error.line_number(), 1);
 /// ```
-#[derive(Debug)]
 pub struct Error<'a>(Span<'a>);
+
+impl<'a> Debug for Error<'a> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Error")
+            .field("line_number", &self.line_number())
+            .finish()
+    }
+}
 
 impl<'a> Error<'a> {
     pub(crate) fn new(span: Span<'a>) -> Self {
