@@ -1,7 +1,7 @@
 use std::collections::HashSet;
 
 use beancount_parser_2::{
-    parse, Directive, DirectiveContent, Flag, Posting, PostingPrice, Transaction,
+    parse, Directive, DirectiveContent, Flag, MetadataValue, Posting, PostingPrice, Transaction,
 };
 use rstest::rstest;
 
@@ -156,6 +156,15 @@ fn should_parse_posting_flags(#[case] input: &str, #[case] expected: &[Option<Fl
     };
     let posting_accounts: Vec<Option<Flag>> = trx.postings.into_iter().map(|p| p.flag).collect();
     assert_eq!(&posting_accounts, expected);
+}
+
+#[rstest]
+fn should_parse_posting_with_metadata() {
+    let posting = parse_single_posting("2023-05-17 *\n  Assets:Cash\n    foo: \"bar\"");
+    assert_eq!(
+        posting.metadata.get("foo"),
+        Some(&MetadataValue::String("bar"))
+    );
 }
 
 #[rstest]

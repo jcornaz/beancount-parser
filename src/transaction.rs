@@ -95,6 +95,8 @@ pub struct Posting<'a, D> {
     pub cost: Option<Cost<'a, D>>,
     /// Price (`@` or `@@`) syntax
     pub price: Option<PostingPrice<'a, D>>,
+    /// The metadata attached to the posting
+    pub metadata: HashMap<&'a str, metadata::Value<'a, D>>,
 }
 
 /// Cost of a posting
@@ -273,6 +275,7 @@ fn posting<D: Decimal>(input: Span<'_>) -> IResult<'_, Posting<'_, D>> {
         )),
     )))(input)?;
     let (input, _) = end_of_line(input)?;
+    let (input, metadata) = metadata::parse(input)?;
     let (amount, cost, price) = match amounts {
         Some((a, l, p)) => (Some(a), l, p),
         None => (None, None, None),
@@ -285,6 +288,7 @@ fn posting<D: Decimal>(input: Span<'_>) -> IResult<'_, Posting<'_, D>> {
             amount,
             cost,
             price,
+            metadata,
         },
     ))
 }
