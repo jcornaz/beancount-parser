@@ -7,6 +7,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Added
+
+* Support metadata in posting
+
+### Thank you
+
+@doriath
+
 
 ## [1.0.0-alpha.9] - 2023-06-13
 
