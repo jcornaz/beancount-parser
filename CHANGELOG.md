@@ -7,6 +7,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Added
+
+* Expose the `Cost` type publicly
+
+### Documentation
+
+* Fix mixed-up documentation of `cost` and `price`
+
 
 ## [1.0.0-alpha.8] - 2023-06-11
 
