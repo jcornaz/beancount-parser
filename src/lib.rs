@@ -58,7 +58,7 @@ pub use crate::{
     error::Error,
     event::Event,
     metadata::Value as MetadataValue,
-    transaction::{Flag, Posting, PostingPrice, Transaction},
+    transaction::{Cost, Flag, Posting, PostingPrice, Transaction},
 };
 use nom::{
     branch::alt,

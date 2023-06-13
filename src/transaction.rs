@@ -91,16 +91,21 @@ pub struct Posting<'a, D> {
     pub account: Account<'a>,
     /// Amount being added to the account
     pub amount: Option<Amount<'a, D>>,
-    /// Cost (`@` or `@@`) syntax
+    /// Cost (content within `{` and `}`)
     pub cost: Option<Cost<'a, D>>,
-    /// Price (content within `{` and `}`)
+    /// Price (`@` or `@@`) syntax
     pub price: Option<PostingPrice<'a, D>>,
 }
 
+/// Cost of a posting
+///
+/// It is the amount within `{` and `}`.
 #[derive(Debug, Clone)]
 #[non_exhaustive]
 pub struct Cost<'a, D> {
+    /// Cost basis of the posting
     pub amount: Option<Amount<'a, D>>,
+    /// The date of this cost basis
     pub date: Option<Date>,
 }
 
