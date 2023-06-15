@@ -129,7 +129,7 @@ pub(super) fn parse(input: Span<'_>) -> IResult<'_, Account<'_>> {
         cut(many1_count(preceded(
             char(':'),
             preceded(
-                satisfy(char::is_uppercase),
+                satisfy(|c: char| c.is_uppercase() || c.is_ascii_digit()),
                 take_while(|c: char| c.is_alphanumeric() || c == '-'),
             ),
         ))),
