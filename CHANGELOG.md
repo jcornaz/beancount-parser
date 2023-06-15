@@ -12,6 +12,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 * Error when account component started with a number
 
 
+### Thank you
+
+@doriath
+
+
 ## [1.0.0-alpha.10] - 2023-06-13
 
 ### Added
