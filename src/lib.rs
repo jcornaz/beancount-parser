@@ -43,23 +43,11 @@
 //! # Ok(()) }
 //! ```
 
-mod account;
-mod amount;
-mod date;
-mod error;
-mod event;
-mod metadata;
-mod transaction;
-
-pub use crate::{
-    account::{Account, Balance, Close, Open, Pad},
-    amount::{Amount, Currency, Decimal, Price},
-    date::Date,
-    error::Error,
-    event::Event,
-    metadata::Value as MetadataValue,
-    transaction::{Cost, Flag, Posting, PostingPrice, Transaction},
+use std::{
+    collections::{HashMap, HashSet},
+    path::Path,
 };
+
 use nom::combinator::not;
 use nom::{
     branch::alt,
@@ -70,10 +58,24 @@ use nom::{
     Finish, Parser,
 };
 use nom_locate::position;
-use std::{
-    collections::{HashMap, HashSet},
-    path::Path,
+
+pub use crate::{
+    account::{Account, Balance, Close, Open, Pad},
+    amount::{Amount, Currency, Decimal, Price},
+    date::Date,
+    error::Error,
+    event::Event,
+    metadata::Value as MetadataValue,
+    transaction::{Cost, Flag, Posting, PostingPrice, Transaction},
 };
+
+mod account;
+mod amount;
+mod date;
+mod error;
+mod event;
+mod metadata;
+mod transaction;
 
 /// Parse the input beancount file and return an instance of [`BeancountFile`] on success
 ///
@@ -175,14 +177,14 @@ pub struct Directive<'a, D> {
 #[derive(Debug, Clone)]
 #[non_exhaustive]
 pub enum DirectiveContent<'a, D> {
-    Transaction(transaction::Transaction<'a, D>),
-    Price(amount::Price<'a, D>),
-    Balance(account::Balance<'a, D>),
-    Open(account::Open<'a>),
-    Close(account::Close<'a>),
-    Pad(account::Pad<'a>),
+    Transaction(Transaction<'a, D>),
+    Price(Price<'a, D>),
+    Balance(Balance<'a, D>),
+    Open(Open<'a>),
+    Close(Close<'a>),
+    Pad(Pad<'a>),
     Commodity(Currency<'a>),
-    Event(event::Event<'a>),
+    Event(Event<'a>),
 }
 
 type Span<'a> = nom_locate::LocatedSpan<&'a str>;

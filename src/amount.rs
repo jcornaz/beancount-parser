@@ -85,7 +85,7 @@ fn exp_p2<D: Decimal>(input: Span<'_>) -> IResult<'_, D> {
     let value = iter.fold(value, |a, (op, b)| match op {
         '+' => a + b,
         '-' => a - b,
-        op => unreachable!("unsupported operator: {op}"),
+        op => unreachable!("unsupported operator: {}", op),
     });
     let (input, _) = iter.finish()?;
     Ok((input, value))
@@ -100,7 +100,7 @@ fn exp_p1<D: Decimal>(input: Span<'_>) -> IResult<'_, D> {
     let value = iter.fold(value, |a, (op, b)| match op {
         '*' => a * b,
         '/' => a / b,
-        op => unreachable!("unsupported operator: {op}"),
+        op => unreachable!("unsupported operator: {}", op),
     });
     let (input, _) = iter.finish()?;
     Ok((input, value))
