@@ -5,14 +5,14 @@ use nom::{
     bytes::complete::{tag, take_while},
     character::complete::{char, space0, space1},
     combinator::{cut, iterator, map, opt, success, value},
-    multi::many0,
+    combinator::{eof, not},
     sequence::{delimited, preceded, separated_pair, terminated, tuple},
+    Parser,
 };
 
 use crate::{
-    account::{self, Account},
-    amount::{self, Amount},
-    date, end_of_line, metadata, string, Date, Decimal, IResult, Span,
+    account, account::Account, amount, amount::Amount, date, end_of_line, metadata, string, Date,
+    Decimal, IResult, Span,
 };
 
 /// A transaction
@@ -175,7 +175,16 @@ fn do_parse<D: Decimal>(
         let (input, (tags, links)) = tags_and_links(input)?;
         let (input, _) = end_of_line(input)?;
         let (input, metadata) = metadata::parse(input)?;
-        let (input, postings) = many0(posting)(input)?;
+        let mut iter = iterator(
+            input,
+            alt((
+                posting.map(Some),
+                preceded(not(eof), end_of_line.map(|_| None)),
+            )),
+        );
+        let postings = iter.flatten().collect();
+        let (input, _) = iter.finish()?;
+
         Ok((
             input,
             (

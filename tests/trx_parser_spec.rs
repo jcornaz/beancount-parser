@@ -133,6 +133,8 @@ fn should_parse_tags(#[case] input: &str, #[case] expected: &[&str]) {
 #[case("2023-05-15 txn\n  Assets:Cash", &["Assets:Cash"])]
 #[case("2023-05-15 * \"Hello\" ; with comment \n  Assets:Cash", &["Assets:Cash"])]
 #[case("2023-05-15 txn\n  Assets:Cash\n Income:Salary", &["Assets:Cash", "Income:Salary"])]
+#[case("2023-05-15 txn\n  Assets:Cash\n  ; A comment\n  Income:Salary", &["Assets:Cash", "Income:Salary"])]
+#[case("2023-05-15 txn\n  Assets:Cash\n\n  Income:Salary", &["Assets:Cash", "Income:Salary"])]
 fn should_parse_posting_accounts(#[case] input: &str, #[case] expected: &[&str]) {
     let DirectiveContent::Transaction(trx) = parse_single_directive(input).content else {
         panic!("was not a transaction");
