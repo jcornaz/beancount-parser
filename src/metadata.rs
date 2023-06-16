@@ -6,9 +6,10 @@ use nom::{
     character::complete::{char, satisfy, space1},
     combinator::{iterator, map, recognize},
     sequence::preceded,
+    Parser,
 };
 
-use crate::{amount, end_of_line, string, Currency, Decimal, IResult, Span};
+use crate::{amount, empty_line, end_of_line, string, Currency, Decimal, IResult, Span};
 
 /// Metadata value
 ///
@@ -36,8 +37,8 @@ pub enum Value<'a, D> {
 }
 
 pub(crate) fn parse<D: Decimal>(input: Span<'_>) -> IResult<'_, HashMap<&str, Value<'_, D>>> {
-    let mut iter = iterator(input, entry);
-    let map: HashMap<_, _> = iter.collect();
+    let mut iter = iterator(input, alt((entry.map(Some), empty_line.map(|_| None))));
+    let map: HashMap<_, _> = iter.flatten().collect();
     let (input, _) = iter.finish()?;
     Ok((input, map))
 }

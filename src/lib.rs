@@ -60,6 +60,7 @@ pub use crate::{
     metadata::Value as MetadataValue,
     transaction::{Cost, Flag, Posting, PostingPrice, Transaction},
 };
+use nom::combinator::not;
 use nom::{
     branch::alt,
     bytes::complete::{tag, take_till},
@@ -340,6 +341,11 @@ fn line(input: Span<'_>) -> IResult<'_, ()> {
     let (input, _) = not_line_ending(input)?;
     let (input, _) = line_ending(input)?;
     Ok((input, ()))
+}
+
+fn empty_line(input: Span<'_>) -> IResult<'_, ()> {
+    let (input, _) = not(eof)(input)?;
+    end_of_line(input)
 }
 
 fn string(input: Span<'_>) -> IResult<'_, &str> {

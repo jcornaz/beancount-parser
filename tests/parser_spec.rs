@@ -248,6 +248,16 @@ fn should_parse_price_amount() {
     MetadataValue::String("world")
 )]
 #[case(
+    "2022-05-18 open Assets:Cash\n  title: \"hello\"\n  ; Comment\n  name: \"world\"",
+    "name",
+    MetadataValue::String("world")
+)]
+#[case(
+    "2022-05-18 open Assets:Cash\n  title: \"hello\"\n\n  name: \"world\"",
+    "name",
+    MetadataValue::String("world")
+)]
+#[case(
     "2022-05-18 * \"a transaction\"\n  title: \"hello\"",
     "title",
     MetadataValue::String("hello")
