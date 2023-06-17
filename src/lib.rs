@@ -1,6 +1,5 @@
 #![deny(future_incompatible, nonstandard_style, unsafe_code, private_in_public)]
 #![warn(rust_2018_idioms, clippy::pedantic, missing_docs)]
-#![allow(clippy::deprecated_semver)]
 #![cfg_attr(docsrs, feature(doc_auto_cfg))]
 
 //! A parsing library for the [beancount language](https://beancount.github.io/docs/beancount_language_syntax.html)
@@ -161,7 +160,7 @@ impl<'a, D> BeancountFile<'a, D> {
     /// Return an iterator over the include directives
     ///
     /// See: <https://beancount.github.io/docs/beancount_language_syntax.html#includes>
-    #[deprecated(note = "Use the includes field instead")]
+    #[deprecated(note = "Use the includes field instead", since = "1.0.0-beta.1")]
     pub fn includes(&self) -> impl Iterator<Item = &'a Path> + '_ {
         self.includes.iter().copied()
     }
