@@ -137,9 +137,7 @@ impl<'a, D> BeancountFile<'a, D> {
     /// ```
     #[must_use]
     pub fn option(&self, key: &str) -> Option<&'a str> {
-        self.options
-            .iter()
-            .copied()
+        self.options()
             .find(|(k, _)| *k == key)
             .map(|(_, value)| value)
     }
