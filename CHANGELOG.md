@@ -7,6 +7,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+
+## [1.0.0-beta.1] - 2023-06-17
+
 ### Added
 
 * `BeanOption` type
@@ -223,7 +226,8 @@ This is less performant but allow continue using the results after discarding th
 * Options
 * Directive metadata (string values only)
 
-[Unreleased]: https://github.com/jcornaz/beancount_parser_2/compare/v1.0.0-alpha.12...HEAD
+[Unreleased]: https://github.com/jcornaz/beancount_parser_2/compare/v1.0.0-beta.1...HEAD
+[1.0.0-beta.1]: https://github.com/jcornaz/beancount_parser_2/compare/v1.0.0-alpha.12...v1.0.0-beta.1
 [1.0.0-alpha.12]: https://github.com/jcornaz/beancount_parser_2/compare/v1.0.0-alpha.11...v1.0.0-alpha.12
 [1.0.0-alpha.11]: https://github.com/jcornaz/beancount_parser_2/compare/v1.0.0-alpha.10...v1.0.0-alpha.11
 [1.0.0-alpha.10]: https://github.com/jcornaz/beancount_parser_2/compare/v1.0.0-alpha.9...v1.0.0-alpha.10
