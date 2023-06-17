@@ -162,6 +162,22 @@ fn should_parse_option() {
 }
 
 #[rstest]
+fn should_parse_multiple_options_with_same_key() {
+    let beancount = parse::<f64>(
+        r#"
+option "operating_currency" "CHF"
+option "operating_currency" "PLN"
+"#,
+    )
+    .unwrap();
+    let options: Vec<(&str, &str)> = beancount.options().collect();
+    assert_eq!(
+        &options,
+        &[("operating_currency", "CHF"), ("operating_currency", "PLN")]
+    );
+}
+
+#[rstest]
 fn should_parse_option_with_comment() {
     let beancount = parse::<f64>(r#"option "Hello" "world!" ; This is great"#).unwrap();
     assert_eq!(beancount.option("Hello"), Some("world!"));

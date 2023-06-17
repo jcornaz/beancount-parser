@@ -8,6 +8,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Unreleased]
 
 
+### Added
+
+* `BeancountFile::options` which returns an iterator over all declared options and their value. (#31 and #32)
+
+
 ## [1.0.0-alpha.12] - 2023-06-16
 
 ### Fixed 

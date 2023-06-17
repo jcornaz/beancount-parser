@@ -114,9 +114,27 @@ pub struct BeancountFile<'a, D> {
 }
 
 impl<'a, D> BeancountFile<'a, D> {
-    /// Returns the value for of the option if defined
+    /// Returns the first value found for the option
     ///
-    /// See: <https://beancount.github.io/docs/beancount_language_syntax.html#options>
+    /// If the option is declared multiple times, this function returns the first one found.
+    ///
+    /// See [`Self::options`] to get all declared options.
+    ///
+    /// Syntax: <https://beancount.github.io/docs/beancount_language_syntax.html#options>
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// let input = r#"
+    /// option "favorite_color" "blue"
+    /// option "operating_currency" "CHF"
+    /// option "operating_currency" "PLN"
+    /// "#;
+    /// let beancount = beancount_parser_2::parse::<f64>(input).unwrap();
+    /// assert_eq!(beancount.option("favorite_color"), Some("blue"));
+    /// assert_eq!(beancount.option("operating_currency"), Some("CHF"));
+    /// assert_eq!(beancount.option("foo"), None);
+    /// ```
     #[must_use]
     pub fn option(&self, key: &str) -> Option<&'a str> {
         self.options
@@ -124,6 +142,31 @@ impl<'a, D> BeancountFile<'a, D> {
             .copied()
             .find(|(k, _)| *k == key)
             .map(|(_, value)| value)
+    }
+
+    /// Returns an iterator over the options in the form of tuples (key, value)
+    ///
+    /// See also [`Self::option`]
+    ///
+    /// Syntax: <https://beancount.github.io/docs/beancount_language_syntax.html#options>
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// let input = r#"
+    /// option "favorite_color" "blue"
+    /// option "operating_currency" "CHF"
+    /// option "operating_currency" "PLN"
+    /// "#;
+    /// let beancount = beancount_parser_2::parse::<f64>(input).unwrap();
+    /// let operating_currencies: Vec<_> = beancount.options()
+    ///     .filter(|(key, _)| *key == "operating_currency")
+    ///     .map(|(_, value)| value)
+    ///     .collect();
+    /// assert_eq!(&operating_currencies, &["CHF", "PLN"])
+    /// ```
+    pub fn options(&self) -> impl Iterator<Item = (&'a str, &'a str)> + '_ {
+        self.options.iter().copied()
     }
 }
 
