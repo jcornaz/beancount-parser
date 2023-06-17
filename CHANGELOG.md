@@ -14,6 +14,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 * `BeanOption` type
 * Make the `includes` and `options` fields public
+* Support multiple options with the same key
 
 
 ### Deprecated
