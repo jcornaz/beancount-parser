@@ -1,5 +1,6 @@
 #![deny(future_incompatible, nonstandard_style, unsafe_code, private_in_public)]
 #![warn(rust_2018_idioms, clippy::pedantic, missing_docs)]
+#![allow(clippy::deprecated_semver)]
 #![cfg_attr(docsrs, feature(doc_auto_cfg))]
 
 //! A parsing library for the [beancount language](https://beancount.github.io/docs/beancount_language_syntax.html)
@@ -108,7 +109,7 @@ pub struct BeancountFile<'a, D> {
     /// Paths of include directives
     ///
     /// See: <https://beancount.github.io/docs/beancount_language_syntax.html#includes>
-    includes: HashSet<&'a Path>,
+    pub includes: Vec<&'a Path>,
     /// List of [`Directive`] found in the file
     pub directives: Vec<Directive<'a, D>>,
 }
@@ -172,6 +173,7 @@ impl<'a, D> BeancountFile<'a, D> {
     /// Return an iterator over the include directives
     ///
     /// See: <https://beancount.github.io/docs/beancount_language_syntax.html#includes>
+    #[deprecated(note = "Use the includes field instead")]
     pub fn includes(&self) -> impl Iterator<Item = &'a Path> + '_ {
         self.includes.iter().copied()
     }
@@ -238,7 +240,7 @@ type IResult<'a, O> = nom::IResult<Span<'a>, O>;
 fn beancount_file<D: Decimal>(input: Span<'_>) -> IResult<'_, BeancountFile<'_, D>> {
     let mut iter = iterator(input, entry);
     let mut options = Vec::new();
-    let mut includes = HashSet::new();
+    let mut includes = Vec::new();
     let mut tag_stack = HashSet::new();
     let mut directives = Vec::new();
     for entry in &mut iter {
@@ -253,7 +255,7 @@ fn beancount_file<D: Decimal>(input: Span<'_>) -> IResult<'_, BeancountFile<'_, 
                 options.push((key, value));
             }
             Entry::Include(path) => {
-                includes.insert(path);
+                includes.push(path);
             }
             Entry::PushTag(tag) => {
                 tag_stack.insert(tag);

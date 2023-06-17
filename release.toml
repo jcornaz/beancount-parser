@@ -21,4 +21,3 @@ search = "\\[Unreleased\\]:"
 replace = "[Unreleased]: https://github.com/jcornaz/beancount_parser_2/compare/v{{version}}...HEAD\n[{{version}}]:"
 prerelease = true
 exactly = 1
-
