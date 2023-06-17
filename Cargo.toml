@@ -18,13 +18,13 @@ rustdoc-args = ["--cfg", "docsrs"]
 # Public
 
 # Private
-nom = { version = "7.1", default-features = false, features = ["std"] }
-nom_locate = { version = "4.1", default-features = false }
+nom = { version = "7.1.3", default-features = false, features = ["std"] }
+nom_locate = { version = "4.1.0", default-features = false }
 
 [dev-dependencies]
 criterion = "0.5.1"
 rstest = { version = "0.17.0", default-features = false }
-rust_decimal = { version = "1.30", default-features = false }
+rust_decimal = { version = "1.30.0", default-features = false }
 
 [[bench]]
 name = "benchmark"
