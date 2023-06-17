@@ -104,8 +104,8 @@ pub struct BeancountFile<'a, D> {
     /// Map of options declared in the file
     ///
     /// See: <https://beancount.github.io/docs/beancount_language_syntax.html#options>
-    options: HashMap<&'a str, &'a str>,
-    /// Pathes of include directives
+    options: Vec<(&'a str, &'a str)>,
+    /// Paths of include directives
     ///
     /// See: <https://beancount.github.io/docs/beancount_language_syntax.html#includes>
     includes: HashSet<&'a Path>,
@@ -119,7 +119,11 @@ impl<'a, D> BeancountFile<'a, D> {
     /// See: <https://beancount.github.io/docs/beancount_language_syntax.html#options>
     #[must_use]
     pub fn option(&self, key: &str) -> Option<&'a str> {
-        self.options.get(key).copied()
+        self.options
+            .iter()
+            .copied()
+            .find(|(k, _)| *k == key)
+            .map(|(_, value)| value)
     }
 }
 
@@ -192,7 +196,7 @@ type IResult<'a, O> = nom::IResult<Span<'a>, O>;
 
 fn beancount_file<D: Decimal>(input: Span<'_>) -> IResult<'_, BeancountFile<'_, D>> {
     let mut iter = iterator(input, entry);
-    let mut options = HashMap::new();
+    let mut options = Vec::new();
     let mut includes = HashSet::new();
     let mut tag_stack = HashSet::new();
     let mut directives = Vec::new();
@@ -205,7 +209,7 @@ fn beancount_file<D: Decimal>(input: Span<'_>) -> IResult<'_, BeancountFile<'_, 
                 directives.push(d);
             }
             Entry::Option { key, value } => {
-                options.insert(key, value);
+                options.push((key, value));
             }
             Entry::Include(path) => {
                 includes.insert(path);
