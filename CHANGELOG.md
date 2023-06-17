@@ -9,8 +9,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
-* `BeancountFile::options` which returns an iterator over all declared options and their value. (#31 and #32)
-* Make the `includes` field public
+* `BeanOption` type
+* Make the `includes` and `options` fields public
 
 
 ### Deprecated

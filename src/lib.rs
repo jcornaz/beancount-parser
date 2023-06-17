@@ -102,16 +102,28 @@ pub fn parse<D: Decimal>(input: &str) -> Result<BeancountFile<'_, D>, Error<'_>>
 #[derive(Debug, Clone)]
 #[non_exhaustive]
 pub struct BeancountFile<'a, D> {
-    /// Map of options declared in the file
+    /// List of beancount options
     ///
     /// See: <https://beancount.github.io/docs/beancount_language_syntax.html#options>
-    options: Vec<(&'a str, &'a str)>,
+    pub options: Vec<BeanOption<'a>>,
     /// Paths of include directives
     ///
     /// See: <https://beancount.github.io/docs/beancount_language_syntax.html#includes>
     pub includes: Vec<&'a Path>,
     /// List of [`Directive`] found in the file
     pub directives: Vec<Directive<'a, D>>,
+}
+
+/// An beancount option
+///
+/// See: <https://beancount.github.io/docs/beancount_language_syntax.html#options>
+#[derive(Debug, Clone)]
+#[non_exhaustive]
+pub struct BeanOption<'a> {
+    /// Key
+    pub key: &'a str,
+    /// Value
+    pub value: &'a str,
 }
 
 impl<'a, D> BeancountFile<'a, D> {
@@ -138,34 +150,10 @@ impl<'a, D> BeancountFile<'a, D> {
     /// ```
     #[must_use]
     pub fn option(&self, key: &str) -> Option<&'a str> {
-        self.options()
-            .find(|(k, _)| *k == key)
-            .map(|(_, value)| value)
-    }
-
-    /// Returns an iterator over the options in the form of tuples (key, value)
-    ///
-    /// See also [`Self::option`]
-    ///
-    /// Syntax: <https://beancount.github.io/docs/beancount_language_syntax.html#options>
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// let input = r#"
-    /// option "favorite_color" "blue"
-    /// option "operating_currency" "CHF"
-    /// option "operating_currency" "PLN"
-    /// "#;
-    /// let beancount = beancount_parser_2::parse::<f64>(input).unwrap();
-    /// let operating_currencies: Vec<_> = beancount.options()
-    ///     .filter(|(key, _)| *key == "operating_currency")
-    ///     .map(|(_, value)| value)
-    ///     .collect();
-    /// assert_eq!(&operating_currencies, &["CHF", "PLN"])
-    /// ```
-    pub fn options(&self) -> impl Iterator<Item = (&'a str, &'a str)> + '_ {
-        self.options.iter().copied()
+        self.options
+            .iter()
+            .find(|opt| opt.key == key)
+            .map(|opt| opt.value)
     }
 }
 
@@ -251,8 +239,8 @@ fn beancount_file<D: Decimal>(input: Span<'_>) -> IResult<'_, BeancountFile<'_, 
                 }
                 directives.push(d);
             }
-            Entry::Option { key, value } => {
-                options.push((key, value));
+            Entry::Option(option) => {
+                options.push(option);
             }
             Entry::Include(path) => {
                 includes.push(path);
@@ -279,7 +267,7 @@ fn beancount_file<D: Decimal>(input: Span<'_>) -> IResult<'_, BeancountFile<'_, 
 
 enum Entry<'a, D> {
     Directive(Directive<'a, D>),
-    Option { key: &'a str, value: &'a str },
+    Option(BeanOption<'a>),
     Include(&'a Path),
     PushTag(&'a str),
     PopTag(&'a str),
@@ -289,7 +277,7 @@ enum Entry<'a, D> {
 fn entry<D: Decimal>(input: Span<'_>) -> IResult<'_, Entry<'_, D>> {
     alt((
         directive.map(Entry::Directive),
-        option.map(|(key, value)| Entry::Option { key, value }),
+        option.map(|(key, value)| Entry::Option(BeanOption { key, value })),
         include.map(|p| Entry::Include(p)),
         tag_stack_operation,
         line.map(|_| Entry::Comment),

@@ -170,7 +170,11 @@ option "operating_currency" "PLN"
 "#,
     )
     .unwrap();
-    let options: Vec<(&str, &str)> = beancount.options().collect();
+    let options: Vec<(&str, &str)> = beancount
+        .options
+        .into_iter()
+        .map(|opt| (opt.key, opt.value))
+        .collect();
     assert_eq!(
         &options,
         &[("operating_currency", "CHF"), ("operating_currency", "PLN")]
