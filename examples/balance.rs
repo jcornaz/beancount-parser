@@ -25,7 +25,7 @@ fn main() {
     stdin()
         .read_to_string(&mut input)
         .expect("cannot read from stdin");
-    let beancount = match beancount_parser_2::parse::<rust_decimal::Decimal>(&input) {
+    let beancount = match beancount_parser_2::parse::<Decimal>(&input) {
         Ok(beancount) => beancount,
         Err(err) => {
             eprintln!("{err}");
