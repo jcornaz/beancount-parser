@@ -74,8 +74,8 @@ pub struct Transaction<'a, D> {
 /// assert_eq!(posting.account.as_str(), "Assets:Cash");
 /// assert_eq!(posting.amount.as_ref().unwrap().value, 1.0);
 /// assert_eq!(posting.amount.as_ref().unwrap().currency.as_str(), "CHF");
-/// assert_eq!(posting.cost.as_ref().unwrap().amount.unwrap().value, 2.0);
-/// assert_eq!(posting.cost.as_ref().unwrap().amount.unwrap().currency.as_str(), "PLN");
+/// assert_eq!(posting.cost.as_ref().unwrap().amount.as_ref().unwrap().value, 2.0);
+/// assert_eq!(posting.cost.as_ref().unwrap().amount.as_ref().unwrap().currency.as_str(), "PLN");
 /// let Some(PostingPrice::Unit(price)) = &posting.price else {
 ///   unreachable!("no price");
 /// };
@@ -90,11 +90,11 @@ pub struct Posting<'a, D> {
     /// Account modified by the posting
     pub account: Account,
     /// Amount being added to the account
-    pub amount: Option<Amount<'a, D>>,
+    pub amount: Option<Amount<D>>,
     /// Cost (content within `{` and `}`)
-    pub cost: Option<Cost<'a, D>>,
+    pub cost: Option<Cost<D>>,
     /// Price (`@` or `@@`) syntax
-    pub price: Option<PostingPrice<'a, D>>,
+    pub price: Option<PostingPrice<D>>,
     /// The metadata attached to the posting
     pub metadata: HashMap<&'a str, metadata::Value<'a, D>>,
 }
@@ -104,9 +104,9 @@ pub struct Posting<'a, D> {
 /// It is the amount within `{` and `}`.
 #[derive(Debug, Clone)]
 #[non_exhaustive]
-pub struct Cost<'a, D> {
+pub struct Cost<D> {
     /// Cost basis of the posting
-    pub amount: Option<Amount<'a, D>>,
+    pub amount: Option<Amount<D>>,
     /// The date of this cost basis
     pub date: Option<Date>,
 }
@@ -115,11 +115,11 @@ pub struct Cost<'a, D> {
 ///
 /// It is the amount following the `@` or `@@` symbols
 #[derive(Debug, Clone)]
-pub enum PostingPrice<'a, D> {
+pub enum PostingPrice<D> {
     /// Unit cost (`@`)
-    Unit(Amount<'a, D>),
+    Unit(Amount<D>),
     /// Total cost (`@@`)
-    Total(Amount<'a, D>),
+    Total(Amount<D>),
 }
 
 #[allow(clippy::type_complexity)]
@@ -262,7 +262,7 @@ fn posting<D: Decimal>(input: Span<'_>) -> IResult<'_, Posting<'_, D>> {
     ))
 }
 
-fn cost<D: Decimal>(input: Span<'_>) -> IResult<'_, Cost<'_, D>> {
+fn cost<D: Decimal>(input: Span<'_>) -> IResult<'_, Cost<D>> {
     let (input, _) = terminated(char_tag('{'), space0)(input)?;
     let (input, (cost, date)) = alt((
         map(

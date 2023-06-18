@@ -33,7 +33,7 @@ pub enum Value<'a, D> {
     /// A number or number expression
     Number(D),
     /// A [`Currency`]
-    Currency(Currency<'a>),
+    Currency(Currency),
 }
 
 pub(crate) fn parse<D: Decimal>(input: Span<'_>) -> IResult<'_, HashMap<&str, Value<'_, D>>> {

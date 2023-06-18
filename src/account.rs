@@ -62,11 +62,11 @@ impl Display for Account {
 /// ```
 #[derive(Debug, Clone)]
 #[non_exhaustive]
-pub struct Open<'a> {
+pub struct Open {
     /// Account being open
     pub account: Account,
     /// Currency constraints
-    pub currencies: HashSet<Currency<'a>>,
+    pub currencies: HashSet<Currency>,
 }
 
 /// Close account directive
@@ -100,11 +100,11 @@ pub struct Close {
 /// ```
 #[derive(Debug, Clone)]
 #[non_exhaustive]
-pub struct Balance<'a, D> {
+pub struct Balance<D> {
     /// Account being asserted
     pub account: Account,
     /// Amount the amount should have on the date
-    pub amount: Amount<'a, D>,
+    pub amount: Amount<D>,
 }
 
 /// Pad directive
@@ -147,7 +147,7 @@ pub(super) fn parse(input: Span<'_>) -> IResult<'_, Account> {
     Ok((input, Account(Arc::from(*name.fragment()))))
 }
 
-pub(super) fn open(input: Span<'_>) -> IResult<'_, Open<'_>> {
+pub(super) fn open(input: Span<'_>) -> IResult<'_, Open> {
     let (input, account) = parse(input)?;
     let (input, _) = space0(input)?;
     let (input, currencies) = opt(currencies)(input)?;
@@ -160,7 +160,7 @@ pub(super) fn open(input: Span<'_>) -> IResult<'_, Open<'_>> {
     ))
 }
 
-fn currencies(input: Span<'_>) -> IResult<'_, HashSet<Currency<'_>>> {
+fn currencies(input: Span<'_>) -> IResult<'_, HashSet<Currency>> {
     let (input, first) = amount::currency(input)?;
     let sep = delimited(space0, char(','), space0);
     let mut iter = iterator(input, preceded(sep, amount::currency));
@@ -176,7 +176,7 @@ pub(super) fn close(input: Span<'_>) -> IResult<'_, Close> {
     Ok((input, Close { account }))
 }
 
-pub(super) fn balance<D: Decimal>(input: Span<'_>) -> IResult<'_, Balance<'_, D>> {
+pub(super) fn balance<D: Decimal>(input: Span<'_>) -> IResult<'_, Balance<D>> {
     let (input, account) = parse(input)?;
     let (input, _) = space1(input)?;
     let (input, amount) = amount::parse(input)?;

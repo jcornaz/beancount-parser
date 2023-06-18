@@ -20,7 +20,7 @@ use beancount_parser_2::{
     Account, Amount, BeancountFile, Currency, Directive, DirectiveContent, Transaction,
 };
 
-type Report<'a> = HashMap<Account, HashMap<Currency<'a>, Decimal>>;
+type Report<'a> = HashMap<Account, HashMap<Currency, Decimal>>;
 
 fn main() {
     let mut input = String::new();
@@ -74,16 +74,18 @@ fn add_trx<'a>(report: &mut Report<'a>, transaction: Transaction<'a, Decimal>) {
         .into_iter()
         .filter_map(|p| Some((p.account, p.amount?)))
         .for_each(|(account, mut amount)| {
-            add_amount(report, account, amount);
             // If there is a source account, then we balance the transaction by removing the amount from the source account
-            if let Some(ref account) = source_account {
+            if let Some(ref source_account) = source_account {
+                add_amount(report, account, amount.clone());
                 amount.value = -amount.value;
-                add_amount(report, account.clone(), amount);
+                add_amount(report, source_account.clone(), amount);
+            } else {
+                add_amount(report, account, amount);
             }
         });
 }
 
-fn add_amount<'a>(report: &mut Report<'a>, account: Account, amount: Amount<'a, Decimal>) {
+fn add_amount(report: &mut Report, account: Account, amount: Amount<Decimal>) {
     let value = report
         .entry(account)
         .or_default()
@@ -92,7 +94,7 @@ fn add_amount<'a>(report: &mut Report<'a>, account: Account, amount: Amount<'a, 
     *value += amount.value;
 }
 
-fn set_balance<'a>(report: &mut Report<'a>, account: Account, amount: Amount<'a, Decimal>) {
+fn set_balance(report: &mut Report, account: Account, amount: Amount<Decimal>) {
     let value = report
         .entry(account)
         .or_default()

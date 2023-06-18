@@ -36,8 +36,8 @@
 //! };
 //! assert_eq!(trx.narration, Some("Coffee beans"));
 //! assert_eq!(trx.postings[0].account.as_str(), "Expenses:Groceries");
-//! assert_eq!(trx.postings[0].amount.unwrap().value, 10.0);
-//! assert_eq!(trx.postings[0].amount.unwrap().currency.as_str(), "CHF");
+//! assert_eq!(trx.postings[0].amount.as_ref().unwrap().value, 10.0);
+//! assert_eq!(trx.postings[0].amount.as_ref().unwrap().currency.as_str(), "CHF");
 //! assert_eq!(trx.postings[1].account.as_str(), "Assets:Checking");
 //! assert_eq!(trx.postings[1].amount, None);
 //! # Ok(()) }
@@ -212,12 +212,12 @@ pub struct Directive<'a, D> {
 #[non_exhaustive]
 pub enum DirectiveContent<'a, D> {
     Transaction(Transaction<'a, D>),
-    Price(Price<'a, D>),
-    Balance(Balance<'a, D>),
-    Open(Open<'a>),
+    Price(Price<D>),
+    Balance(Balance<D>),
+    Open(Open),
     Close(Close),
     Pad(Pad),
-    Commodity(Currency<'a>),
+    Commodity(Currency),
     Event(Event<'a>),
 }
 

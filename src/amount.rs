@@ -1,3 +1,4 @@
+use std::sync::Arc;
 use std::{
     fmt::Debug,
     fmt::{Display, Formatter},
@@ -31,11 +32,11 @@ use crate::{IResult, Span};
 /// assert_eq!(price.amount.currency.as_str(), "PLN");
 /// ```
 #[derive(Debug, Clone)]
-pub struct Price<'a, D> {
+pub struct Price<D> {
     /// Currency
-    pub currency: Currency<'a>,
+    pub currency: Currency,
     /// Price of the currency
-    pub amount: Amount<'a, D>,
+    pub amount: Amount<D>,
 }
 
 /// Amount
@@ -43,13 +44,13 @@ pub struct Price<'a, D> {
 /// Where `D` is the decimal type (like `f64` or `rust_decimal::Decimal`)
 ///
 /// For an example, look at the [`Price`] directive
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, PartialEq)]
 #[non_exhaustive]
-pub struct Amount<'a, D> {
+pub struct Amount<D> {
     /// The value (decimal) part
     pub value: D,
     /// Currency
-    pub currency: Currency<'a>,
+    pub currency: Currency,
 }
 
 /// Currency
@@ -57,24 +58,24 @@ pub struct Amount<'a, D> {
 /// One may use [`Currency::as_str`] to get the string representation of the currency
 ///
 /// For an example, look at the [`Price`] directive
-#[derive(Debug, Copy, Clone, PartialOrd, Ord, PartialEq, Eq, Hash)]
-pub struct Currency<'a>(&'a str);
+#[derive(Debug, Clone, PartialOrd, Ord, PartialEq, Eq, Hash)]
+pub struct Currency(Arc<str>);
 
-impl<'a> Currency<'a> {
+impl Currency {
     /// Returns the string representation of the currency
     #[must_use]
-    pub fn as_str(&self) -> &'a str {
-        self.0
+    pub fn as_str(&self) -> &str {
+        &self.0
     }
 }
 
-impl<'a> Display for Currency<'a> {
+impl Display for Currency {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        Display::fmt(self.0, f)
+        Display::fmt(&self.0, f)
     }
 }
 
-impl<'a> TryFrom<&'a str> for Currency<'a> {
+impl<'a> TryFrom<&'a str> for Currency {
     type Error = crate::ConversionError;
     fn try_from(value: &'a str) -> Result<Self, Self::Error> {
         match all_consuming(currency)(Span::new(value)).finish() {
@@ -84,7 +85,7 @@ impl<'a> TryFrom<&'a str> for Currency<'a> {
     }
 }
 
-pub(crate) fn parse<D: Decimal>(input: Span<'_>) -> IResult<'_, Amount<'_, D>> {
+pub(crate) fn parse<D: Decimal>(input: Span<'_>) -> IResult<'_, Amount<D>> {
     let (input, value) = expression(input)?;
     let (input, _) = space1(input)?;
     let (input, currency) = currency(input)?;
@@ -146,14 +147,14 @@ fn litteral<D: Decimal>(input: Span<'_>) -> IResult<'_, D> {
     )(input)
 }
 
-pub(crate) fn price<D: Decimal>(input: Span<'_>) -> IResult<'_, Price<'_, D>> {
+pub(crate) fn price<D: Decimal>(input: Span<'_>) -> IResult<'_, Price<D>> {
     let (input, currency) = currency(input)?;
     let (input, _) = space1(input)?;
     let (input, amount) = parse(input)?;
     Ok((input, Price { currency, amount }))
 }
 
-pub(crate) fn currency(input: Span<'_>) -> IResult<'_, Currency<'_>> {
+pub(crate) fn currency(input: Span<'_>) -> IResult<'_, Currency> {
     let (input, currency) = recognize(tuple((
         satisfy(char::is_uppercase),
         verify(
@@ -163,7 +164,7 @@ pub(crate) fn currency(input: Span<'_>) -> IResult<'_, Currency<'_>> {
             |s: &Span<'_>| s.fragment().chars().last().map_or(true, char::is_uppercase),
         ),
     )))(input)?;
-    Ok((input, Currency(currency.fragment())))
+    Ok((input, Currency(Arc::from(*currency.fragment()))))
 }
 
 /// Decimal type to which amount values and expressions will be parsed into.
