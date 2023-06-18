@@ -48,11 +48,11 @@ fn should_parse_date(
     "2020-04-10 balance Assets:US:BofA:Checking        2473.33 USD",
     "Assets:US:BofA:Checking"
 )]
-fn should_parse_balance_assertion_account(#[case] input: &str, #[case] exepected: &str) {
+fn should_parse_balance_assertion_account(#[case] input: &str, #[case] expected: &str) {
     let DirectiveContent::Balance(assertion) = parse_single_directive(input).content else {
         panic!("was not an open directive");
     };
-    assert_eq!(assertion.account.as_str(), exepected);
+    assert_eq!(assertion.account.as_str(), expected);
 }
 
 #[rstest]
@@ -130,11 +130,11 @@ fn should_parse_open_account(#[case] input: &str, #[case] expected_account: &str
 #[case("2014-05-01 open Assets:Checking CHF,USD", &["CHF", "USD"])]
 #[case("2014-05-01 open Assets:Checking CHF, USD", &["CHF", "USD"])]
 #[case("2014-05-01 open Assets:Checking CHF  ,\tUSD", &["CHF", "USD"])]
-fn should_parse_open_account_currency(#[case] input: &str, #[case] exepcted_currencies: &[&str]) {
+fn should_parse_open_account_currency(#[case] input: &str, #[case] expected_currencies: &[&str]) {
     let DirectiveContent::Open(open) = parse_single_directive(input).content else {
         panic!("was not an open directive");
     };
-    let expected: HashSet<&str> = exepcted_currencies.iter().copied().collect();
+    let expected: HashSet<&str> = expected_currencies.iter().copied().collect();
     let actual: HashSet<&str> = open.currencies.iter().map(|c| c.as_str()).collect();
     assert_eq!(actual, expected);
 }
@@ -315,8 +315,8 @@ fn should_parse_metadata_entry(
     #[case] key: &str,
     #[case] expected_value: MetadataValue<'static, f64>,
 ) {
-    let metdata = parse_single_directive(input).metadata;
-    assert_eq!(metdata.get(key), Some(&expected_value));
+    let metadata = parse_single_directive(input).metadata;
+    assert_eq!(metadata.get(key), Some(&expected_value));
 }
 
 #[rstest]
@@ -435,7 +435,7 @@ fn parse_single_directive(input: &str) -> Directive<'_, f64> {
     assert_eq!(
         directives.len(),
         1,
-        "unexepcted number of directives: {:?}",
+        "unexpected number of directives: {:?}",
         directives
     );
     directives.into_iter().next().unwrap()
