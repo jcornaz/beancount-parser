@@ -66,7 +66,7 @@ pub use crate::{
     error::Error,
     event::Event,
     metadata::Value as MetadataValue,
-    transaction::{Cost, Flag, Posting, PostingPrice, Transaction},
+    transaction::{Cost, Posting, PostingPrice, Transaction},
 };
 
 mod account;

@@ -7,9 +7,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Breaking changes
+
+* The enum `Flag` has been removed
+* The `flag` field in `Transaction` and `Posting` is now of type `Option<char>`
+
+
 ### Added
 
 * Implement `Display` for `Account` and `Currency`
+
 
 ## [1.0.0-beta.1] - 2023-06-17
 

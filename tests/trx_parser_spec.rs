@@ -1,7 +1,7 @@
 use std::collections::HashSet;
 
 use beancount_parser_2::{
-    parse, Directive, DirectiveContent, Flag, MetadataValue, Posting, PostingPrice, Transaction,
+    parse, Directive, DirectiveContent, MetadataValue, Posting, PostingPrice, Transaction,
 };
 use rstest::rstest;
 
@@ -107,11 +107,11 @@ fn should_parse_transaction_tags(#[case] input: &str, #[case] expected: &[&str])
 #[rstest]
 #[case("2023-05-15 txn", None)]
 #[case("2023-05-15 txn \"hello\"", None)]
-#[case("2023-05-15 *", Some(Flag::Completed))]
-#[case("2023-05-15 * \"hello\"", Some(Flag::Completed))]
-#[case("2023-05-15 !", Some(Flag::Incomplete))]
-#[case("2023-05-15 ! \"hello\"", Some(Flag::Incomplete))]
-fn should_parse_transaction_flag(#[case] input: &str, #[case] expected: Option<Flag>) {
+#[case("2023-05-15 *", Some('*'))]
+#[case("2023-05-15 * \"hello\"", Some('*'))]
+#[case("2023-05-15 !", Some('!'))]
+#[case("2023-05-15 ! \"hello\"", Some('!'))]
+fn should_parse_transaction_flag(#[case] input: &str, #[case] expected: Option<char>) {
     let DirectiveContent::Transaction(trx) = parse_single_directive(input).content else {
         panic!("was not a transaction");
     };
@@ -151,12 +151,12 @@ fn should_parse_posting_accounts(#[case] input: &str, #[case] expected: &[&str])
 #[case("2023-05-15 txn", &[])]
 #[case("2023-05-15 txn\n  Assets:Cash", &[None])]
 #[case("2023-05-15 * \"Hello\" ; with comment \n  Assets:Cash", &[None])]
-#[case("2023-05-15 txn\n  * Assets:Cash\n  ! Income:Salary\n  Equity:Openings", &[Some(Flag::Completed), Some(Flag::Incomplete), None])]
-fn should_parse_posting_flags(#[case] input: &str, #[case] expected: &[Option<Flag>]) {
+#[case("2023-05-15 txn\n  * Assets:Cash\n  ! Income:Salary\n  Equity:Openings", &[Some('*'), Some('!'), None])]
+fn should_parse_posting_flags(#[case] input: &str, #[case] expected: &[Option<char>]) {
     let DirectiveContent::Transaction(trx) = parse_single_directive(input).content else {
         panic!("was not a transaction");
     };
-    let posting_accounts: Vec<Option<Flag>> = trx.postings.into_iter().map(|p| p.flag).collect();
+    let posting_accounts: Vec<Option<char>> = trx.postings.into_iter().map(|p| p.flag).collect();
     assert_eq!(&posting_accounts, expected);
 }
 
