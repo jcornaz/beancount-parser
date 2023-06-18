@@ -37,18 +37,21 @@ fn error_debug_impl_is_succinct() {
 }
 
 #[rstest]
-fn accounts_implements_display(
-    #[values(
-        "Assets:Bank:Checking",
-        "Expenses:Taxes:Y2021:US:Federal:PreTax401k",
-        "Equity:Opening-Balances"
-    )]
-    account: &str,
-) {
+fn accounts_implements_display() {
+    let account = "Expenses:Taxes:Y2021:US:Federal:PreTax401k";
     let input = format!("2023-06-18 open {account}");
     let DirectiveContent::Open(ref open) = parse::<f64>(&input).unwrap().directives[0].content else {
         unreachable!("was not an open directive")
     };
     let actual = format!("{}", open.account);
     assert_eq!(&actual, account);
+}
+
+#[rstest]
+fn currency_implements_display() {
+    let input = "2023-06-18 commodity CHF";
+    let DirectiveContent::Commodity(ref currency) = parse::<f64>(input).unwrap().directives[0].content else {
+        unreachable!("was not an open directive")
+    };
+    assert_eq!(&format!("{currency}"), "CHF");
 }

@@ -9,7 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
-* Implement `Display` for `Account`
+* Implement `Display` for `Account` and `Currency`
 
 ## [1.0.0-beta.1] - 2023-06-17
 

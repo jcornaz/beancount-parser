@@ -64,10 +64,7 @@ fn print(report: &Report) {
             .iter()
             .flat_map(|a| a.iter())
             .for_each(|(currency, value)| {
-                println!(
-                    "{account:50} {value:>15.2} {currency}",
-                    currency = currency.as_str()
-                );
+                println!("{account:50} {value:>15.2} {currency}");
             });
     }
 }

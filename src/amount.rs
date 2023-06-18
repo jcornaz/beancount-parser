@@ -1,5 +1,6 @@
 use std::{
     fmt::Debug,
+    fmt::{Display, Formatter},
     ops::{Add, Div, Mul, Neg, Sub},
     str::FromStr,
 };
@@ -62,6 +63,12 @@ impl<'a> Currency<'a> {
     #[must_use]
     pub fn as_str(&self) -> &'a str {
         self.0
+    }
+}
+
+impl<'a> Display for Currency<'a> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        Display::fmt(self.0, f)
     }
 }
 
