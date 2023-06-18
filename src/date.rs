@@ -4,6 +4,7 @@ use nom::{
     combinator::{cut, map_res, peek, verify},
     sequence::tuple,
 };
+use std::cmp::Ordering;
 
 use super::{IResult, Span};
 
@@ -64,4 +65,34 @@ fn day(input: Span<'_>) -> IResult<'_, u8> {
         map_res(take(2usize), |s: Span<'_>| s.fragment().parse()),
         |&n| n > 0 && n < 32,
     )(input)
+}
+
+impl PartialOrd for Date {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl Ord for Date {
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.year
+            .cmp(&other.year)
+            .then_with(|| self.month.cmp(&other.month))
+            .then_with(|| self.day.cmp(&other.day))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::Date;
+    use rstest::rstest;
+
+    #[rstest]
+    #[case(Date { year: 2023, month: 6, day: 18 }, Date { year: 2024, month: 5, day: 17 })]
+    #[case(Date { year: 2023, month: 6, day: 18 }, Date { year: 2023, month: 7, day: 17 })]
+    #[case(Date { year: 2023, month: 6, day: 18 }, Date { year: 2023, month: 7, day: 19 })]
+    fn date_comparison(#[case] smaller: Date, #[case] bigger: Date) {
+        assert!(smaller < bigger);
+        assert!(bigger > smaller);
+    }
 }
