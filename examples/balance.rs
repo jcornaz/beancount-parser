@@ -6,17 +6,19 @@
 //! This example should play well with grep: `cat $LEDGER_PATH | cargo run --example balance | grep Assets`
 //!
 //! Important note: The current implementation doesn't handle all edge-cases (yet).
-//! In particular it:
-//! * Ignores postings without amount
-//! * Ignores includes, pad and balance directives
+//! In particular it ignores includes, pad and balance directives
 
-use std::collections::HashMap;
-use std::io::{stdin, Read};
-use std::process::exit;
+use std::{
+    collections::HashMap,
+    io::{stdin, Read},
+    process::exit,
+};
 
-use beancount_parser_2::{Account, BeancountFile, Currency, DirectiveContent};
+use rust_decimal::Decimal;
 
-type Report<'a> = HashMap<Account<'a>, HashMap<Currency<'a>, rust_decimal::Decimal>>;
+use beancount_parser_2::{Account, Amount, BeancountFile, Currency, DirectiveContent, Transaction};
+
+type Report<'a> = HashMap<Account<'a>, HashMap<Currency<'a>, Decimal>>;
 
 fn main() {
     let mut input = String::new();
@@ -34,7 +36,7 @@ fn main() {
     print(&report);
 }
 
-fn build_report(beancount: BeancountFile<rust_decimal::Decimal>) -> Report {
+fn build_report(beancount: BeancountFile<Decimal>) -> Report {
     beancount
         .directives
         .into_iter()
@@ -42,17 +44,41 @@ fn build_report(beancount: BeancountFile<rust_decimal::Decimal>) -> Report {
             DirectiveContent::Transaction(trx) => Some(trx),
             _ => None,
         })
-        .flat_map(|trx| trx.postings.into_iter())
-        .filter_map(|posting| Some((posting.account, posting.amount?)))
-        .fold(Report::new(), |mut report, (account, amount)| {
-            let value = report
-                .entry(account)
-                .or_default()
-                .entry(amount.currency)
-                .or_default();
-            *value += amount.value;
+        .fold(Report::new(), |mut report, trx| {
+            add_trx(&mut report, trx);
             report
         })
+}
+
+/// Add a transaction to the report
+fn add_trx<'a>(report: &mut Report<'a>, transaction: Transaction<'a, Decimal>) {
+    // If there is a posting without amount, then it should be consider as a source account for balancing the transaction
+    let source_account = transaction
+        .postings
+        .iter()
+        .find(|p| p.amount.is_none())
+        .map(|p| p.account);
+    transaction
+        .postings
+        .into_iter()
+        .filter_map(|p| Some((p.account, p.amount?)))
+        .for_each(|(account, mut amount)| {
+            add_amount(report, account, amount);
+            // If there is a source account, then we balance the transaction by removing the amount from the source account
+            if let Some(account) = source_account {
+                amount.value = -amount.value;
+                add_amount(report, account, amount);
+            }
+        });
+}
+
+fn add_amount<'a>(report: &mut Report<'a>, account: Account<'a>, amount: Amount<'a, Decimal>) {
+    let value = report
+        .entry(account)
+        .or_default()
+        .entry(amount.currency)
+        .or_default();
+    *value += amount.value;
 }
 
 fn print(report: &Report) {
