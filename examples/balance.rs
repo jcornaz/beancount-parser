@@ -5,10 +5,10 @@
 //!
 //! This example should play well with grep: `cat $LEDGER_PATH | cargo run --example balance | grep Assets`
 //!
-//! Important note: The current implementation doesn't handle all edge-cases (yet).
-//! In particular it ignores includes, pad and balance directives
+//! Important note: The current implementation ignores the 'include' directives
 
 use std::{
+    cmp::Ordering,
     collections::HashMap,
     io::{stdin, Read},
     process::exit,
@@ -16,7 +16,9 @@ use std::{
 
 use rust_decimal::Decimal;
 
-use beancount_parser_2::{Account, Amount, BeancountFile, Currency, DirectiveContent, Transaction};
+use beancount_parser_2::{
+    Account, Amount, BeancountFile, Currency, Directive, DirectiveContent, Transaction,
+};
 
 type Report<'a> = HashMap<Account<'a>, HashMap<Currency<'a>, Decimal>>;
 
@@ -36,18 +38,27 @@ fn main() {
     print(&report);
 }
 
-fn build_report(beancount: BeancountFile<Decimal>) -> Report {
-    beancount
-        .directives
-        .into_iter()
-        .filter_map(|d| match d.content {
-            DirectiveContent::Transaction(trx) => Some(trx),
-            _ => None,
+fn compare_directives<'a, D>(a: &Directive<'a, D>, b: &Directive<'a, D>) -> Ordering {
+    a.date
+        .cmp(&b.date)
+        .then_with(|| match (&a.content, &b.content) {
+            (DirectiveContent::Balance(_), DirectiveContent::Transaction(_)) => Ordering::Less,
+            (DirectiveContent::Transaction(_), DirectiveContent::Balance(_)) => Ordering::Greater,
+            _ => Ordering::Equal,
         })
-        .fold(Report::new(), |mut report, trx| {
-            add_trx(&mut report, trx);
-            report
-        })
+}
+
+fn build_report(mut beancount: BeancountFile<Decimal>) -> Report {
+    beancount.directives.sort_by(compare_directives);
+    let mut report = Report::new();
+    for directive in beancount.directives {
+        match directive.content {
+            DirectiveContent::Transaction(trx) => add_trx(&mut report, trx),
+            DirectiveContent::Balance(bal) => set_balance(&mut report, bal.account, bal.amount),
+            _ => (),
+        }
+    }
+    report
 }
 
 /// Add a transaction to the report
@@ -79,6 +90,15 @@ fn add_amount<'a>(report: &mut Report<'a>, account: Account<'a>, amount: Amount<
         .entry(amount.currency)
         .or_default();
     *value += amount.value;
+}
+
+fn set_balance<'a>(report: &mut Report<'a>, account: Account<'a>, amount: Amount<'a, Decimal>) {
+    let value = report
+        .entry(account)
+        .or_default()
+        .entry(amount.currency)
+        .or_default();
+    *value = amount.value;
 }
 
 fn print(report: &Report) {
