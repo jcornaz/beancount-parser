@@ -2,7 +2,7 @@ use std::fmt::Debug;
 
 use rstest::rstest;
 
-use beancount_parser_2::{parse, BeancountFile, DirectiveContent};
+use beancount_parser_2::{parse, BeancountFile, Date, DirectiveContent};
 
 fn is_normal<T: Sized + Send + Sync + Unpin>() {}
 fn is_debug<T: Debug>() {}
@@ -41,4 +41,13 @@ fn currency_implements_display() {
         unreachable!("was not an open directive")
     };
     assert_eq!(&format!("{currency}"), "CHF");
+}
+
+#[rstest]
+#[case(Date { year: 2023, month: 6, day: 18 }, Date { year: 2024, month: 5, day: 17 })]
+#[case(Date { year: 2023, month: 6, day: 18 }, Date { year: 2023, month: 7, day: 17 })]
+#[case(Date { year: 2023, month: 6, day: 18 }, Date { year: 2023, month: 7, day: 19 })]
+fn date_comparison(#[case] smaller: Date, #[case] bigger: Date) {
+    assert!(smaller < bigger);
+    assert!(bigger > smaller);
 }

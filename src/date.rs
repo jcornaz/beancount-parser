@@ -1,10 +1,11 @@
+use std::cmp::Ordering;
+
 use nom::{
     bytes::complete::take,
     character::complete::{char, digit1},
     combinator::{cut, map_res, peek, verify},
     sequence::tuple,
 };
-use std::cmp::Ordering;
 
 use super::{IResult, Span};
 
@@ -79,20 +80,5 @@ impl Ord for Date {
             .cmp(&other.year)
             .then_with(|| self.month.cmp(&other.month))
             .then_with(|| self.day.cmp(&other.day))
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use crate::Date;
-    use rstest::rstest;
-
-    #[rstest]
-    #[case(Date { year: 2023, month: 6, day: 18 }, Date { year: 2024, month: 5, day: 17 })]
-    #[case(Date { year: 2023, month: 6, day: 18 }, Date { year: 2023, month: 7, day: 17 })]
-    #[case(Date { year: 2023, month: 6, day: 18 }, Date { year: 2023, month: 7, day: 19 })]
-    fn date_comparison(#[case] smaller: Date, #[case] bigger: Date) {
-        assert!(smaller < bigger);
-        assert!(bigger > smaller);
     }
 }
