@@ -1,6 +1,6 @@
 [package]
 name = "beancount_parser_2"
-version = "1.0.0-beta.1"
+version = "1.0.0-beta.2"
 license = "Unlicense"
 authors = ["Jonathan Cornaz"]
 edition = "2021"

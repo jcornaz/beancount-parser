@@ -7,6 +7,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+
+## [1.0.0-beta.2] - 2023-06-18
+
 I realized that there is a major flaw in the design of having the parsing result bound to the lifetime of the input.
 Those lifetime becomes very problematic when one wants to solve the `include` directives, because it becomes very difficult (if possible at all?)
 to write code that dynamically loads a file, parse it, do the same for each includes and merge everything together in a single data-structure
@@ -251,7 +254,8 @@ This is less performant but allow continue using the results after discarding th
 * Options
 * Directive metadata (string values only)
 
-[Unreleased]: https://github.com/jcornaz/beancount_parser_2/compare/v1.0.0-beta.1...HEAD
+[Unreleased]: https://github.com/jcornaz/beancount_parser_2/compare/v1.0.0-beta.2...HEAD
+[1.0.0-beta.2]: https://github.com/jcornaz/beancount_parser_2/compare/v1.0.0-beta.1...v1.0.0-beta.2
 [1.0.0-beta.1]: https://github.com/jcornaz/beancount_parser_2/compare/v1.0.0-alpha.12...v1.0.0-beta.1
 [1.0.0-alpha.12]: https://github.com/jcornaz/beancount_parser_2/compare/v1.0.0-alpha.11...v1.0.0-alpha.12
 [1.0.0-alpha.11]: https://github.com/jcornaz/beancount_parser_2/compare/v1.0.0-alpha.10...v1.0.0-alpha.11
