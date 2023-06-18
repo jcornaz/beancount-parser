@@ -1,7 +1,8 @@
 use std::fmt::Debug;
 
-use beancount_parser_2::{parse, BeancountFile, Flag};
 use rstest::rstest;
+
+use beancount_parser_2::{parse, BeancountFile, DirectiveContent, Flag};
 
 fn is_normal<T: Sized + Send + Sync + Unpin>() {}
 fn is_debug<T: Debug>() {}
@@ -33,4 +34,21 @@ fn error_debug_impl_is_succinct() {
     let Err(err) = parse::<f64>(input) else { unreachable!("parsing should fail") };
     let debug = format!("{err:?}");
     assert!(!debug.contains("; end comment"), "{}", debug);
+}
+
+#[rstest]
+fn accounts_implements_display(
+    #[values(
+        "Assets:Bank:Checking",
+        "Expenses:Taxes:Y2021:US:Federal:PreTax401k",
+        "Equity:Opening-Balances"
+    )]
+    account: &str,
+) {
+    let input = format!("2023-06-18 open {account}");
+    let DirectiveContent::Open(ref open) = parse::<f64>(&input).unwrap().directives[0].content else {
+        unreachable!("was not an open directive")
+    };
+    let actual = format!("{}", open.account);
+    assert_eq!(&actual, account);
 }

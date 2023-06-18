@@ -66,7 +66,6 @@ fn print(report: &Report) {
             .for_each(|(currency, value)| {
                 println!(
                     "{account:50} {value:>15.2} {currency}",
-                    account = account.as_str(),
                     currency = currency.as_str()
                 );
             });

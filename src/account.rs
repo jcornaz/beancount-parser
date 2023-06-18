@@ -1,4 +1,5 @@
 use std::collections::HashSet;
+use std::fmt::{Display, Formatter};
 
 use nom::{
     branch::alt,
@@ -36,6 +37,12 @@ impl<'a> Account<'a> {
     #[must_use]
     pub fn as_str(&self) -> &'a str {
         self.0
+    }
+}
+
+impl<'a> Display for Account<'a> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        self.0.fmt(f)
     }
 }
 
