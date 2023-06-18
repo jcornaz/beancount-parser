@@ -248,7 +248,7 @@ fn should_parse_price_amount() {
 #[case(
     "2022-05-18 open Assets:Cash\n  title: \"hello\"",
     "title",
-    MetadataValue::String("hello")
+    MetadataValue::String("hello".into())
 )]
 #[case(
     "2022-05-18 commodity CHF\n  value: 1.2",
@@ -258,62 +258,62 @@ fn should_parse_price_amount() {
 #[case(
     "2022-05-18 open Assets:Cash\n  title: \"hello\"\n  name: \"world\"",
     "title",
-    MetadataValue::String("hello")
+    MetadataValue::String("hello".into())
 )]
 #[case(
     "2022-05-18 open Assets:Cash\n  title: \"hello\"\n  name: \"world\"",
     "name",
-    MetadataValue::String("world")
+    MetadataValue::String("world".into())
 )]
 #[case(
     "2022-05-18 open Assets:Cash\n  title: \"hello\"\n  ; Comment\n  name: \"world\"",
     "name",
-    MetadataValue::String("world")
+    MetadataValue::String("world".into())
 )]
 #[case(
     "2022-05-18 open Assets:Cash\n  title: \"hello\"\n\n  name: \"world\"",
     "name",
-    MetadataValue::String("world")
+    MetadataValue::String("world".into())
 )]
 #[case(
     "2022-05-18 * \"a transaction\"\n  title: \"hello\"",
     "title",
-    MetadataValue::String("hello")
+    MetadataValue::String("hello".into())
 )]
 #[case(
     "2022-05-18 *\n  goodTitle: \"Hello world!\"",
     "goodTitle",
-    MetadataValue::String("Hello world!")
+    MetadataValue::String("Hello world!".into())
 )]
 #[case(
     "2022-05-18 *\n  good-title: \"Hello world!\"",
     "good-title",
-    MetadataValue::String("Hello world!")
+    MetadataValue::String("Hello world!".into())
 )]
 #[case(
     "2022-05-18 *\n  good_title: \"Hello world!\"",
     "good_title",
-    MetadataValue::String("Hello world!")
+    MetadataValue::String("Hello world!".into())
 )]
 #[case(
     "2022-05-18 *\n  good_title2: \"Hello world!\"",
     "good_title2",
-    MetadataValue::String("Hello world!")
+    MetadataValue::String("Hello world!".into())
 )]
 #[case(
     "2022-05-18 * \"a transaction\"\n  title: \"hello\"\n  Assets:Cash 10 CHF",
     "title",
-    MetadataValue::String("hello")
+    MetadataValue::String("hello".into())
 )]
 #[case(
     "2022-05-18 * \"a transaction\"\n  title: \"hello\"\n  Assets:Cash 10 CHF ; With comment",
     "title",
-    MetadataValue::String("hello")
+    MetadataValue::String("hello".into())
 )]
 fn should_parse_metadata_entry(
     #[case] input: &str,
     #[case] key: &str,
-    #[case] expected_value: MetadataValue<'static, f64>,
+    #[case] expected_value: MetadataValue<f64>,
 ) {
     let metadata = parse_single_directive(input).metadata;
     assert_eq!(metadata.get(key), Some(&expected_value));

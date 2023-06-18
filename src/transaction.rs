@@ -96,7 +96,7 @@ pub struct Posting<'a, D> {
     /// Price (`@` or `@@`) syntax
     pub price: Option<PostingPrice<D>>,
     /// The metadata attached to the posting
-    pub metadata: HashMap<&'a str, metadata::Value<'a, D>>,
+    pub metadata: HashMap<&'a str, metadata::Value<D>>,
 }
 
 /// Cost of a posting
@@ -125,7 +125,7 @@ pub enum PostingPrice<D> {
 #[allow(clippy::type_complexity)]
 pub(crate) fn parse<D: Decimal>(
     input: Span<'_>,
-) -> IResult<'_, (Transaction<'_, D>, HashMap<&str, metadata::Value<'_, D>>)> {
+) -> IResult<'_, (Transaction<'_, D>, HashMap<&str, metadata::Value<D>>)> {
     let (input, flag) = alt((map(flag, Some), value(None, tag("txn"))))(input)?;
     cut(do_parse(flag))(input)
 }
@@ -136,7 +136,7 @@ fn flag(input: Span<'_>) -> IResult<'_, char> {
 
 fn do_parse<D: Decimal>(
     flag: Option<char>,
-) -> impl Fn(Span<'_>) -> IResult<'_, (Transaction<'_, D>, HashMap<&str, metadata::Value<'_, D>>)> {
+) -> impl Fn(Span<'_>) -> IResult<'_, (Transaction<'_, D>, HashMap<&str, metadata::Value<D>>)> {
     move |input| {
         let (input, payee_and_narration) = opt(preceded(space1, payee_and_narration))(input)?;
         let (input, (tags, links)) = tags_and_links(input)?;

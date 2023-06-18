@@ -164,7 +164,7 @@ fn should_parse_posting_with_metadata() {
     let posting = parse_single_posting("2023-05-17 *\n  Assets:Cash\n    foo: \"bar\"");
     assert_eq!(
         posting.metadata.get("foo"),
-        Some(&MetadataValue::String("bar"))
+        Some(&MetadataValue::String("bar".into()))
     );
 }
 
