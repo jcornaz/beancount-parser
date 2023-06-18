@@ -7,6 +7,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+I realized that there is a major flaw in the design of having the parsing result bound to the lifetime of the input.
+Those lifetime becomes very problematic when one wants to solve the `include` directives, because it becomes very difficult (if possible at all?)
+to write code that dynamically loads a file, parse it, do the same for each includes and merge everything together in a single data-structure
+before starting to analyze the ledger as a whole.
+
+Therefore, I started the process of removing lifetimes from the parser's result.
+Once that'll be done, I'll try to add string interning for currencies, accounts and metadata keys, to hopefully mitigate the (CPU & memory) performance cost of this new approach.
+
+
 ### Breaking changes
 
 * The type `Account`, `Currency`, `MetadataValue`, `Open`, `Close`, `Pad`, `Price` and `Balance` no longer have a lifetime parameter
