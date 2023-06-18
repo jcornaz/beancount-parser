@@ -331,6 +331,7 @@ fn should_parse_metadata_currency() {
 #[rstest]
 fn should_reject_invalid_input(
     #[values(
+        "2023-06-18 \"Hello\"",
         "14-05-01 open Assets:Cash",
         "2014-05-05 open Assets",
         "2014-05-05 open Assets:hello",

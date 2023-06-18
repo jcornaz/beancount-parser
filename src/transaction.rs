@@ -1,9 +1,9 @@
 use std::collections::{HashMap, HashSet};
 
-use nom::character::complete::one_of;
 use nom::{
     branch::alt,
     bytes::complete::{tag, take_while},
+    character::complete::satisfy,
     character::complete::{char as char_tag, space0, space1},
     combinator::{cut, iterator, map, opt, success, value},
     sequence::{delimited, preceded, separated_pair, terminated, tuple},
@@ -131,7 +131,7 @@ pub(crate) fn parse<D: Decimal>(
 }
 
 fn flag(input: Span<'_>) -> IResult<'_, char> {
-    one_of("*!")(input)
+    satisfy(|c: char| !c.is_ascii_lowercase())(input)
 }
 
 fn do_parse<D: Decimal>(

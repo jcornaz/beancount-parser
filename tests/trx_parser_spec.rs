@@ -111,6 +111,8 @@ fn should_parse_transaction_tags(#[case] input: &str, #[case] expected: &[&str])
 #[case("2023-05-15 * \"hello\"", Some('*'))]
 #[case("2023-05-15 !", Some('!'))]
 #[case("2023-05-15 ! \"hello\"", Some('!'))]
+#[case("2023-05-15 ? \"hello\"", Some('?'))]
+#[case("2023-05-15 P \"hello\"", Some('P'))]
 fn should_parse_transaction_flag(#[case] input: &str, #[case] expected: Option<char>) {
     let DirectiveContent::Transaction(trx) = parse_single_directive(input).content else {
         panic!("was not a transaction");
@@ -152,6 +154,7 @@ fn should_parse_posting_accounts(#[case] input: &str, #[case] expected: &[&str])
 #[case("2023-05-15 txn\n  Assets:Cash", &[None])]
 #[case("2023-05-15 * \"Hello\" ; with comment \n  Assets:Cash", &[None])]
 #[case("2023-05-15 txn\n  * Assets:Cash\n  ! Income:Salary\n  Equity:Openings", &[Some('*'), Some('!'), None])]
+#[case("2023-05-15 txn\n  P Assets:Cash\n  ? Income:Salary\n  Equity:Openings", &[Some('P'), Some('?'), None])]
 fn should_parse_posting_flags(#[case] input: &str, #[case] expected: &[Option<char>]) {
     let DirectiveContent::Transaction(trx) = parse_single_directive(input).content else {
         panic!("was not a transaction");
