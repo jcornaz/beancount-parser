@@ -1,5 +1,8 @@
-use std::collections::HashSet;
-use std::fmt::{Display, Formatter};
+use std::{
+    collections::HashSet,
+    fmt::{Display, Formatter},
+    sync::Arc,
+};
 
 use nom::{
     branch::alt,
@@ -29,18 +32,18 @@ use super::{IResult, Span};
 /// let DirectiveContent::Open(open) = &beancount.directives[0].content else { unreachable!() };
 /// assert_eq!(open.account.as_str(), "Assets:Bank:Checking");
 /// ```
-#[derive(Debug, Copy, Clone, PartialOrd, Ord, PartialEq, Eq, Hash)]
-pub struct Account<'a>(&'a str);
+#[derive(Debug, Clone, PartialOrd, Ord, PartialEq, Eq, Hash)]
+pub struct Account(Arc<str>);
 
-impl<'a> Account<'a> {
+impl Account {
     /// Returns the account name
     #[must_use]
-    pub fn as_str(&self) -> &'a str {
-        self.0
+    pub fn as_str(&self) -> &str {
+        &self.0
     }
 }
 
-impl<'a> Display for Account<'a> {
+impl Display for Account {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         self.0.fmt(f)
     }
@@ -61,7 +64,7 @@ impl<'a> Display for Account<'a> {
 #[non_exhaustive]
 pub struct Open<'a> {
     /// Account being open
-    pub account: Account<'a>,
+    pub account: Account,
     /// Currency constraints
     pub currencies: HashSet<Currency<'a>>,
 }
@@ -78,9 +81,9 @@ pub struct Open<'a> {
 /// ```
 #[derive(Debug, Clone)]
 #[non_exhaustive]
-pub struct Close<'a> {
+pub struct Close {
     /// Account being closed
-    pub account: Account<'a>,
+    pub account: Account,
 }
 
 /// Balance assertion
@@ -99,7 +102,7 @@ pub struct Close<'a> {
 #[non_exhaustive]
 pub struct Balance<'a, D> {
     /// Account being asserted
-    pub account: Account<'a>,
+    pub account: Account,
     /// Amount the amount should have on the date
     pub amount: Amount<'a, D>,
 }
@@ -117,14 +120,14 @@ pub struct Balance<'a, D> {
 /// ```
 #[derive(Debug, Clone)]
 #[non_exhaustive]
-pub struct Pad<'a> {
+pub struct Pad {
     /// Account being padded
-    pub account: Account<'a>,
+    pub account: Account,
     /// Source account from which take the money
-    pub source_account: Account<'a>,
+    pub source_account: Account,
 }
 
-pub(super) fn parse(input: Span<'_>) -> IResult<'_, Account<'_>> {
+pub(super) fn parse(input: Span<'_>) -> IResult<'_, Account> {
     let (input, name) = recognize(preceded(
         alt((
             tag("Expenses"),
@@ -141,7 +144,7 @@ pub(super) fn parse(input: Span<'_>) -> IResult<'_, Account<'_>> {
             ),
         ))),
     ))(input)?;
-    Ok((input, Account(name.fragment())))
+    Ok((input, Account(Arc::from(*name.fragment()))))
 }
 
 pub(super) fn open(input: Span<'_>) -> IResult<'_, Open<'_>> {
@@ -168,7 +171,7 @@ fn currencies(input: Span<'_>) -> IResult<'_, HashSet<Currency<'_>>> {
     Ok((input, currencies))
 }
 
-pub(super) fn close(input: Span<'_>) -> IResult<'_, Close<'_>> {
+pub(super) fn close(input: Span<'_>) -> IResult<'_, Close> {
     let (input, account) = parse(input)?;
     Ok((input, Close { account }))
 }
@@ -180,7 +183,7 @@ pub(super) fn balance<D: Decimal>(input: Span<'_>) -> IResult<'_, Balance<'_, D>
     Ok((input, Balance { account, amount }))
 }
 
-pub(super) fn pad(input: Span<'_>) -> IResult<'_, Pad<'_>> {
+pub(super) fn pad(input: Span<'_>) -> IResult<'_, Pad> {
     let (input, account) = parse(input)?;
     let (input, _) = space1(input)?;
     let (input, source_account) = parse(input)?;

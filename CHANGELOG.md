@@ -9,6 +9,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Breaking changes
 
+* The type `Account`, `Pad` and `Close` no longer have a lifetime parameter
+* The type `Account` no longer implements `Copy`, but is still reasonably cheap to clone (it uses `Arc`)
 * The enum `Flag` has been removed
 * The `flag` field in `Transaction` and `Posting` is now of type `Option<char>`
 

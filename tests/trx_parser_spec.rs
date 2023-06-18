@@ -141,11 +141,7 @@ fn should_parse_posting_accounts(#[case] input: &str, #[case] expected: &[&str])
     let DirectiveContent::Transaction(trx) = parse_single_directive(input).content else {
         panic!("was not a transaction");
     };
-    let posting_accounts: Vec<&str> = trx
-        .postings
-        .into_iter()
-        .map(|p| p.account.as_str())
-        .collect();
+    let posting_accounts: Vec<&str> = trx.postings.iter().map(|p| p.account.as_str()).collect();
     assert_eq!(&posting_accounts, expected);
 }
 

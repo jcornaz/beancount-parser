@@ -215,8 +215,8 @@ pub enum DirectiveContent<'a, D> {
     Price(Price<'a, D>),
     Balance(Balance<'a, D>),
     Open(Open<'a>),
-    Close(Close<'a>),
-    Pad(Pad<'a>),
+    Close(Close),
+    Pad(Pad),
     Commodity(Currency<'a>),
     Event(Event<'a>),
 }

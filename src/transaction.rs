@@ -88,7 +88,7 @@ pub struct Posting<'a, D> {
     /// Transaction flag (`*` or `!` or `None` when absent)
     pub flag: Option<char>,
     /// Account modified by the posting
-    pub account: Account<'a>,
+    pub account: Account,
     /// Amount being added to the account
     pub amount: Option<Amount<'a, D>>,
     /// Cost (content within `{` and `}`)
