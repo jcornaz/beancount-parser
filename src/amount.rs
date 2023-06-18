@@ -5,12 +5,14 @@ use std::{
     str::FromStr,
 };
 
+use nom::combinator::all_consuming;
 use nom::{
     branch::alt,
     bytes::complete::{take_while, take_while1},
     character::complete::{char, one_of, satisfy, space0, space1},
     combinator::{iterator, map_res, opt, recognize, verify},
     sequence::{delimited, preceded, terminated, tuple},
+    Finish,
 };
 
 use crate::{IResult, Span};
@@ -69,6 +71,16 @@ impl<'a> Currency<'a> {
 impl<'a> Display for Currency<'a> {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         Display::fmt(self.0, f)
+    }
+}
+
+impl<'a> TryFrom<&'a str> for Currency<'a> {
+    type Error = crate::ConversionError;
+    fn try_from(value: &'a str) -> Result<Self, Self::Error> {
+        match all_consuming(currency)(Span::new(value)).finish() {
+            Ok((_, currency)) => Ok(currency),
+            Err(_) => Err(crate::ConversionError),
+        }
     }
 }
 

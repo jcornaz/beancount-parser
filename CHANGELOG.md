@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 * Implement `Display` for `Account` and `Currency`
 * Implement `Ord` for `Date`
+* Implement `TryFrom<&str>` for `Currency`
 * Accept any non-lowercase character as transaction/posting flag (example of valid flags: `*`, `!`, `?`, `P`)
 
 

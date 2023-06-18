@@ -221,6 +221,12 @@ pub enum DirectiveContent<'a, D> {
     Event(Event<'a>),
 }
 
+/// Error that may be returned by the various `TryFrom`/`TryInto` implementation
+/// to signify that the value cannot be converted to the desired type
+#[derive(Debug, Clone)]
+#[non_exhaustive]
+pub struct ConversionError;
+
 type Span<'a> = nom_locate::LocatedSpan<&'a str>;
 type IResult<'a, O> = nom::IResult<Span<'a>, O>;
 

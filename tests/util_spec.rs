@@ -2,7 +2,7 @@ use std::fmt::Debug;
 
 use rstest::rstest;
 
-use beancount_parser_2::{parse, BeancountFile, Date, DirectiveContent};
+use beancount_parser_2::{parse, BeancountFile, Currency, Date, DirectiveContent};
 
 fn is_normal<T: Sized + Send + Sync + Unpin>() {}
 fn is_debug<T: Debug>() {}
@@ -50,4 +50,18 @@ fn currency_implements_display() {
 fn date_comparison(#[case] smaller: Date, #[case] bigger: Date) {
     assert!(smaller < bigger);
     assert!(bigger > smaller);
+}
+
+#[rstest]
+fn can_parse_valid_currency_from_str(#[values("A", "CHF", "USD'42-CHF_EUR.PLN")] raw: &str) {
+    let currency: Currency = raw.try_into().unwrap();
+    assert_eq!(currency.as_str(), raw);
+}
+
+#[rstest]
+fn reject_invalid_currency_from_str(
+    #[values("hello world", "oops", "1SD", "-US", "US-", "CHF ")] raw: &str,
+) {
+    let currency: Result<Currency, _> = raw.try_into();
+    assert!(currency.is_err());
 }
