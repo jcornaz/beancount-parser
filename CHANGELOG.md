@@ -125,7 +125,7 @@ Once that'll be done, I'll try to add string interning for currencies, accounts 
 ### Breaking changes
 
 This Release reverts the change made on the last release which made the parser generic over the string type.
-The function `parse` and all structs have now one less generic argment, and instead are bound to the lifetime of the input.
+The function `parse` and all structs have now one less generic argument, and instead are bound to the lifetime of the input.
 
 The change turned out to not be as beneficial as anticipated for a higher cost in complexity than anticipated.
 

@@ -177,7 +177,7 @@ impl<'a, D> BeancountFile<'a, D> {
 /// let input = r#"
 /// 2022-01-01 open Assets:Cash
 /// 2022-01-01 * "Grocery shopping"
-///   Expensses:Groceerices  10 CHF
+///   Expenses:Groceries  10 CHF
 ///   Assets:Cash
 /// "#;
 /// let beancount: BeancountFile<f64> = beancount_parser_2::parse(input).unwrap();

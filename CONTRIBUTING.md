@@ -32,7 +32,7 @@ When extending the API, make sure it can last. In particular:
 * Think twice before making anything public
 * Use `#[non_exhaustive]` for public enums and structs
 * Don't eagerly add api surface (incl. trait implementation) just "because we can". Make sure they are needed and provide value. First.
-    * In doubt, refrein from adding the new api surface, we can still add it later.
+    * In doubt, refrain from adding the new api surface, we can still add it later.
 * Don't leek private dependencies in the API
 * Public dependencies crates must be optional
 * Gate new/unstable/unfinished api behind a `unstable-*` feature flag until stabilized/finished.
@@ -45,6 +45,6 @@ When extending the API, make sure it can last. In particular:
 
 ## Open a pull request
 
-Don't be afraid of small steps. I'd rather review 5 tiny pull-requests than 1 big. It is fine to have a PR that only partilally implement a feature. We can gate the feature behind the `unstable-*` feature flag until it is complete.
+Don't be afraid of small steps. I'd rather review 5 tiny pull-requests than 1 big. It is fine to have a PR that only partially implement a feature. We can gate the feature behind the `unstable-*` feature flag until it is complete.
 
 But no matter how small the PR is, it must have automated tests for any new feature and fixes!

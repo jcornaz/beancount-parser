@@ -141,7 +141,7 @@ fn exp_p1<D: Decimal>(input: Span<'_>) -> IResult<'_, D> {
 
 fn exp_p0<D: Decimal>(input: Span<'_>) -> IResult<'_, D> {
     alt((
-        litteral,
+        literal,
         delimited(
             terminated(char('('), space0),
             expression,
@@ -150,7 +150,7 @@ fn exp_p0<D: Decimal>(input: Span<'_>) -> IResult<'_, D> {
     ))(input)
 }
 
-fn litteral<D: Decimal>(input: Span<'_>) -> IResult<'_, D> {
+fn literal<D: Decimal>(input: Span<'_>) -> IResult<'_, D> {
     map_res(
         recognize(tuple((
             opt(char('-')),
