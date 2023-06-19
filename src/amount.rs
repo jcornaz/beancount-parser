@@ -1,16 +1,17 @@
-use std::sync::Arc;
+use std::borrow::Borrow;
 use std::{
     fmt::Debug,
     fmt::{Display, Formatter},
     ops::{Add, Div, Mul, Neg, Sub},
     str::FromStr,
+    sync::Arc,
 };
 
-use nom::combinator::all_consuming;
 use nom::{
     branch::alt,
     bytes::complete::{take_while, take_while1},
     character::complete::{char, one_of, satisfy, space0, space1},
+    combinator::all_consuming,
     combinator::{iterator, map_res, opt, recognize, verify},
     sequence::{delimited, preceded, terminated, tuple},
     Finish,
@@ -62,7 +63,7 @@ pub struct Amount<D> {
 pub struct Currency(Arc<str>);
 
 impl Currency {
-    /// Returns the string representation of the currency
+    /// Returns underlying string representation
     #[must_use]
     pub fn as_str(&self) -> &str {
         &self.0
@@ -72,6 +73,18 @@ impl Currency {
 impl Display for Currency {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         Display::fmt(&self.0, f)
+    }
+}
+
+impl AsRef<str> for Currency {
+    fn as_ref(&self) -> &str {
+        self.0.as_ref()
+    }
+}
+
+impl Borrow<str> for Currency {
+    fn borrow(&self) -> &str {
+        self.0.borrow()
     }
 }
 

@@ -1,3 +1,4 @@
+use std::borrow::Borrow;
 use std::{
     collections::HashSet,
     fmt::{Display, Formatter},
@@ -36,7 +37,7 @@ use super::{IResult, Span};
 pub struct Account(Arc<str>);
 
 impl Account {
-    /// Returns the account name
+    /// Returns underlying string representation
     #[must_use]
     pub fn as_str(&self) -> &str {
         &self.0
@@ -45,7 +46,19 @@ impl Account {
 
 impl Display for Account {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        self.0.fmt(f)
+        Display::fmt(&self.0, f)
+    }
+}
+
+impl AsRef<str> for Account {
+    fn as_ref(&self) -> &str {
+        self.0.as_ref()
+    }
+}
+
+impl Borrow<str> for Account {
+    fn borrow(&self) -> &str {
+        self.0.borrow()
     }
 }
 

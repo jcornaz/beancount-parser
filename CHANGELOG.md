@@ -16,6 +16,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 * The fields `tags` and `links` in `Transaction` are now of type `HashSet<Tag>` and `HashSet<Link>` respectively
 
 
+### Added
+
+* implement `Borrow<str>` and `AsRef<str>` for `Currency` and `Amount`
+
+
 ### Deprecated
 
 * The type alias `MetadataValue` is deprecated. Use its target type directly instead `metadata::Value`
