@@ -43,13 +43,13 @@
 //! # Ok(()) }
 //! ```
 
-use std::{collections::HashSet, path::Path};
+use std::{collections::HashSet, path::PathBuf};
 
-use nom::combinator::not;
 use nom::{
     branch::alt,
     bytes::complete::{tag, take_till},
     character::complete::{char, line_ending, not_line_ending, space0, space1},
+    combinator::not,
     combinator::{all_consuming, cut, eof, iterator, map, opt},
     sequence::{delimited, preceded, terminated, tuple},
     Finish, Parser,
@@ -108,7 +108,7 @@ pub struct BeancountFile<'a, D> {
     /// Paths of include directives
     ///
     /// See: <https://beancount.github.io/docs/beancount_language_syntax.html#includes>
-    pub includes: Vec<&'a Path>,
+    pub includes: Vec<PathBuf>,
     /// List of [`Directive`] found in the file
     pub directives: Vec<Directive<D>>,
 }
@@ -153,17 +153,6 @@ impl<'a, D> BeancountFile<'a, D> {
             .iter()
             .find(|opt| opt.key == key)
             .map(|opt| opt.value)
-    }
-}
-
-impl<'a, D> BeancountFile<'a, D> {
-    /// Return an iterator over the include directives
-    ///
-    /// See: <https://beancount.github.io/docs/beancount_language_syntax.html#includes>
-    #[deprecated(note = "Use the includes field instead", since = "1.0.0-beta.1")]
-    #[doc(hidden)]
-    pub fn includes(&self) -> impl Iterator<Item = &'a Path> + '_ {
-        self.includes.iter().copied()
     }
 }
 
@@ -274,7 +263,7 @@ fn beancount_file<D: Decimal>(input: Span<'_>) -> IResult<'_, BeancountFile<'_, 
 enum Entry<'a, D> {
     Directive(Directive<D>),
     Option(BeanOption<'a>),
-    Include(&'a Path),
+    Include(PathBuf),
     PushTag(Tag),
     PopTag(Tag),
     Comment,
@@ -354,10 +343,10 @@ fn option(input: Span<'_>) -> IResult<'_, (&str, &str)> {
     Ok((input, (key, value)))
 }
 
-fn include(input: Span<'_>) -> IResult<'_, &Path> {
+fn include(input: Span<'_>) -> IResult<'_, PathBuf> {
     let (input, _) = tag("include")(input)?;
     let (input, path) = cut(delimited(space1, string, end_of_line))(input)?;
-    Ok((input, Path::new(path)))
+    Ok((input, path.into()))
 }
 
 fn tag_stack_operation<D>(input: Span<'_>) -> IResult<'_, Entry<'_, D>> {
