@@ -38,7 +38,7 @@ fn main() {
     print(&report);
 }
 
-fn compare_directives<'a, D>(a: &Directive<'a, D>, b: &Directive<'a, D>) -> Ordering {
+fn compare_directives<D>(a: &Directive<D>, b: &Directive<D>) -> Ordering {
     a.date
         .cmp(&b.date)
         .then_with(|| match (&a.content, &b.content) {

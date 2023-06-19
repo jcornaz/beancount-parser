@@ -431,7 +431,7 @@ fn directive_should_contain_relevant_line_number() {
     assert_eq!(line_numbers, vec![1, 2, 4, 8]);
 }
 
-fn parse_single_directive(input: &str) -> Directive<'_, f64> {
+fn parse_single_directive(input: &str) -> Directive<f64> {
     let directives = parse(input).expect("parsing should succeed").directives;
     assert_eq!(
         directives.len(),

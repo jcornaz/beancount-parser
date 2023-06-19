@@ -11,7 +11,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Breaking changes
 
 * All `HashMap<&str, MetadataValue<D>>` have been replaced with `metadata::Map<D>`
-* The `Posting` and `Transaction` types no longer have lifetimes
+* The types `Transaction`, `Posting`, `Event` and `Directive` no longer have lifetimes
 * The fields `payee` and `narration` in `Transaction` are now of type `Option<String>`
 * The fields `tags` and `links` in `Transaction` are now of type `HashSet<Tag>` and `HashSet<Link>` respectively
 

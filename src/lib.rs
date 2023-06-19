@@ -110,7 +110,7 @@ pub struct BeancountFile<'a, D> {
     /// See: <https://beancount.github.io/docs/beancount_language_syntax.html#includes>
     pub includes: Vec<&'a Path>,
     /// List of [`Directive`] found in the file
-    pub directives: Vec<Directive<'a, D>>,
+    pub directives: Vec<Directive<D>>,
 }
 
 /// An beancount option
@@ -194,11 +194,11 @@ impl<'a, D> BeancountFile<'a, D> {
 /// ```
 #[derive(Debug, Clone)]
 #[non_exhaustive]
-pub struct Directive<'a, D> {
+pub struct Directive<D> {
     /// Date of the directive
     pub date: Date,
     /// Content of the directive that is specific to each directive type
-    pub content: DirectiveContent<'a, D>,
+    pub content: DirectiveContent<D>,
     /// Metadata associated to the directive
     ///
     /// See the [`metadata`] module for more
@@ -211,7 +211,7 @@ pub struct Directive<'a, D> {
 #[allow(missing_docs)]
 #[derive(Debug, Clone)]
 #[non_exhaustive]
-pub enum DirectiveContent<'a, D> {
+pub enum DirectiveContent<D> {
     Transaction(Transaction<D>),
     Price(Price<D>),
     Balance(Balance<D>),
@@ -219,7 +219,7 @@ pub enum DirectiveContent<'a, D> {
     Close(Close),
     Pad(Pad),
     Commodity(Currency),
-    Event(Event<'a>),
+    Event(Event),
 }
 
 /// Error that may be returned by the various `TryFrom`/`TryInto` implementation
@@ -272,7 +272,7 @@ fn beancount_file<D: Decimal>(input: Span<'_>) -> IResult<'_, BeancountFile<'_, 
 }
 
 enum Entry<'a, D> {
-    Directive(Directive<'a, D>),
+    Directive(Directive<D>),
     Option(BeanOption<'a>),
     Include(&'a Path),
     PushTag(Tag),
@@ -290,7 +290,7 @@ fn entry<D: Decimal>(input: Span<'_>) -> IResult<'_, Entry<'_, D>> {
     ))(input)
 }
 
-fn directive<D: Decimal>(input: Span<'_>) -> IResult<'_, Directive<'_, D>> {
+fn directive<D: Decimal>(input: Span<'_>) -> IResult<'_, Directive<D>> {
     let (input, position) = position(input)?;
     let (input, date) = date::parse(input)?;
     let (input, _) = cut(space1)(input)?;

@@ -15,16 +15,22 @@ use crate::{string, IResult, Span};
 /// ```
 #[derive(Debug, Clone)]
 #[non_exhaustive]
-pub struct Event<'a> {
+pub struct Event {
     /// Name of the event
-    pub name: &'a str,
+    pub name: String,
     /// Value of the event
-    pub value: &'a str,
+    pub value: String,
 }
 
-pub(super) fn parse(input: Span<'_>) -> IResult<'_, Event<'_>> {
+pub(super) fn parse(input: Span<'_>) -> IResult<'_, Event> {
     let (input, name) = string(input)?;
     let (input, _) = space1(input)?;
     let (input, value) = string(input)?;
-    Ok((input, Event { name, value }))
+    Ok((
+        input,
+        Event {
+            name: name.into(),
+            value: value.into(),
+        },
+    ))
 }
