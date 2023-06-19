@@ -5,8 +5,7 @@ set dotenv-load
 
 # Perform all verifications (compile, test, lint, etc.)
 verify: test lint doc check-msrv
-    cat tests/samples/official.beancount \
-      | cargo run --example balance \
+    cargo run --example balance -- tests/samples/official.beancount \
       | grep 'Expenses:Taxes:Y2022:US:Federal:PreTax401k                18500.00 IRAUSD' \
       > /dev/null
     cargo deny check licenses

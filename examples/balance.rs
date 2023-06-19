@@ -1,41 +1,39 @@
-//! This example is a cli tool that take a beancount file from stdin and spit out the balance of each accounts
+//! This example is a cli tool that take some files as argument, parse them and spit out the balance of each accounts
 //!
-//! To try it out run `bean-example | cargo run --example balance`
-//! Or, use your own ledger: `cat $LEDGER_PATH | cargo run --example balance`
+//! To try it out run `cargo run --example balance -- tests/samples/official.beancount`
+//! Or, use your own ledger: `cargo run --example balance -- $LEDGER_PATH`
 //!
-//! This example should play well with grep: `cat $LEDGER_PATH | cargo run --example balance | grep Assets`
-//!
-//! Important note: The current implementation ignores the 'include' directives
+//! This example should play well with grep: `cargo run --example balance -- $LEDGER_PATH | grep Assets`
 
 use std::{
-    cmp::Ordering,
-    collections::HashMap,
-    io::{stdin, Read},
-    process::exit,
+    cmp::Ordering, collections::HashMap, env::args, error::Error, fs::File, io::Read, path::PathBuf,
 };
 
 use rust_decimal::Decimal;
 
-use beancount_parser_2::{
-    Account, Amount, BeancountFile, Currency, Directive, DirectiveContent, Transaction,
-};
+use beancount_parser_2::{Account, Amount, Currency, Directive, DirectiveContent, Transaction};
 
 type Report = HashMap<Account, HashMap<Currency, Decimal>>;
 
-fn main() {
-    let mut input = String::new();
-    stdin()
-        .read_to_string(&mut input)
-        .expect("cannot read from stdin");
-    let beancount = match beancount_parser_2::parse::<Decimal>(&input) {
-        Ok(beancount) => beancount,
-        Err(err) => {
-            eprintln!("{err}");
-            exit(1);
-        }
-    };
-    let report = build_report(beancount);
+fn main() -> Result<(), Box<dyn Error>> {
+    let files: Vec<PathBuf> = args().skip(1).map(Into::into).collect();
+    let directives = load_from_files(files)?;
+    let report = build_report(directives);
     print(&report);
+    Ok(())
+}
+
+fn load_from_files(mut files: Vec<PathBuf>) -> Result<Vec<Directive<Decimal>>, Box<dyn Error>> {
+    let mut directives = Vec::<Directive<Decimal>>::new();
+    let mut buffer = String::new();
+    while let Some(path) = files.pop() {
+        buffer.clear();
+        File::open(path)?.read_to_string(&mut buffer)?;
+        let file = beancount_parser_2::parse::<Decimal>(&buffer)?;
+        files.extend(file.includes);
+        directives.extend(file.directives);
+    }
+    Ok(directives)
 }
 
 fn compare_directives<D>(a: &Directive<D>, b: &Directive<D>) -> Ordering {
@@ -48,10 +46,10 @@ fn compare_directives<D>(a: &Directive<D>, b: &Directive<D>) -> Ordering {
         })
 }
 
-fn build_report(mut beancount: BeancountFile<Decimal>) -> Report {
-    beancount.directives.sort_by(compare_directives);
+fn build_report(mut directives: Vec<Directive<Decimal>>) -> Report {
+    directives.sort_by(compare_directives);
     let mut report = Report::new();
-    for directive in beancount.directives {
+    for directive in directives {
         match directive.content {
             DirectiveContent::Transaction(trx) => add_trx(&mut report, trx),
             DirectiveContent::Balance(bal) => set_balance(&mut report, bal.account, bal.amount),
