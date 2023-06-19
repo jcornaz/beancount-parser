@@ -1,4 +1,7 @@
+use std::borrow::Borrow;
 use std::collections::HashSet;
+use std::fmt::{Display, Formatter};
+use std::sync::Arc;
 
 use nom::{
     branch::alt,
@@ -40,7 +43,7 @@ use crate::{
 /// ```
 #[derive(Debug, Clone)]
 #[non_exhaustive]
-pub struct Transaction<'a, D> {
+pub struct Transaction<D> {
     /// Transaction flag (`*` or `!` or `None` when using the `txn` keyword)
     pub flag: Option<char>,
     /// Payee (if present)
@@ -48,9 +51,9 @@ pub struct Transaction<'a, D> {
     /// Narration (if present)
     pub narration: Option<String>,
     /// Set of tags
-    pub tags: HashSet<&'a str>,
+    pub tags: HashSet<Tag>,
     /// Set of links
-    pub links: HashSet<&'a str>,
+    pub links: HashSet<Link>,
     /// Postings
     pub postings: Vec<Posting<D>>,
 }
@@ -122,10 +125,86 @@ pub enum PostingPrice<D> {
     Total(Amount<D>),
 }
 
+/// Transaction tag
+///
+/// # Example
+/// ```
+/// # use beancount_parser_2::{DirectiveContent};
+/// let input = r#"
+/// 2022-05-22 * "Grocery store" "Grocery shopping" #food
+///   Assets:Cash           -10 CHF
+///   Expenses:Groceries
+/// "#;
+///
+/// let beancount = beancount_parser_2::parse::<f64>(input).unwrap();
+/// let DirectiveContent::Transaction(trx) = &beancount.directives[0].content else {
+///   unreachable!("was not a transaction")
+/// };
+/// assert!(trx.tags.contains("food"));
+/// ```
+#[derive(Debug, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
+pub struct Tag(Arc<str>);
+
+impl Display for Tag {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        Display::fmt(&self.0, f)
+    }
+}
+
+impl AsRef<str> for Tag {
+    fn as_ref(&self) -> &str {
+        self.0.as_ref()
+    }
+}
+
+impl Borrow<str> for Tag {
+    fn borrow(&self) -> &str {
+        self.0.borrow()
+    }
+}
+
+/// Transaction link
+///
+/// # Example
+/// ```
+/// # use beancount_parser_2::{DirectiveContent};
+/// let input = r#"
+/// 2014-02-05 * "Invoice for January" ^invoice-pepe-studios-jan14
+///    Income:Clients:PepeStudios           -8450.00 USD
+///    Assets:AccountsReceivable
+/// "#;
+///
+/// let beancount = beancount_parser_2::parse::<f64>(input).unwrap();
+/// let DirectiveContent::Transaction(trx) = &beancount.directives[0].content else {
+///   unreachable!("was not a transaction")
+/// };
+/// assert!(trx.links.contains("invoice-pepe-studios-jan14"));
+/// ```
+#[derive(Debug, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
+pub struct Link(Arc<str>);
+
+impl Display for Link {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        Display::fmt(&self.0, f)
+    }
+}
+
+impl AsRef<str> for Link {
+    fn as_ref(&self) -> &str {
+        self.0.as_ref()
+    }
+}
+
+impl Borrow<str> for Link {
+    fn borrow(&self) -> &str {
+        self.0.borrow()
+    }
+}
+
 #[allow(clippy::type_complexity)]
 pub(crate) fn parse<D: Decimal>(
     input: Span<'_>,
-) -> IResult<'_, (Transaction<'_, D>, metadata::Map<D>)> {
+) -> IResult<'_, (Transaction<D>, metadata::Map<D>)> {
     let (input, flag) = alt((map(flag, Some), value(None, tag("txn"))))(input)?;
     cut(do_parse(flag))(input)
 }
@@ -136,7 +215,7 @@ fn flag(input: Span<'_>) -> IResult<'_, char> {
 
 fn do_parse<D: Decimal>(
     flag: Option<char>,
-) -> impl Fn(Span<'_>) -> IResult<'_, (Transaction<'_, D>, metadata::Map<D>)> {
+) -> impl Fn(Span<'_>) -> IResult<'_, (Transaction<D>, metadata::Map<D>)> {
     move |input| {
         let (input, payee_and_narration) = opt(preceded(space1, payee_and_narration))(input)?;
         let (input, (tags, links)) = tags_and_links(input)?;
@@ -166,39 +245,39 @@ fn do_parse<D: Decimal>(
     }
 }
 
-pub(super) enum TagOrLink<'a> {
-    Tag(&'a str),
-    Link(&'a str),
+pub(super) enum TagOrLink {
+    Tag(Tag),
+    Link(Link),
 }
 
-pub(super) fn parse_tag(input: Span<'_>) -> IResult<'_, &str> {
+pub(super) fn parse_tag(input: Span<'_>) -> IResult<'_, Tag> {
     map(
         preceded(
             char_tag('#'),
             take_while(|c: char| c.is_alphanumeric() || c == '-' || c == '_'),
         ),
-        |s: Span<'_>| *s.fragment(),
+        |s: Span<'_>| Tag((*s.fragment()).into()),
     )(input)
 }
 
-pub(super) fn parse_link(input: Span<'_>) -> IResult<'_, &str> {
+pub(super) fn parse_link(input: Span<'_>) -> IResult<'_, Link> {
     map(
         preceded(
             char_tag('^'),
             take_while(|c: char| c.is_alphanumeric() || c == '-' || c == '_'),
         ),
-        |s: Span<'_>| *s.fragment(),
+        |s: Span<'_>| Link((*s.fragment()).into()),
     )(input)
 }
 
-pub(super) fn parse_tag_or_link(input: Span<'_>) -> IResult<'_, TagOrLink<'_>> {
+pub(super) fn parse_tag_or_link(input: Span<'_>) -> IResult<'_, TagOrLink> {
     alt((
         map(parse_tag, TagOrLink::Tag),
         map(parse_link, TagOrLink::Link),
     ))(input)
 }
 
-fn tags_and_links(input: Span<'_>) -> IResult<'_, (HashSet<&str>, HashSet<&str>)> {
+fn tags_and_links(input: Span<'_>) -> IResult<'_, (HashSet<Tag>, HashSet<Link>)> {
     let mut tags_and_links_iter = iterator(input, preceded(space1, parse_tag_or_link));
     let (tags, links) = tags_and_links_iter.fold(
         (HashSet::new(), HashSet::new()),

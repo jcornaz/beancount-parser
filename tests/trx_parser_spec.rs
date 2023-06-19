@@ -84,8 +84,8 @@ fn should_parse_transaction_links(#[case] input: &str, #[case] expected: &[&str]
         panic!("was not a transaction");
     };
     assert_eq!(
-        trx.links,
-        expected.iter().cloned().collect::<HashSet<&str>>()
+        trx.links.iter().map(AsRef::as_ref).collect::<HashSet<_>>(),
+        expected.iter().cloned().collect::<HashSet<_>>()
     )
 }
 
@@ -100,8 +100,8 @@ fn should_parse_transaction_tags(#[case] input: &str, #[case] expected: &[&str])
         panic!("was not a transaction");
     };
     assert_eq!(
-        trx.tags,
-        expected.iter().cloned().collect::<HashSet<&str>>()
+        trx.tags.iter().map(AsRef::as_ref).collect::<HashSet<_>>(),
+        expected.iter().cloned().collect::<HashSet<_>>()
     )
 }
 
@@ -128,7 +128,10 @@ fn should_parse_transaction_flag(#[case] input: &str, #[case] expected: Option<c
 fn should_parse_tags(#[case] input: &str, #[case] expected: &[&str]) {
     let expected: HashSet<_> = expected.iter().copied().collect();
     let trx = parse_single_transaction(input);
-    assert_eq!(trx.tags, expected);
+    assert_eq!(
+        trx.tags.iter().map(AsRef::as_ref).collect::<HashSet<_>>(),
+        expected
+    );
 }
 
 #[rstest]
@@ -343,11 +346,19 @@ poptag #foo
         "unexpected number of transactions: {transactions:?}"
     );
     assert_eq!(
-        transactions[0].tags,
+        transactions[0]
+            .tags
+            .iter()
+            .map(AsRef::as_ref)
+            .collect::<HashSet<_>>(),
         ["foo", "bar", "baz"].into_iter().collect::<HashSet<_>>()
     );
     assert_eq!(
-        transactions[1].tags,
+        transactions[1]
+            .tags
+            .iter()
+            .map(AsRef::as_ref)
+            .collect::<HashSet<_>>(),
         ["bar"].into_iter().collect::<HashSet<_>>()
     );
 }

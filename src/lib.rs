@@ -62,7 +62,7 @@ pub use crate::{
     date::Date,
     error::Error,
     event::Event,
-    transaction::{Cost, Posting, PostingPrice, Transaction},
+    transaction::{Cost, Link, Posting, PostingPrice, Tag, Transaction},
 };
 
 #[deprecated(note = "use `metadata::Value` instead", since = "1.0.0-beta.3")]
@@ -212,7 +212,7 @@ pub struct Directive<'a, D> {
 #[derive(Debug, Clone)]
 #[non_exhaustive]
 pub enum DirectiveContent<'a, D> {
-    Transaction(Transaction<'a, D>),
+    Transaction(Transaction<D>),
     Price(Price<D>),
     Balance(Balance<D>),
     Open(Open),
@@ -241,7 +241,7 @@ fn beancount_file<D: Decimal>(input: Span<'_>) -> IResult<'_, BeancountFile<'_, 
         match entry {
             Entry::Directive(mut d) => {
                 if let DirectiveContent::Transaction(trx) = &mut d.content {
-                    trx.tags.extend(tag_stack.iter());
+                    trx.tags.extend(tag_stack.iter().cloned());
                 }
                 directives.push(d);
             }
@@ -255,7 +255,7 @@ fn beancount_file<D: Decimal>(input: Span<'_>) -> IResult<'_, BeancountFile<'_, 
                 tag_stack.insert(tag);
             }
             Entry::PopTag(tag) => {
-                tag_stack.remove(tag);
+                tag_stack.remove(&tag);
             }
             Entry::Comment => (),
         }
@@ -275,8 +275,8 @@ enum Entry<'a, D> {
     Directive(Directive<'a, D>),
     Option(BeanOption<'a>),
     Include(&'a Path),
-    PushTag(&'a str),
-    PopTag(&'a str),
+    PushTag(Tag),
+    PopTag(Tag),
     Comment,
 }
 

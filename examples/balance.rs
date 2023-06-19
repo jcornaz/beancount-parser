@@ -62,7 +62,7 @@ fn build_report(mut beancount: BeancountFile<Decimal>) -> Report {
 }
 
 /// Add a transaction to the report
-fn add_trx<'a>(report: &mut Report<'a>, transaction: Transaction<'a, Decimal>) {
+fn add_trx(report: &mut Report, transaction: Transaction<Decimal>) {
     // If there is a posting without amount, then it should be consider as a source account for balancing the transaction
     let source_account = transaction
         .postings
