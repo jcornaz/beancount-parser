@@ -1,4 +1,24 @@
-use std::collections::HashMap;
+//! Types to represent [beancount metadata](https://beancount.github.io/docs/beancount_language_syntax.html#metadata)
+//!
+//! # Example
+//!
+//! ```
+//! use beancount_parser_2::metadata::Value;
+//! let input = r#"
+//! 2023-05-27 commodity CHF
+//!     title: "Swiss Franc"
+//! "#;
+//! let beancount = beancount_parser_2::parse::<f64>(input).unwrap();
+//! let directive_metadata = &beancount.directives[0].metadata;
+//! assert_eq!(directive_metadata.get("title"), Some(&Value::String("Swiss Franc".into())));
+//! ```
+
+use std::{
+    borrow::Borrow,
+    collections::HashMap,
+    fmt::{Debug, Display, Formatter},
+    sync::Arc,
+};
 
 use nom::{
     branch::alt,
@@ -11,20 +31,38 @@ use nom::{
 
 use crate::{amount, empty_line, end_of_line, string, Currency, Decimal, IResult, Span};
 
+/// Metadata map
+///
+/// See the [`metadata`](crate::metadata) module for an example
+pub type Map<D> = HashMap<Key, Value<D>>;
+
+/// Metadata key
+///
+/// See the [`metadata`](crate::metadata) module for an example
+#[derive(Debug, Clone, Eq, PartialEq, Hash)]
+pub struct Key(Arc<str>);
+
+impl Display for Key {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        Display::fmt(&self.0, f)
+    }
+}
+
+impl AsRef<str> for Key {
+    fn as_ref(&self) -> &str {
+        self.0.as_ref()
+    }
+}
+
+impl Borrow<str> for Key {
+    fn borrow(&self) -> &str {
+        self.0.borrow()
+    }
+}
+
 /// Metadata value
 ///
-/// # Example
-///
-/// ```
-/// # use beancount_parser_2::MetadataValue;
-/// let input = r#"
-/// 2023-05-27 commodity CHF
-///     title: "Swiss Franc"
-/// "#;
-/// let beancount = beancount_parser_2::parse::<f64>(input).unwrap();
-/// let directive_metadata = &beancount.directives[0].metadata;
-/// assert_eq!(directive_metadata.get("title"), Some(&MetadataValue::String("Swiss Franc".into())));
-/// ```
+/// See the [`metadata`](crate::metadata) module for an example
 #[derive(Debug, Clone, PartialEq)]
 #[non_exhaustive]
 pub enum Value<D> {

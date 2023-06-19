@@ -65,16 +65,19 @@ pub use crate::{
     date::Date,
     error::Error,
     event::Event,
-    metadata::Value as MetadataValue,
     transaction::{Cost, Posting, PostingPrice, Transaction},
 };
+
+#[deprecated(note = "use `metadata::Value` instead", since = "1.0.0-beta.3")]
+#[doc(hidden)]
+pub type MetadataValue<D> = metadata::Value<D>;
 
 mod account;
 mod amount;
 mod date;
 mod error;
 mod event;
-mod metadata;
+pub mod metadata;
 mod transaction;
 
 /// Parse the input beancount file and return an instance of [`BeancountFile`] on success
@@ -161,6 +164,7 @@ impl<'a, D> BeancountFile<'a, D> {
     ///
     /// See: <https://beancount.github.io/docs/beancount_language_syntax.html#includes>
     #[deprecated(note = "Use the includes field instead", since = "1.0.0-beta.1")]
+    #[doc(hidden)]
     pub fn includes(&self) -> impl Iterator<Item = &'a Path> + '_ {
         self.includes.iter().copied()
     }
