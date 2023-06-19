@@ -173,8 +173,8 @@ option "operating_currency" "PLN"
     .unwrap();
     let options: Vec<(&str, &str)> = beancount
         .options
-        .into_iter()
-        .map(|opt| (opt.key, opt.value))
+        .iter()
+        .map(|opt| (&opt.name[..], &opt.value[..]))
         .collect();
     assert_eq!(
         &options,

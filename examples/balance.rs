@@ -20,7 +20,7 @@ use beancount_parser_2::{
     Account, Amount, BeancountFile, Currency, Directive, DirectiveContent, Transaction,
 };
 
-type Report<'a> = HashMap<Account, HashMap<Currency, Decimal>>;
+type Report = HashMap<Account, HashMap<Currency, Decimal>>;
 
 fn main() {
     let mut input = String::new();

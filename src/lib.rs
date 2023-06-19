@@ -86,7 +86,7 @@ mod transaction;
 /// # Errors
 ///
 /// Returns an [`Error`] in case of invalid beancount syntax found.
-pub fn parse<D: Decimal>(input: &str) -> Result<BeancountFile<'_, D>, Error<'_>> {
+pub fn parse<D: Decimal>(input: &str) -> Result<BeancountFile<D>, Error<'_>> {
     match all_consuming(beancount_file)(Span::new(input)).finish() {
         Ok((_, content)) => Ok(content),
         Err(nom::error::Error { input, .. }) => Err(Error::new(input)),
@@ -100,11 +100,11 @@ pub fn parse<D: Decimal>(input: &str) -> Result<BeancountFile<'_, D>, Error<'_>>
 /// For an example, look at the root crate documentation.
 #[derive(Debug, Clone)]
 #[non_exhaustive]
-pub struct BeancountFile<'a, D> {
+pub struct BeancountFile<D> {
     /// List of beancount options
     ///
     /// See: <https://beancount.github.io/docs/beancount_language_syntax.html#options>
-    pub options: Vec<BeanOption<'a>>,
+    pub options: Vec<BeanOption>,
     /// Paths of include directives
     ///
     /// See: <https://beancount.github.io/docs/beancount_language_syntax.html#includes>
@@ -118,14 +118,14 @@ pub struct BeancountFile<'a, D> {
 /// See: <https://beancount.github.io/docs/beancount_language_syntax.html#options>
 #[derive(Debug, Clone)]
 #[non_exhaustive]
-pub struct BeanOption<'a> {
-    /// Key
-    pub key: &'a str,
-    /// Value
-    pub value: &'a str,
+pub struct BeanOption {
+    /// Name of the option
+    pub name: String,
+    /// Value of the option
+    pub value: String,
 }
 
-impl<'a, D> BeancountFile<'a, D> {
+impl<D> BeancountFile<D> {
     /// Returns the first value found for the option
     ///
     /// If the option is declared multiple times, this function returns the first one found.
@@ -148,11 +148,11 @@ impl<'a, D> BeancountFile<'a, D> {
     /// assert_eq!(beancount.option("foo"), None);
     /// ```
     #[must_use]
-    pub fn option(&self, key: &str) -> Option<&'a str> {
+    pub fn option(&self, key: &str) -> Option<&str> {
         self.options
             .iter()
-            .find(|opt| opt.key == key)
-            .map(|opt| opt.value)
+            .find(|opt| opt.name == key)
+            .map(|opt| &opt.value[..])
     }
 }
 
@@ -220,7 +220,7 @@ pub struct ConversionError;
 type Span<'a> = nom_locate::LocatedSpan<&'a str>;
 type IResult<'a, O> = nom::IResult<Span<'a>, O>;
 
-fn beancount_file<D: Decimal>(input: Span<'_>) -> IResult<'_, BeancountFile<'_, D>> {
+fn beancount_file<D: Decimal>(input: Span<'_>) -> IResult<'_, BeancountFile<D>> {
     let mut iter = iterator(input, entry);
     let mut options = Vec::new();
     let mut includes = Vec::new();
@@ -260,19 +260,24 @@ fn beancount_file<D: Decimal>(input: Span<'_>) -> IResult<'_, BeancountFile<'_, 
     ))
 }
 
-enum Entry<'a, D> {
+enum Entry<D> {
     Directive(Directive<D>),
-    Option(BeanOption<'a>),
+    Option(BeanOption),
     Include(PathBuf),
     PushTag(Tag),
     PopTag(Tag),
     Comment,
 }
 
-fn entry<D: Decimal>(input: Span<'_>) -> IResult<'_, Entry<'_, D>> {
+fn entry<D: Decimal>(input: Span<'_>) -> IResult<'_, Entry<D>> {
     alt((
         directive.map(Entry::Directive),
-        option.map(|(key, value)| Entry::Option(BeanOption { key, value })),
+        option.map(|(name, value)| {
+            Entry::Option(BeanOption {
+                name: name.into(),
+                value: value.into(),
+            })
+        }),
         include.map(|p| Entry::Include(p)),
         tag_stack_operation,
         line.map(|_| Entry::Comment),
@@ -349,7 +354,7 @@ fn include(input: Span<'_>) -> IResult<'_, PathBuf> {
     Ok((input, path.into()))
 }
 
-fn tag_stack_operation<D>(input: Span<'_>) -> IResult<'_, Entry<'_, D>> {
+fn tag_stack_operation<D>(input: Span<'_>) -> IResult<'_, Entry<D>> {
     alt((
         preceded(tuple((tag("pushtag"), space1)), transaction::parse_tag).map(Entry::PushTag),
         preceded(tuple((tag("poptag"), space1)), transaction::parse_tag).map(Entry::PopTag),
