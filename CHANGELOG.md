@@ -7,6 +7,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+
+## [1.0.0-beta.3] - 2023-06-19
+
 This release finishes the work of removing lifetimes from the result types that was started `1.0.0-beta.2`.
 
 ### Breaking changes
@@ -274,7 +277,8 @@ This is less performant but allow continue using the results after discarding th
 * Options
 * Directive metadata (string values only)
 
-[Unreleased]: https://github.com/jcornaz/beancount_parser_2/compare/v1.0.0-beta.2...HEAD
+[Unreleased]: https://github.com/jcornaz/beancount_parser_2/compare/v1.0.0-beta.3...HEAD
+[1.0.0-beta.3]: https://github.com/jcornaz/beancount_parser_2/compare/v1.0.0-beta.2...v1.0.0-beta.3
 [1.0.0-beta.2]: https://github.com/jcornaz/beancount_parser_2/compare/v1.0.0-beta.1...v1.0.0-beta.2
 [1.0.0-beta.1]: https://github.com/jcornaz/beancount_parser_2/compare/v1.0.0-alpha.12...v1.0.0-beta.1
 [1.0.0-alpha.12]: https://github.com/jcornaz/beancount_parser_2/compare/v1.0.0-alpha.11...v1.0.0-alpha.12
