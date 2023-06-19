@@ -11,7 +11,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Breaking changes
 
 * All `HashMap<&str, MetadataValue<D>>` have been replaced with `metadata::Map<D>`
-* The types `Transaction`, `Posting`, `Event`, `Directive`, `BeanOption` and `BeancountFile` no longer have lifetimes
+* The types `Transaction`, `Posting`, `Event`, `Directive`, `BeanOption`, `BeancountFile` and `Error` no longer have lifetimes
 * The fields `payee` and `narration` in `Transaction` are now of type `Option<String>` (formerly `Option<&str>`)
 * The fields `tags` and `links` in `Transaction` are now of type `HashSet<Tag>` and `HashSet<Link>` respectively (formerly `HashSet<&str>`)
 * The field `includes` in `BeancountFile` is now of type `PathBuf` (formerly `&Path`)

@@ -11,29 +11,26 @@ use crate::Span;
 /// let error = result.unwrap_err();
 /// assert_eq!(error.line_number(), 1);
 /// ```
-pub struct Error<'a>(Span<'a>);
-
-impl<'a> Debug for Error<'a> {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        f.debug_struct("Error")
-            .field("line_number", &self.line_number())
-            .finish()
-    }
+#[derive(Debug)]
+pub struct Error {
+    line_number: u32,
 }
 
-impl<'a> Error<'a> {
-    pub(crate) fn new(span: Span<'a>) -> Self {
-        Self(span)
+impl Error {
+    pub(crate) fn new(span: Span<'_>) -> Self {
+        Self {
+            line_number: span.location_line(),
+        }
     }
 
     /// Line number at which the error was found in the input
     #[must_use]
     pub fn line_number(&self) -> u32 {
-        self.0.location_line()
+        self.line_number
     }
 }
 
-impl<'a> Display for Error<'a> {
+impl Display for Error {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
@@ -43,4 +40,4 @@ impl<'a> Display for Error<'a> {
     }
 }
 
-impl<'a> std::error::Error for Error<'a> {}
+impl std::error::Error for Error {}

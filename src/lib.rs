@@ -16,7 +16,7 @@
 //! ```
 //! use beancount_parser_2::{BeancountFile, DirectiveContent};
 //!
-//! # fn main() -> Result<(), beancount_parser_2::Error<'static>> {
+//! # fn main() -> Result<(), beancount_parser_2::Error> {
 //! let input = r#"
 //! 2023-05-20 * "Coffee beans"
 //!   Expenses:Groceries   10 CHF
@@ -86,7 +86,7 @@ mod transaction;
 /// # Errors
 ///
 /// Returns an [`Error`] in case of invalid beancount syntax found.
-pub fn parse<D: Decimal>(input: &str) -> Result<BeancountFile<D>, Error<'_>> {
+pub fn parse<D: Decimal>(input: &str) -> Result<BeancountFile<D>, Error> {
     match all_consuming(beancount_file)(Span::new(input)).finish() {
         Ok((_, content)) => Ok(content),
         Err(nom::error::Error { input, .. }) => Err(Error::new(input)),
