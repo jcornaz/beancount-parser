@@ -74,14 +74,14 @@ pub enum Value<D> {
     Currency(Currency),
 }
 
-pub(crate) fn parse<D: Decimal>(input: Span<'_>) -> IResult<'_, HashMap<&str, Value<D>>> {
+pub(crate) fn parse<D: Decimal>(input: Span<'_>) -> IResult<'_, Map<D>> {
     let mut iter = iterator(input, alt((entry.map(Some), empty_line.map(|_| None))));
     let map: HashMap<_, _> = iter.flatten().collect();
     let (input, _) = iter.finish()?;
     Ok((input, map))
 }
 
-fn entry<D: Decimal>(input: Span<'_>) -> IResult<'_, (&str, Value<D>)> {
+fn entry<D: Decimal>(input: Span<'_>) -> IResult<'_, (Key, Value<D>)> {
     let (input, _) = space1(input)?;
     let (input, key) = recognize(preceded(
         satisfy(char::is_lowercase),
@@ -95,5 +95,5 @@ fn entry<D: Decimal>(input: Span<'_>) -> IResult<'_, (&str, Value<D>)> {
         amount::currency.map(Value::Currency),
     ))(input)?;
     let (input, _) = end_of_line(input)?;
-    Ok((input, (*key.fragment(), value)))
+    Ok((input, (Key((*key.fragment()).into()), value)))
 }

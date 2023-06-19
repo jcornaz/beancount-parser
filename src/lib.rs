@@ -43,10 +43,7 @@
 //! # Ok(()) }
 //! ```
 
-use std::{
-    collections::{HashMap, HashSet},
-    path::Path,
-};
+use std::{collections::HashSet, path::Path};
 
 use nom::combinator::not;
 use nom::{
@@ -204,8 +201,8 @@ pub struct Directive<'a, D> {
     pub content: DirectiveContent<'a, D>,
     /// Metadata associated to the directive
     ///
-    /// See: <https://beancount.github.io/docs/beancount_language_syntax.html#metadata>
-    pub metadata: HashMap<&'a str, metadata::Value<D>>,
+    /// See the [`metadata`] module for more
+    pub metadata: metadata::Map<D>,
     /// Line number where the directive was found in the input file
     pub line_number: u32,
 }

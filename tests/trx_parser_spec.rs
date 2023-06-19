@@ -1,9 +1,10 @@
 use std::collections::HashSet;
 
+use rstest::rstest;
+
 use beancount_parser_2::{
     metadata, parse, Directive, DirectiveContent, Posting, PostingPrice, Transaction,
 };
-use rstest::rstest;
 
 const COMMENTS: &str = include_str!("samples/comments.beancount");
 const SIMPLE: &str = include_str!("samples/simple.beancount");
@@ -408,7 +409,7 @@ fn parse_single_directive(input: &str) -> Directive<f64> {
     directives.into_iter().next().unwrap()
 }
 
-fn parse_single_posting(input: &str) -> Posting<'_, f64> {
+fn parse_single_posting(input: &str) -> Posting<f64> {
     let trx = parse_single_transaction(input);
     assert_eq!(
         trx.postings.len(),

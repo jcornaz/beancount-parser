@@ -7,6 +7,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Breaking changes
+
+* All `HashMap<&str, MetadataValue<D>>` have been replaced by `metadata::Map<D>` (and they no longer have a lifetime associated)
+* The `Posting` no longer have a lifetime
+
+
+### Deprecated
+
+* The type alias `MetadataValue` is deprecated. Use its target type directly instead `metadata::Value`
+
 
 ## [1.0.0-beta.2] - 2023-06-18
 

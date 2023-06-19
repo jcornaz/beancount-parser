@@ -1,4 +1,4 @@
-use std::collections::{HashMap, HashSet};
+use std::collections::HashSet;
 
 use nom::{
     branch::alt,
@@ -52,7 +52,7 @@ pub struct Transaction<'a, D> {
     /// Set of links
     pub links: HashSet<&'a str>,
     /// Postings
-    pub postings: Vec<Posting<'a, D>>,
+    pub postings: Vec<Posting<D>>,
 }
 
 /// A transaction posting
@@ -84,7 +84,7 @@ pub struct Transaction<'a, D> {
 /// ```
 #[derive(Debug, Clone)]
 #[non_exhaustive]
-pub struct Posting<'a, D> {
+pub struct Posting<D> {
     /// Transaction flag (`*` or `!` or `None` when absent)
     pub flag: Option<char>,
     /// Account modified by the posting
@@ -96,7 +96,7 @@ pub struct Posting<'a, D> {
     /// Price (`@` or `@@`) syntax
     pub price: Option<PostingPrice<D>>,
     /// The metadata attached to the posting
-    pub metadata: HashMap<&'a str, metadata::Value<D>>,
+    pub metadata: metadata::Map<D>,
 }
 
 /// Cost of a posting
@@ -125,7 +125,7 @@ pub enum PostingPrice<D> {
 #[allow(clippy::type_complexity)]
 pub(crate) fn parse<D: Decimal>(
     input: Span<'_>,
-) -> IResult<'_, (Transaction<'_, D>, HashMap<&str, metadata::Value<D>>)> {
+) -> IResult<'_, (Transaction<'_, D>, metadata::Map<D>)> {
     let (input, flag) = alt((map(flag, Some), value(None, tag("txn"))))(input)?;
     cut(do_parse(flag))(input)
 }
@@ -136,7 +136,7 @@ fn flag(input: Span<'_>) -> IResult<'_, char> {
 
 fn do_parse<D: Decimal>(
     flag: Option<char>,
-) -> impl Fn(Span<'_>) -> IResult<'_, (Transaction<'_, D>, HashMap<&str, metadata::Value<D>>)> {
+) -> impl Fn(Span<'_>) -> IResult<'_, (Transaction<'_, D>, metadata::Map<D>)> {
     move |input| {
         let (input, payee_and_narration) = opt(preceded(space1, payee_and_narration))(input)?;
         let (input, (tags, links)) = tags_and_links(input)?;
@@ -222,7 +222,7 @@ fn payee_and_narration(input: Span<'_>) -> IResult<'_, (Option<&str>, &str)> {
     ))
 }
 
-fn posting<D: Decimal>(input: Span<'_>) -> IResult<'_, Posting<'_, D>> {
+fn posting<D: Decimal>(input: Span<'_>) -> IResult<'_, Posting<D>> {
     let (input, _) = space1(input)?;
     let (input, flag) = opt(terminated(flag, space1))(input)?;
     let (input, account) = account::parse(input)?;

@@ -1,6 +1,7 @@
-use beancount_parser_2::{parse, Directive, DirectiveContent, Posting, Transaction};
 use rstest::rstest;
 use rust_decimal::Decimal;
+
+use beancount_parser_2::{parse, Directive, DirectiveContent, Posting, Transaction};
 
 #[rstest]
 #[case("10 CHF", 10, "CHF")]
@@ -31,7 +32,7 @@ fn parse_single_directive(input: &str) -> Directive<Decimal> {
     directives.into_iter().next().unwrap()
 }
 
-fn parse_single_posting(input: &str) -> Posting<'_, Decimal> {
+fn parse_single_posting(input: &str) -> Posting<Decimal> {
     let trx = parse_single_transaction(input);
     assert_eq!(
         trx.postings.len(),
