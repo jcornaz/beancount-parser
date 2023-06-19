@@ -7,6 +7,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+This release finishes the work of removing lifetimes from the result types that was started `1.0.0-beta.2`.
 
 ### Breaking changes
 
