@@ -55,7 +55,7 @@ fn should_parse_transaction_description(#[case] input: &str, #[case] expected: O
     let DirectiveContent::Transaction(trx) = parse_single_directive(input).content else {
         panic!("was not a transaction");
     };
-    assert_eq!(trx.narration, expected)
+    assert_eq!(trx.narration.as_deref(), expected)
 }
 
 #[rstest]
@@ -70,7 +70,7 @@ fn should_parse_transaction_payee(#[case] input: &str, #[case] expected: Option<
     let DirectiveContent::Transaction(trx) = parse_single_directive(input).content else {
         panic!("was not a transaction");
     };
-    assert_eq!(trx.payee, expected)
+    assert_eq!(trx.payee.as_deref(), expected)
 }
 
 #[rstest]

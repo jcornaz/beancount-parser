@@ -34,7 +34,7 @@
 //! let DirectiveContent::Transaction(trx) = &directive.content else {
 //!     panic!("was not a transaction")
 //! };
-//! assert_eq!(trx.narration, Some("Coffee beans"));
+//! assert_eq!(trx.narration.as_deref(), Some("Coffee beans"));
 //! assert_eq!(trx.postings[0].account.as_str(), "Expenses:Groceries");
 //! assert_eq!(trx.postings[0].amount.as_ref().unwrap().value, 10.0);
 //! assert_eq!(trx.postings[0].amount.as_ref().unwrap().currency.as_str(), "CHF");

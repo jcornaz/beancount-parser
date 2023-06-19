@@ -9,8 +9,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Breaking changes
 
-* All `HashMap<&str, MetadataValue<D>>` have been replaced by `metadata::Map<D>` (and they no longer have a lifetime associated)
+* All `HashMap<&str, MetadataValue<D>>` have been replaced with `metadata::Map<D>` (and they no longer have a lifetime associated)
 * The `Posting` no longer have a lifetime
+* The fields `payee` and `narration` in `Transaction` are now of type `Option<String>`
 
 
 ### Deprecated

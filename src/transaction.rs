@@ -33,8 +33,8 @@ use crate::{
 ///   unreachable!("was not a transaction")
 /// };
 /// assert_eq!(trx.flag, Some('*'));
-/// assert_eq!(trx.payee, Some("Grocery store"));
-/// assert_eq!(trx.narration, Some("Grocery shopping"));
+/// assert_eq!(trx.payee.as_deref(), Some("Grocery store"));
+/// assert_eq!(trx.narration.as_deref(), Some("Grocery shopping"));
 /// assert!(trx.tags.contains("food"));
 /// assert_eq!(trx.postings.len(), 2);
 /// ```
@@ -44,9 +44,9 @@ pub struct Transaction<'a, D> {
     /// Transaction flag (`*` or `!` or `None` when using the `txn` keyword)
     pub flag: Option<char>,
     /// Payee (if present)
-    pub payee: Option<&'a str>,
+    pub payee: Option<String>,
     /// Narration (if present)
-    pub narration: Option<&'a str>,
+    pub narration: Option<String>,
     /// Set of tags
     pub tags: HashSet<&'a str>,
     /// Set of links
@@ -145,13 +145,17 @@ fn do_parse<D: Decimal>(
         let mut iter = iterator(input, alt((posting.map(Some), empty_line.map(|_| None))));
         let postings = iter.flatten().collect();
         let (input, _) = iter.finish()?;
+        let narration = payee_and_narration.map(|(_, n)| n).map(ToOwned::to_owned);
+        let payee = payee_and_narration
+            .and_then(|(p, _)| p)
+            .map(ToOwned::to_owned);
         Ok((
             input,
             (
                 Transaction {
                     flag,
-                    payee: payee_and_narration.and_then(|(p, _)| p),
-                    narration: payee_and_narration.map(|(_, n)| n),
+                    payee,
+                    narration,
                     tags,
                     links,
                     postings,
