@@ -1,11 +1,11 @@
 #![cfg(feature = "unstable")]
 
-use crate::pest_parser::Pair;
-use crate::{string, IResult, Span};
-use nom::bytes::streaming::take_till;
-use nom::character::complete::space1;
-use nom::sequence::delimited;
-use nom::{bytes::complete::tag, character::complete::char, sequence::terminated};
+use nom::{
+    bytes::complete::tag, bytes::streaming::take_till, character::complete::char,
+    character::complete::space1, sequence::delimited, sequence::terminated,
+};
+
+use crate::{IResult, Span};
 
 /// beancount option
 ///
@@ -25,13 +25,6 @@ impl<'a> Option<'a> {
     #[must_use]
     pub fn value(&self) -> &'a str {
         self.value
-    }
-
-    pub(crate) fn from_pair(pair: Pair<'a>) -> Self {
-        let mut inner = pair.into_inner();
-        let name = string::from_pair(inner.next().expect("no name in option"));
-        let value = string::from_pair(inner.next().expect("no name in option"));
-        Self { name, value }
     }
 }
 

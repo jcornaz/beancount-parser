@@ -7,8 +7,6 @@ use nom::{
     sequence::{delimited, preceded, separated_pair, terminated, tuple},
 };
 
-#[cfg(feature = "unstable")]
-use crate::pest_parser::{Pair, Rule};
 use crate::{
     account::{account, Account},
     amount::{amount, Amount},
@@ -85,47 +83,6 @@ impl<'a> Posting<'a> {
     pub fn comment(&self) -> Option<&str> {
         self.comment
     }
-
-    #[cfg(feature = "unstable")]
-    pub(super) fn from_pair(pair: Pair<'a>) -> Self {
-        let mut flag = None;
-        let mut account = None;
-        let mut amount = None;
-        let mut comment = None;
-        let mut lot = None;
-        let mut price = None;
-        for pair in pair.into_inner() {
-            match pair.as_rule() {
-                Rule::account => account = Some(Account::from_pair(pair)),
-                Rule::amount => amount = Some(Amount::from_pair(pair)),
-                Rule::transaction_flag => flag = Some(Flag::from_pair(pair)),
-                Rule::comment => comment = Some(pair.as_str()),
-                Rule::lot => lot = Some(LotAttributes::from_pair(pair)),
-                Rule::price => price = Some(price_from_pair(pair)),
-                _ => (),
-            }
-        }
-        Posting {
-            flag,
-            account: account.expect("no account in posting"),
-            price,
-            lot,
-            comment,
-            amount,
-        }
-    }
-}
-
-#[cfg(feature = "unstable")]
-fn price_from_pair(pair: Pair<'_>) -> (PriceType, Amount<'_>) {
-    let mut inner = pair.into_inner();
-    let type_ = match inner.next().expect("not price type").as_str() {
-        "@" => PriceType::Unit,
-        "@@" => PriceType::Total,
-        _ => unreachable!("invalid price type"),
-    };
-    let amount = Amount::from_pair(inner.next().expect("no amount in price"));
-    (type_, amount)
 }
 
 /// A price type
@@ -161,21 +118,6 @@ impl<'a> LotAttributes<'a> {
     #[cfg(all(test, feature = "unstable"))]
     pub(crate) fn date(&self) -> Option<Date> {
         self.date
-    }
-
-    #[cfg(feature = "unstable")]
-    fn from_pair(pair: Pair<'a>) -> Self {
-        let mut cost = None;
-        let mut date = None;
-        let label = None;
-        for pair in pair.into_inner() {
-            match pair.as_rule() {
-                Rule::amount => cost = Some(Amount::from_pair(pair)),
-                Rule::date => date = Some(Date::from_pair(pair)),
-                _ => unreachable!("unexpected token in lot attributes"),
-            }
-        }
-        Self { cost, date, label }
     }
 }
 

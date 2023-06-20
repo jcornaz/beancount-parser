@@ -4,8 +4,7 @@ use nom::bytes::complete::{tag, take_till};
 use nom::character::complete::{char, space1};
 use nom::sequence::delimited;
 
-use crate::pest_parser::Pair;
-use crate::{date::date, string, Date, IResult, Span};
+use crate::{date::date, Date, IResult, Span};
 
 #[derive(Debug, Clone)]
 pub struct Event<'a> {
@@ -28,14 +27,6 @@ impl<'a> Event<'a> {
     #[must_use]
     pub fn value(&self) -> &'a str {
         self.value
-    }
-
-    pub(crate) fn from_pair(pair: Pair<'a>) -> Self {
-        let mut inner = pair.into_inner();
-        let date = Date::from_pair(inner.next().expect("no date in event"));
-        let name = string::from_pair(inner.next().expect("no name in event"));
-        let value = string::from_pair(inner.next().expect("no value in event"));
-        Self { date, name, value }
     }
 }
 

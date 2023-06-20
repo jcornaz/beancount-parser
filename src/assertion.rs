@@ -4,8 +4,6 @@ use nom::{
     sequence::{terminated, tuple},
 };
 
-#[cfg(feature = "unstable")]
-use crate::pest_parser::Pair;
 use crate::Date;
 use crate::{
     account::{account, Account},
@@ -39,19 +37,6 @@ impl<'a> Assertion<'a> {
     #[must_use]
     pub fn amount(&self) -> &Amount<'a> {
         &self.amount
-    }
-
-    #[cfg(feature = "unstable")]
-    pub(crate) fn from_pair(pair: Pair<'a>) -> Self {
-        let mut inner = pair.into_inner();
-        let date = Date::from_pair(inner.next().expect("no date in balance assertion"));
-        let account = Account::from_pair(inner.next().expect("no account in balance assertion"));
-        let amount = Amount::from_pair(inner.next().expect("no amount in balance assertion"));
-        Self {
-            date,
-            account,
-            amount,
-        }
     }
 }
 

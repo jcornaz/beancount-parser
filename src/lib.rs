@@ -69,9 +69,6 @@ mod nom_parser;
 mod open;
 mod option;
 mod pad;
-#[cfg(feature = "unstable")]
-#[doc(hidden)]
-pub mod pest_parser;
 mod price;
 mod string;
 pub mod transaction;
@@ -84,8 +81,6 @@ pub mod transaction;
 #[doc(hidden)]
 pub type Type = account::Type;
 
-pub use crate::include::Include;
-pub use crate::nom_parser::Parser;
 pub use crate::{
     account::{Account, Type as AccountType},
     amount::Amount,
@@ -94,6 +89,8 @@ pub use crate::{
     date::Date,
     directive::Directive,
     error::Error,
+    include::Include,
+    nom_parser::Parser,
     open::Open,
     pad::Pad,
     price::Price,

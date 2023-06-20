@@ -5,8 +5,6 @@ use nom::{
     sequence::tuple,
 };
 
-#[cfg(feature = "unstable")]
-use crate::pest_parser::Pair;
 use crate::{account, date::date, Account, Date, Span};
 use crate::{amount, IResult};
 
@@ -35,19 +33,6 @@ impl<'a> Open<'a> {
     #[must_use]
     pub fn currencies(&self) -> &[&'a str] {
         &self.currencies
-    }
-
-    #[cfg(feature = "unstable")]
-    pub(crate) fn from_pair(pair: Pair<'a>) -> Self {
-        let mut inner = pair.into_inner();
-        let date = Date::from_pair(inner.next().expect("no date in open directive"));
-        let account = Account::from_pair(inner.next().expect("no account in open directive"));
-        let currencies = inner.map(|c| c.as_str()).collect();
-        Open {
-            date,
-            account,
-            currencies,
-        }
     }
 }
 

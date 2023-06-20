@@ -1,17 +1,13 @@
-use crate::include::Include;
-
-use crate::pad::Pad;
-use crate::price::Price;
-#[cfg(feature = "unstable")]
-use crate::{
-    pest_parser::{Pair, Rule},
-    {Commodity, Event},
-};
-use crate::{Assertion, Close, Date, IResult, Open, Span};
 use nom::branch::alt;
 use nom::combinator::map;
 
+use crate::include::Include;
+use crate::pad::Pad;
+use crate::price::Price;
 use crate::transaction::Transaction;
+use crate::{Assertion, Close, Date, IResult, Open, Span};
+#[cfg(feature = "unstable")]
+use crate::{Commodity, Event};
 
 /// A directive
 ///
@@ -82,21 +78,6 @@ impl<'a> Directive<'a> {
             Directive::Include(_) => None,
             #[cfg(feature = "unstable")]
             Directive::Commodity(_) | Directive::Option(_) | Directive::Event(_) => None,
-        }
-    }
-
-    #[cfg(feature = "unstable")]
-    pub(crate) fn from_pair(pair: Pair<'a>) -> Self {
-        match pair.as_rule() {
-            Rule::transaction => Directive::Transaction(Transaction::from_pair(pair)),
-            Rule::balance_assertion => Directive::Assertion(Assertion::from_pair(pair)),
-            Rule::open_directive => Directive::Open(Open::from_pair(pair)),
-            Rule::close_directive => Directive::Close(Close::from_pair(pair)),
-            Rule::price_directive => Directive::Price(Price::from_pair(pair)),
-            Rule::commodity => Directive::Commodity(Commodity::from_pair(pair)),
-            Rule::event => Directive::Event(Event::from_pair(pair)),
-            Rule::option => Directive::Option(crate::Option::from_pair(pair)),
-            rule => panic!("unexpected directive rule {rule:?}"),
         }
     }
 }

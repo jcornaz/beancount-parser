@@ -8,8 +8,6 @@ use nom::{
     sequence::{pair, separated_pair},
 };
 
-#[cfg(feature = "unstable")]
-use crate::pest_parser::Pair;
 use crate::{IResult, Span};
 
 pub use self::expression::{ConversionError, Expression, Value};
@@ -50,17 +48,6 @@ impl<'a> Amount<'a> {
     #[must_use]
     pub fn currency(&self) -> &'a str {
         self.currency
-    }
-
-    #[cfg(feature = "unstable")]
-    pub(crate) fn from_pair(pair: Pair<'_>) -> Amount<'_> {
-        let mut inner = pair.into_inner();
-        let expression = Expression::from_pair(inner.next().expect("no value in amount"));
-        let currency = inner.next().expect("no currency in amount").as_str();
-        Amount {
-            expression,
-            currency,
-        }
     }
 }
 
@@ -111,9 +98,9 @@ pub(crate) fn currency(input: Span<'_>) -> IResult<'_, &str> {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
-
     use nom::combinator::all_consuming;
+
+    use super::*;
 
     #[test]
     fn parse_amount() {

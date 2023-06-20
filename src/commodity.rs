@@ -2,7 +2,7 @@
 
 use nom::{bytes::complete::tag, character::complete::space1, sequence::delimited};
 
-use crate::{amount::currency, date::date, pest_parser::Pair, IResult, Span};
+use crate::{amount::currency, date::date, IResult, Span};
 
 /// The commodity declaration directive
 ///
@@ -17,16 +17,6 @@ impl<'a> Commodity<'a> {
     #[must_use]
     pub fn currency(&self) -> &'a str {
         self.currency
-    }
-
-    pub(crate) fn from_pair(pair: Pair<'a>) -> Self {
-        let mut inner = pair.into_inner();
-        let _date = inner.next().expect("no date in commodity declaration");
-        let currency = inner
-            .next()
-            .expect("no currency in commodity declaration")
-            .as_str();
-        Self { currency }
     }
 }
 

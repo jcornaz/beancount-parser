@@ -7,6 +7,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Breaking changes *(in unstable API)*
+
+#### remove `pest_parser`
+
+The `pest` experiment was not conclusive. It is much slower than the `nom` implementation and the code is not significantly more maintainable.
+On top of that, the latest patch contained breaking changes, causing new compile errors.
+Therefore, this release completely removes the pest parser. 
+
 
 ## [1.16.1] - 2023-05-22
 

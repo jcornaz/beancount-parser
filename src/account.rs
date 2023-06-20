@@ -2,9 +2,6 @@
 
 use std::fmt::Display;
 
-#[cfg(feature = "unstable")]
-use crate::pest_parser::Pair;
-use crate::{IResult, Span};
 use nom::{
     branch::alt,
     bytes::complete::{tag, take_while1},
@@ -12,6 +9,8 @@ use nom::{
     combinator::{iterator, map},
     sequence::preceded,
 };
+
+use crate::{IResult, Span};
 
 /// Account
 ///
@@ -78,21 +77,6 @@ impl<'a> Account<'a> {
     #[must_use]
     pub fn components(&self) -> &[&'a str] {
         self.components.as_ref()
-    }
-
-    #[cfg(feature = "unstable")]
-    pub(crate) fn from_pair(pair: Pair<'a>) -> Self {
-        let mut inner = pair.into_inner();
-        let type_ = match inner.next().expect("no account type in account").as_str() {
-            "Assets" => Type::Assets,
-            "Liabilities" => Type::Liabilities,
-            "Expenses" => Type::Expenses,
-            "Income" => Type::Income,
-            "Equity" => Type::Equity,
-            _ => unreachable!("invalid account type"),
-        };
-        let components = inner.map(|c| c.as_str()).collect();
-        Account { type_, components }
     }
 }
 

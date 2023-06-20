@@ -6,8 +6,6 @@ use nom::sequence::{preceded, terminated, tuple};
 
 use crate::amount::{amount, currency};
 use crate::date::date;
-#[cfg(feature = "unstable")]
-use crate::pest_parser::Pair;
 use crate::string::comment;
 use crate::{Amount, Date, IResult, Span};
 
@@ -48,23 +46,6 @@ impl<'a> Price<'a> {
     #[must_use]
     pub fn comment(&self) -> Option<&'a str> {
         self.comment
-    }
-
-    #[cfg(feature = "unstable")]
-    pub(crate) fn from_pair(pair: Pair<'a>) -> Self {
-        let mut inner = pair.into_inner();
-        let date = Date::from_pair(inner.next().expect("no date in price directive"));
-        let commodity = inner
-            .next()
-            .expect("no commodity in price directive")
-            .as_str();
-        let price = Amount::from_pair(inner.next().expect("no amount in price directive"));
-        Self {
-            commodity,
-            price,
-            date,
-            comment: None,
-        }
     }
 }
 

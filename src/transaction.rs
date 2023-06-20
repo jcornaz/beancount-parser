@@ -1,18 +1,15 @@
 //! Types for representing an [`Transaction`]
 
-#[cfg(feature = "unstable")]
-use std::collections::HashMap;
 use std::str;
 
-use nom::bytes::complete::{self, take_till};
-
-use nom::Parser;
 use nom::{
     branch::alt,
+    bytes::complete::{self, take_till},
     character::complete::{char, line_ending, space0, space1},
     combinator::{cut, eof, map, opt},
     multi::many0,
     sequence::{preceded, separated_pair, terminated, tuple},
+    Parser,
 };
 
 use posting::posting;
@@ -24,11 +21,6 @@ use crate::{
     date::date,
     string::{comment, string},
     Date,
-};
-#[cfg(feature = "unstable")]
-use crate::{
-    pest_parser::{Pair, Rule},
-    string,
 };
 use crate::{IResult, Span};
 
@@ -59,7 +51,7 @@ pub struct Transaction<'a> {
 
 /// The transaction flag
 ///
-/// It is eithe cleared (`*`) of pending (`!`)
+/// It is either cleared (`*`) of pending (`!`)
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
 pub enum Flag {
     /// Cleared flag (the `*` character)
@@ -71,17 +63,6 @@ pub enum Flag {
 impl Default for Flag {
     fn default() -> Self {
         Self::Cleared
-    }
-}
-
-impl Flag {
-    #[cfg(feature = "unstable")]
-    fn from_pair(pair: Pair<'_>) -> Flag {
-        match pair.as_str() {
-            "*" => Flag::Cleared,
-            "!" => Flag::Pending,
-            _ => unreachable!("Invalid transaction flag"),
-        }
     }
 }
 
@@ -137,54 +118,6 @@ impl<'a> Transaction<'a> {
 
     pub(crate) fn append_tags(&mut self, tags: &[&'a str]) {
         self.tags.extend(tags);
-    }
-
-    #[cfg(feature = "unstable")]
-    pub(crate) fn from_pair(pair: Pair<'_>) -> Transaction<'_> {
-        let mut inner = pair.into_inner();
-        let date = Date::from_pair(inner.next().expect("no date in transaction"));
-        let mut flag = None;
-        let mut payee = None;
-        let mut narration = None;
-        let mut postings = Vec::new();
-        let mut tags = Vec::new();
-        for pair in inner {
-            match pair.as_rule() {
-                Rule::transaction_flag => flag = Some(Flag::from_pair(pair)),
-                Rule::payee => {
-                    payee = Some(
-                        string::from_pair(pair.into_inner().next().expect("no string in payee"))
-                            .into(),
-                    );
-                }
-                Rule::narration => {
-                    narration = Some(
-                        string::from_pair(
-                            pair.into_inner().next().expect("no string in narration"),
-                        )
-                        .into(),
-                    );
-                }
-                Rule::postings => postings = pair.into_inner().map(Posting::from_pair).collect(),
-                Rule::tags => {
-                    tags = pair
-                        .into_inner()
-                        .filter_map(|p| p.as_str().strip_prefix('#'))
-                        .collect();
-                }
-                _ => (),
-            }
-        }
-        Transaction {
-            date,
-            flag,
-            payee,
-            narration,
-            tags,
-            comment: None,
-            metadata: HashMap::default(),
-            postings,
-        }
     }
 }
 

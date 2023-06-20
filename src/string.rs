@@ -7,17 +7,7 @@ use nom::{
     Parser,
 };
 
-#[cfg(feature = "unstable")]
-use crate::pest_parser::Pair;
 use crate::{IResult, Span};
-
-#[cfg(feature = "unstable")]
-pub(crate) fn from_pair(pair: Pair<'_>) -> &str {
-    pair.into_inner()
-        .next()
-        .expect("no string content")
-        .as_str()
-}
 
 pub(crate) fn string(input: Span<'_>) -> IResult<'_, String> {
     let (mut input, _) = char('"')(input)?;

@@ -4,8 +4,6 @@ use nom::{
     sequence::preceded,
 };
 
-#[cfg(feature = "unstable")]
-use crate::pest_parser::Pair;
 use crate::{IResult, Span};
 
 /// A date
@@ -52,24 +50,6 @@ impl Date {
     #[must_use]
     pub fn day_of_month(&self) -> u8 {
         self.day_of_month
-    }
-
-    #[cfg(feature = "unstable")]
-    pub(crate) fn from_pair(pair: Pair<'_>) -> Date {
-        let mut inner = pair.into_inner();
-        let year = inner
-            .next()
-            .and_then(|y| y.as_str().parse().ok())
-            .expect("invalid year");
-        let month = inner
-            .next()
-            .and_then(|m| m.as_str().parse().ok())
-            .expect("invalid month");
-        let day = inner
-            .next()
-            .and_then(|d| d.as_str().parse().ok())
-            .expect("invalid day");
-        Date::new(year, month, day)
     }
 }
 
