@@ -5,9 +5,8 @@ set dotenv-load
 
 # Perform all verifications (compile, test, lint, etc.)
 verify: test lint doc check-msrv
-    cargo run --example balance -- tests/samples/official.beancount \
-      | grep 'Expenses:Taxes:Y2022:US:Federal:PreTax401k                18500.00 IRAUSD' \
-      > /dev/null
+    just run balance tests/samples/official.beancount | grep 'Expenses:Taxes:Y2022:US:Federal:PreTax401k                18500.00 IRAUSD' > /dev/null
+    just run balance tests/samples/official.beancount | grep 'Assets:MyBank:Checking                                     2662.68 USD' > /dev/null
     cargo deny check licenses
 
 # Run the desired example
