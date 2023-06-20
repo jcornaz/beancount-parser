@@ -8,6 +8,10 @@ option "title" "Example Beancount file"
 option "operating_currency" "USD"
 
 
+; Added includes to test that functionality
+include "./comments.beancount"
+include "./simple.beancount"
+
 
 
 * Commodities
@@ -5770,7 +5774,7 @@ option "operating_currency" "USD"
   Expenses:Taxes:Y2022:US:SDI                        1.12 USD
   Expenses:Taxes:Y2022:US:SocSec                   281.54 USD
   Assets:US:Federal:PreTax401k                    -500.00 IRAUSD
-  Expenses:Taxes:Y2022:US:Federal:PreTax401k       500.00 IRAUSD
+  Expenses:Taxes:Y2022:US:Federal:PreTax401k
   Assets:US:Hooli:Vacation                              5 VACHR
   Income:US:Hooli:Vacation                             -5 VACHR
 

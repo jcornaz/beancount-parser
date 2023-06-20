@@ -25,12 +25,19 @@ fn main() -> Result<(), Box<dyn Error>> {
 
 fn load_from_files(mut files: Vec<PathBuf>) -> Result<Vec<Directive<Decimal>>, Box<dyn Error>> {
     let mut directives = Vec::<Directive<Decimal>>::new();
-    let mut buffer = String::new();
+    let mut input = String::new();
     while let Some(path) = files.pop() {
-        buffer.clear();
-        File::open(path)?.read_to_string(&mut buffer)?;
-        let file = beancount_parser_2::parse::<Decimal>(&buffer)?;
-        files.extend(file.includes);
+        println!("read: {path:?}");
+        input.clear();
+        File::open(&path)?.read_to_string(&mut input)?;
+        let file = beancount_parser_2::parse::<Decimal>(&input)?;
+        files.extend(file.includes.into_iter().map(|include| {
+            if include.is_relative() {
+                path.parent().unwrap().join(include)
+            } else {
+                include
+            }
+        }));
         directives.extend(file.directives);
     }
     Ok(directives)
