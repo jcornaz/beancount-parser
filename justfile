@@ -10,6 +10,10 @@ verify: test lint doc check-msrv
       > /dev/null
     cargo deny check licenses
 
+# Run the desired example
+run example *args:
+    cargo run --example {{example}} -- {{args}}
+
 # Watch the source files and run `just verify` when source changes
 watch:
 	cargo watch --delay 0.1 --clear --why -- just verify
