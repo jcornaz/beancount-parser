@@ -8,6 +8,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Unreleased]
 
 
+## [1.16.3] - 2023-07-01
+
+
 ### Documentation
 
 Update status in readme
@@ -362,7 +365,8 @@ Announce new status of the project in readme: The project is now in "maintenance
  - Parse directives
  - `Parser` iterator type
 
-[Unreleased]: https://github.com/jcornaz/beancount_parser_2/compare/v1.16.2...HEAD
+[Unreleased]: https://github.com/jcornaz/beancount_parser_2/compare/v1.16.3...HEAD
+[1.16.3]: https://github.com/jcornaz/beancount_parser_2/compare/v1.16.2...v1.16.3
 [1.16.2]: https://github.com/jcornaz/beancount_parser_2/compare/v1.16.1...v1.16.2
 [1.16.1]: https://github.com/jcornaz/beancount-parser/compare/v1.16.0...v1.16.1
 [1.16.0]: https://github.com/jcornaz/beancount-parser/compare/v1.15.0...v1.16.0
