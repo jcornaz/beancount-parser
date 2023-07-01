@@ -7,6 +7,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+
+## [2.0.0-beta.1] - 2023-07-01
+
 I finally decided to re-use the old crate name `beancount-parser` instead of continuing with [beancount_parser_2](https://github.com/jcornaz/beancount_parser_2).
 
 This release contains exactly the same functionallity `beancount_parser_2` version `1.0.0-beta.3`.
@@ -413,7 +416,8 @@ Announce new status of the project in readme: The project is now in "maintenance
  - `Parser` iterator type
 
 
-[Unreleased]: https://github.com/jcornaz/beancount-parser/compare/v1...HEAD
+[Unreleased]: https://github.com/jcornaz/beancount-parser/compare/v2.0.0-beta.1...HEAD
+[2.0.0-beta.1]: https://github.com/jcornaz/beancount-parser/compare/v1...v2.0.0-beta.1
 [1.16.2]: https://github.com/jcornaz/beancount-parser/compare/v1.16.1...v1.16.2
 [1.16.1]: https://github.com/jcornaz/beancount-parser/compare/v1.16.0...v1.16.1
 [1.16.0]: https://github.com/jcornaz/beancount-parser/compare/v1.15.0...v1.16.0
