@@ -8,6 +8,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Unreleased]
 
 
+### Documentation
+
+Update status in readme
+
+
 ## [1.16.2] - 2023-06-20
 
 ### Breaking changes *(in unstable API)*
