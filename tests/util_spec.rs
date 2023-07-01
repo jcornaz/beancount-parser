@@ -2,7 +2,7 @@ use std::fmt::Debug;
 
 use rstest::rstest;
 
-use beancount_parser_2::{parse, BeancountFile, Currency, Date, DirectiveContent};
+use beancount_parser::{parse, BeancountFile, Currency, Date, DirectiveContent};
 
 fn is_normal<T: Sized + Send + Sync + Unpin>() {}
 fn is_debug<T: Debug>() {}

@@ -2,7 +2,7 @@ use std::time::Duration;
 
 use criterion::{criterion_group, criterion_main, Criterion, Throughput};
 
-use beancount_parser_2::parse;
+use beancount_parser::parse;
 
 const SAMPLE: &str = include_str!("../tests/samples/official.beancount");
 

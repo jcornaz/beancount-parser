@@ -27,9 +27,9 @@ use super::{IResult, Span};
 ///
 /// # Example
 /// ```
-/// use beancount_parser_2::DirectiveContent;
+/// use beancount_parser::DirectiveContent;
 /// let input = "2022-05-24 open Assets:Bank:Checking";
-/// let beancount = beancount_parser_2::parse::<f64>(input).unwrap();
+/// let beancount = beancount_parser::parse::<f64>(input).unwrap();
 /// let DirectiveContent::Open(open) = &beancount.directives[0].content else { unreachable!() };
 /// assert_eq!(open.account.as_str(), "Assets:Bank:Checking");
 /// ```
@@ -66,9 +66,9 @@ impl Borrow<str> for Account {
 ///
 /// # Example
 /// ```
-/// use beancount_parser_2::DirectiveContent;
+/// use beancount_parser::DirectiveContent;
 /// let input = "2022-05-24 open Assets:Bank:Checking    CHF";
-/// let beancount = beancount_parser_2::parse::<f64>(input).unwrap();
+/// let beancount = beancount_parser::parse::<f64>(input).unwrap();
 /// let DirectiveContent::Open(open) = &beancount.directives[0].content else { unreachable!() };
 /// assert_eq!(open.account.as_str(), "Assets:Bank:Checking");
 /// assert_eq!(open.currencies.iter().next().unwrap().as_str(), "CHF");
@@ -86,9 +86,9 @@ pub struct Open {
 ///
 /// # Example
 /// ```
-/// use beancount_parser_2::DirectiveContent;
+/// use beancount_parser::DirectiveContent;
 /// let input = "2022-05-24 close Assets:Bank:Checking";
-/// let beancount = beancount_parser_2::parse::<f64>(input).unwrap();
+/// let beancount = beancount_parser::parse::<f64>(input).unwrap();
 /// let DirectiveContent::Close(close) = &beancount.directives[0].content else { unreachable!() };
 /// assert_eq!(close.account.as_str(), "Assets:Bank:Checking");
 /// ```
@@ -103,9 +103,9 @@ pub struct Close {
 ///
 /// # Example
 /// ```
-/// use beancount_parser_2::DirectiveContent;
+/// use beancount_parser::DirectiveContent;
 /// let input = "2022-05-24 balance Assets:Bank:Checking 10 CHF";
-/// let beancount = beancount_parser_2::parse::<f64>(input).unwrap();
+/// let beancount = beancount_parser::parse::<f64>(input).unwrap();
 /// let DirectiveContent::Balance(balance) = &beancount.directives[0].content else { unreachable!() };
 /// assert_eq!(balance.account.as_str(), "Assets:Bank:Checking");
 /// assert_eq!(balance.amount.value, 10.0);
@@ -124,9 +124,9 @@ pub struct Balance<D> {
 ///
 /// # Example
 /// ```
-/// # use beancount_parser_2::DirectiveContent;
+/// # use beancount_parser::DirectiveContent;
 /// let raw = "2014-06-01 pad Assets:BofA:Checking Equity:Opening-Balances";
-/// let file = beancount_parser_2::parse::<f64>(raw).unwrap();
+/// let file = beancount_parser::parse::<f64>(raw).unwrap();
 /// let DirectiveContent::Pad(pad) = &file.directives[0].content else { unreachable!() };
 /// assert_eq!(pad.account.as_str(), "Assets:BofA:Checking");
 /// assert_eq!(pad.source_account.as_str(), "Equity:Opening-Balances");

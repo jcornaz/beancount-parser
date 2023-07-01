@@ -2,7 +2,7 @@ use std::collections::HashSet;
 
 use rstest::rstest;
 
-use beancount_parser_2::{
+use beancount_parser::{
     metadata, parse, Directive, DirectiveContent, Posting, PostingPrice, Transaction,
 };
 

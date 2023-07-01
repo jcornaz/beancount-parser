@@ -3,12 +3,12 @@
 //! # Example
 //!
 //! ```
-//! use beancount_parser_2::metadata::Value;
+//! use beancount_parser::metadata::Value;
 //! let input = r#"
 //! 2023-05-27 commodity CHF
 //!     title: "Swiss Franc"
 //! "#;
-//! let beancount = beancount_parser_2::parse::<f64>(input).unwrap();
+//! let beancount = beancount_parser::parse::<f64>(input).unwrap();
 //! let directive_metadata = &beancount.directives[0].metadata;
 //! assert_eq!(directive_metadata.get("title"), Some(&Value::String("Swiss Franc".into())));
 //! ```

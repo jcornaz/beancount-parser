@@ -1,7 +1,7 @@
 use rstest::rstest;
 use rust_decimal::Decimal;
 
-use beancount_parser_2::{parse, Directive, DirectiveContent, Posting, Transaction};
+use beancount_parser::{parse, Directive, DirectiveContent, Posting, Transaction};
 
 #[rstest]
 #[case("10 CHF", 10, "CHF")]

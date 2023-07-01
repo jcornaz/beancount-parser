@@ -206,7 +206,7 @@ This is less performant but allow continue using the results after discarding th
 
 ### Breaking changes
 
-* The decimal type must now implement the `beancount_parser_2::Decimal` trait.
+* The decimal type must now implement the `beancount_parser::Decimal` trait.
   There is a blanket implementation for all types that could be used as a decimal type,
   including `f64` and `rust_decimal::Decimal`
 
@@ -277,21 +277,21 @@ This is less performant but allow continue using the results after discarding th
 * Options
 * Directive metadata (string values only)
 
-[Unreleased]: https://github.com/jcornaz/beancount_parser_2/compare/v1.0.0-beta.3...HEAD
-[1.0.0-beta.3]: https://github.com/jcornaz/beancount_parser_2/compare/v1.0.0-beta.2...v1.0.0-beta.3
-[1.0.0-beta.2]: https://github.com/jcornaz/beancount_parser_2/compare/v1.0.0-beta.1...v1.0.0-beta.2
-[1.0.0-beta.1]: https://github.com/jcornaz/beancount_parser_2/compare/v1.0.0-alpha.12...v1.0.0-beta.1
-[1.0.0-alpha.12]: https://github.com/jcornaz/beancount_parser_2/compare/v1.0.0-alpha.11...v1.0.0-alpha.12
-[1.0.0-alpha.11]: https://github.com/jcornaz/beancount_parser_2/compare/v1.0.0-alpha.10...v1.0.0-alpha.11
-[1.0.0-alpha.10]: https://github.com/jcornaz/beancount_parser_2/compare/v1.0.0-alpha.9...v1.0.0-alpha.10
-[1.0.0-alpha.9]: https://github.com/jcornaz/beancount_parser_2/compare/v1.0.0-alpha.8...v1.0.0-alpha.9
-[1.0.0-alpha.8]: https://github.com/jcornaz/beancount_parser_2/compare/v1.0.0-alpha.7...v1.0.0-alpha.8
-[1.0.0-alpha.7]: https://github.com/jcornaz/beancount_parser_2/compare/v1.0.0-alpha.6...v1.0.0-alpha.7
-[1.0.0-alpha.6]: https://github.com/jcornaz/beancount_parser_2/compare/v1.0.0-alpha.5...v1.0.0-alpha.6
-[1.0.0-alpha.5]: https://github.com/jcornaz/beancount_parser_2/compare/v1.0.0-alpha.4...v1.0.0-alpha.5
-[1.0.0-alpha.4]: https://github.com/jcornaz/beancount_parser_2/compare/v1.0.0-alpha.3...v1.0.0-alpha.4
-[1.0.0-alpha.3]: https://github.com/jcornaz/beancount_parser_2/compare/v1.0.0-alpha.2...v1.0.0-alpha.3
-[1.0.0-alpha.2]: https://github.com/jcornaz/beancount_parser_2/compare/v1.0.0-alpha.1...v1.0.0-alpha.2
-[1.0.0-alpha.1]: https://github.com/jcornaz/beancount_parser_2/compare/v1.0.0-alpha.0...v1.0.0-alpha.1
-[1.0.0-alpha.0]: https://github.com/jcornaz/beancount_parser_2/compare/beancount-parser-v1.16.0...v1.0.0-alpha.0
+[Unreleased]: https://github.com/jcornaz/beancount-parser/compare/v1.0.0-beta.3...HEAD
+[1.0.0-beta.3]: https://github.com/jcornaz/beancount-parser/compare/v1.0.0-beta.2...v1.0.0-beta.3
+[1.0.0-beta.2]: https://github.com/jcornaz/beancount-parser/compare/v1.0.0-beta.1...v1.0.0-beta.2
+[1.0.0-beta.1]: https://github.com/jcornaz/beancount-parser/compare/v1.0.0-alpha.12...v1.0.0-beta.1
+[1.0.0-alpha.12]: https://github.com/jcornaz/beancount-parser/compare/v1.0.0-alpha.11...v1.0.0-alpha.12
+[1.0.0-alpha.11]: https://github.com/jcornaz/beancount-parser/compare/v1.0.0-alpha.10...v1.0.0-alpha.11
+[1.0.0-alpha.10]: https://github.com/jcornaz/beancount-parser/compare/v1.0.0-alpha.9...v1.0.0-alpha.10
+[1.0.0-alpha.9]: https://github.com/jcornaz/beancount-parser/compare/v1.0.0-alpha.8...v1.0.0-alpha.9
+[1.0.0-alpha.8]: https://github.com/jcornaz/beancount-parser/compare/v1.0.0-alpha.7...v1.0.0-alpha.8
+[1.0.0-alpha.7]: https://github.com/jcornaz/beancount-parser/compare/v1.0.0-alpha.6...v1.0.0-alpha.7
+[1.0.0-alpha.6]: https://github.com/jcornaz/beancount-parser/compare/v1.0.0-alpha.5...v1.0.0-alpha.6
+[1.0.0-alpha.5]: https://github.com/jcornaz/beancount-parser/compare/v1.0.0-alpha.4...v1.0.0-alpha.5
+[1.0.0-alpha.4]: https://github.com/jcornaz/beancount-parser/compare/v1.0.0-alpha.3...v1.0.0-alpha.4
+[1.0.0-alpha.3]: https://github.com/jcornaz/beancount-parser/compare/v1.0.0-alpha.2...v1.0.0-alpha.3
+[1.0.0-alpha.2]: https://github.com/jcornaz/beancount-parser/compare/v1.0.0-alpha.1...v1.0.0-alpha.2
+[1.0.0-alpha.1]: https://github.com/jcornaz/beancount-parser/compare/v1.0.0-alpha.0...v1.0.0-alpha.1
+[1.0.0-alpha.0]: https://github.com/jcornaz/beancount-parser/compare/beancount-parser-v1.16.0...v1.0.0-alpha.0
 

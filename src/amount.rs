@@ -24,9 +24,9 @@ use crate::{IResult, Span};
 /// # Example
 ///
 /// ```
-/// use beancount_parser_2::DirectiveContent;
+/// use beancount_parser::DirectiveContent;
 /// let input = "2023-05-27 price CHF  4 PLN";
-/// let beancount = beancount_parser_2::parse::<f64>(input).unwrap();
+/// let beancount = beancount_parser::parse::<f64>(input).unwrap();
 /// let DirectiveContent::Price(price) = &beancount.directives[0].content else { unreachable!() };
 /// assert_eq!(price.currency.as_str(), "CHF");
 /// assert_eq!(price.amount.value, 4.0);

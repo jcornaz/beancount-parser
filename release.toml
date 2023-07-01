@@ -18,6 +18,6 @@ exactly = 1
 [[pre-release-replacements]]
 file = "CHANGELOG.md"
 search = "\\[Unreleased\\]:"
-replace = "[Unreleased]: https://github.com/jcornaz/beancount_parser_2/compare/v{{version}}...HEAD\n[{{version}}]:"
+replace = "[Unreleased]: https://github.com/jcornaz/beancount-parser/compare/v{{version}}...HEAD\n[{{version}}]:"
 prerelease = true
 exactly = 1

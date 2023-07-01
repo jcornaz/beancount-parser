@@ -14,9 +14,9 @@
 //! [rust_decimal crate]: https://docs.rs/rust_decimal
 //!
 //! ```
-//! use beancount_parser_2::{BeancountFile, DirectiveContent};
+//! use beancount_parser::{BeancountFile, DirectiveContent};
 //!
-//! # fn main() -> Result<(), beancount_parser_2::Error> {
+//! # fn main() -> Result<(), beancount_parser::Error> {
 //! let input = r#"
 //! 2023-05-20 * "Coffee beans"
 //!   Expenses:Groceries   10 CHF
@@ -24,7 +24,7 @@
 //! "#;
 //!
 //! // Parse into the `BeancountFile` struct:
-//! let beancount: BeancountFile<f64> = beancount_parser_2::parse::<f64>(input)?;
+//! let beancount: BeancountFile<f64> = beancount_parser::parse::<f64>(input)?;
 //!
 //! let directive = &beancount.directives[0];
 //! assert_eq!(directive.date.year, 2023);
@@ -142,7 +142,7 @@ impl<D> BeancountFile<D> {
     /// option "operating_currency" "CHF"
     /// option "operating_currency" "PLN"
     /// "#;
-    /// let beancount = beancount_parser_2::parse::<f64>(input).unwrap();
+    /// let beancount = beancount_parser::parse::<f64>(input).unwrap();
     /// assert_eq!(beancount.option("favorite_color"), Some("blue"));
     /// assert_eq!(beancount.option("operating_currency"), Some("CHF"));
     /// assert_eq!(beancount.option("foo"), None);
@@ -162,14 +162,14 @@ impl<D> BeancountFile<D> {
 /// a different content for each directive type.
 ///
 /// ```
-/// # use beancount_parser_2::{BeancountFile, DirectiveContent};
+/// # use beancount_parser::{BeancountFile, DirectiveContent};
 /// let input = r#"
 /// 2022-01-01 open Assets:Cash
 /// 2022-01-01 * "Grocery shopping"
 ///   Expenses:Groceries  10 CHF
 ///   Assets:Cash
 /// "#;
-/// let beancount: BeancountFile<f64> = beancount_parser_2::parse(input).unwrap();
+/// let beancount: BeancountFile<f64> = beancount_parser::parse(input).unwrap();
 /// assert_eq!(beancount.directives.len(), 2);
 /// for directive in beancount.directives {
 ///    println!("line: {}", directive.line_number);

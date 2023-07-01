@@ -2,7 +2,7 @@ use std::{collections::HashSet, path::Path};
 
 use rstest::rstest;
 
-use beancount_parser_2::{metadata, parse, Directive, DirectiveContent};
+use beancount_parser::{metadata, parse, Directive, DirectiveContent};
 
 const COMMENTS: &str = include_str!("samples/comments.beancount");
 const SIMPLE: &str = include_str!("samples/simple.beancount");
