@@ -9,12 +9,6 @@ A [beancount] file parser library for rust
 
 [beancount]: https://beancount.github.io/docs/index.html
 
-This crate is a rewrite of [beancount-parser]. Not all features have been ported yet, and some of them may never be.
-
-If you're missing something, please open an issue.
-
-[beancount-parser]: https://github.com/jcornaz/beancount-parser
-
 ## Goal
 
 Parse a [beancount file](https://beancount.github.io/docs/beancount_language_syntax.html) into a rust data structure
