@@ -43,7 +43,7 @@ use crate::{
 /// ```
 #[derive(Debug, Clone)]
 #[non_exhaustive]
-pub struct Transaction<D> {
+pub struct Transaction<D, A = Option<Amount<D>>> {
     /// Transaction flag (`*` or `!` or `None` when using the `txn` keyword)
     pub flag: Option<char>,
     /// Payee (if present)
@@ -55,7 +55,7 @@ pub struct Transaction<D> {
     /// Set of links
     pub links: HashSet<Link>,
     /// Postings
-    pub postings: Vec<Posting<D>>,
+    pub postings: Vec<Posting<D, A>>,
 }
 
 /// A transaction posting
@@ -87,13 +87,13 @@ pub struct Transaction<D> {
 /// ```
 #[derive(Debug, Clone)]
 #[non_exhaustive]
-pub struct Posting<D> {
+pub struct Posting<D, A = Option<Amount<D>>> {
     /// Transaction flag (`*` or `!` or `None` when absent)
     pub flag: Option<char>,
     /// Account modified by the posting
     pub account: Account,
     /// Amount being added to the account
-    pub amount: Option<Amount<D>>,
+    pub amount: A,
     /// Cost (content within `{` and `}`)
     pub cost: Option<Cost<D>>,
     /// Price (`@` or `@@`) syntax
