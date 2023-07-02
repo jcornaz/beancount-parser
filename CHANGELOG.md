@@ -7,11 +7,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
-### Added
-
-* Transaction and posting are now generic over the amount type `A` which is `Option<Amount<D>>` by default.
-  So it is possible to represent a transaction where all postings have a defined amount with the type `Transaction<D, Amount<D>>`.
-
 
 ## [2.0.0-beta.1] - 2023-07-01
 
