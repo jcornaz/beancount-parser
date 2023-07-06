@@ -74,6 +74,8 @@ mod amount;
 mod date;
 mod error;
 mod event;
+#[allow(unused)]
+mod iterator;
 pub mod metadata;
 mod transaction;
 
@@ -228,25 +230,25 @@ fn beancount_file<D: Decimal>(input: Span<'_>) -> IResult<'_, BeancountFile<D>> 
     let mut directives = Vec::new();
     for entry in &mut iter {
         match entry {
-            Entry::Directive(mut d) => {
+            RawEntry::Directive(mut d) => {
                 if let DirectiveContent::Transaction(trx) = &mut d.content {
                     trx.tags.extend(tag_stack.iter().cloned());
                 }
                 directives.push(d);
             }
-            Entry::Option(option) => {
+            RawEntry::Option(option) => {
                 options.push(option);
             }
-            Entry::Include(path) => {
+            RawEntry::Include(path) => {
                 includes.push(path);
             }
-            Entry::PushTag(tag) => {
+            RawEntry::PushTag(tag) => {
                 tag_stack.insert(tag);
             }
-            Entry::PopTag(tag) => {
+            RawEntry::PopTag(tag) => {
                 tag_stack.remove(&tag);
             }
-            Entry::Comment => (),
+            RawEntry::Comment => (),
         }
     }
     let (input, _) = iter.finish()?;
@@ -260,7 +262,34 @@ fn beancount_file<D: Decimal>(input: Span<'_>) -> IResult<'_, BeancountFile<D>> 
     ))
 }
 
+impl<D> FromIterator<Entry<D>> for BeancountFile<D> {
+    fn from_iter<T: IntoIterator<Item = Entry<D>>>(iter: T) -> Self {
+        let mut options = Vec::new();
+        let mut includes = Vec::new();
+        let mut directives = Vec::new();
+        for entry in iter {
+            match entry {
+                Entry::Directive(d) => directives.push(d),
+                Entry::Option(o) => options.push(o),
+                Entry::Include(p) => includes.push(p),
+            }
+        }
+        BeancountFile {
+            options,
+            includes,
+            directives,
+        }
+    }
+}
+
+#[allow(unused)]
 enum Entry<D> {
+    Directive(Directive<D>),
+    Option(BeanOption),
+    Include(PathBuf),
+}
+
+enum RawEntry<D> {
     Directive(Directive<D>),
     Option(BeanOption),
     Include(PathBuf),
@@ -269,18 +298,18 @@ enum Entry<D> {
     Comment,
 }
 
-fn entry<D: Decimal>(input: Span<'_>) -> IResult<'_, Entry<D>> {
+fn entry<D: Decimal>(input: Span<'_>) -> IResult<'_, RawEntry<D>> {
     alt((
-        directive.map(Entry::Directive),
+        directive.map(RawEntry::Directive),
         option.map(|(name, value)| {
-            Entry::Option(BeanOption {
+            RawEntry::Option(BeanOption {
                 name: name.into(),
                 value: value.into(),
             })
         }),
-        include.map(|p| Entry::Include(p)),
+        include.map(|p| RawEntry::Include(p)),
         tag_stack_operation,
-        line.map(|_| Entry::Comment),
+        line.map(|_| RawEntry::Comment),
     ))(input)
 }
 
@@ -354,10 +383,10 @@ fn include(input: Span<'_>) -> IResult<'_, PathBuf> {
     Ok((input, path.into()))
 }
 
-fn tag_stack_operation<D>(input: Span<'_>) -> IResult<'_, Entry<D>> {
+fn tag_stack_operation<D>(input: Span<'_>) -> IResult<'_, RawEntry<D>> {
     alt((
-        preceded(tuple((tag("pushtag"), space1)), transaction::parse_tag).map(Entry::PushTag),
-        preceded(tuple((tag("poptag"), space1)), transaction::parse_tag).map(Entry::PopTag),
+        preceded(tuple((tag("pushtag"), space1)), transaction::parse_tag).map(RawEntry::PushTag),
+        preceded(tuple((tag("poptag"), space1)), transaction::parse_tag).map(RawEntry::PopTag),
     ))(input)
 }
 
