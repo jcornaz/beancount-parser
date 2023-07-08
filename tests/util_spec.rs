@@ -2,7 +2,9 @@ use std::fmt::Debug;
 
 use rstest::rstest;
 
-use beancount_parser::{parse, BeancountFile, Currency, Date, DirectiveContent};
+use beancount_parser::{
+    parse, parse_iter, BeancountFile, Currency, Date, DirectiveContent, Entry, Error,
+};
 
 fn is_normal<T: Sized + Send + Sync + Unpin>() {}
 fn is_debug<T: Debug>() {}
@@ -16,9 +18,16 @@ fn beancount_file_type_should_be_normal() {
 }
 
 #[test]
+fn result_entry_type_should_be_normal() {
+    is_normal::<Result<Entry<f32>, Error>>();
+    is_debug::<Result<Entry<f32>, Error>>();
+    is_clone::<Result<Entry<f32>, Error>>();
+}
+
+#[test]
 fn error_debug_impl_is_succinct() {
     let input = "2023-06-11 * Oops\n\n\n\n\n; end comment";
-    let Err(err) = parse::<f64>(input) else { unreachable!("parsing should fail") };
+    let err = parse_iter::<f64>(input).next().unwrap().unwrap_err();
     let debug = format!("{err:?}");
     assert!(!debug.contains("; end comment"), "{}", debug);
 }

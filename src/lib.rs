@@ -253,6 +253,7 @@ impl<D> FromIterator<Entry<D>> for BeancountFile<D> {
 /// It is more general than `Directive` as an entry can also be option or an include.
 #[allow(missing_docs)]
 #[non_exhaustive]
+#[derive(Debug, Clone)]
 pub enum Entry<D> {
     Directive(Directive<D>),
     Option(BeanOption),

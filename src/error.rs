@@ -11,7 +11,7 @@ use crate::Span;
 /// let error = result.unwrap_err();
 /// assert_eq!(error.line_number(), 1);
 /// ```
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Error {
     line_number: u32,
 }

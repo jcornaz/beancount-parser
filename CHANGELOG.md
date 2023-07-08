@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 * `Entry` enum which is one of `Directive`, `Option`, `Include`
 * `parse_iter` which return an iterator over `Result<Entry<D>, Result>`
+* implement `Clone` for `Error`
 
 ## [2.0.0-beta.1] - 2023-07-01
 
