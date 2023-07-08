@@ -24,14 +24,14 @@ use crate::{
 ///
 /// # Example
 /// ```
-/// # use beancount_parser::{DirectiveContent};
+/// # use beancount_parser::{BeancountFile, DirectiveContent};
 /// let input = r#"
 /// 2022-05-22 * "Grocery store" "Grocery shopping" #food
 ///   Assets:Cash           -10 CHF
 ///   Expenses:Groceries
 /// "#;
 ///
-/// let beancount = beancount_parser::parse::<f64>(input).unwrap();
+/// let beancount: BeancountFile<f64> = input.parse().unwrap();
 /// let DirectiveContent::Transaction(trx) = &beancount.directives[0].content else {
 ///   unreachable!("was not a transaction")
 /// };
@@ -62,14 +62,14 @@ pub struct Transaction<D> {
 ///
 /// # Example
 /// ```
-/// # use beancount_parser::{DirectiveContent, PostingPrice};
+/// # use beancount_parser::{BeancountFile, DirectiveContent, PostingPrice};
 /// let input = r#"
 /// 2022-05-22 * "Grocery shopping"
 ///   Assets:Cash           1 CHF {2 PLN} @ 3 EUR
 ///   Expenses:Groceries
 /// "#;
 ///
-/// let beancount = beancount_parser::parse::<f64>(input).unwrap();
+/// let beancount: BeancountFile<f64> = input.parse().unwrap();
 /// let DirectiveContent::Transaction(trx) = &beancount.directives[0].content else {
 ///   unreachable!("was not a transaction")
 /// };
@@ -129,14 +129,14 @@ pub enum PostingPrice<D> {
 ///
 /// # Example
 /// ```
-/// # use beancount_parser::{DirectiveContent};
+/// # use beancount_parser::{BeancountFile, DirectiveContent};
 /// let input = r#"
 /// 2022-05-22 * "Grocery store" "Grocery shopping" #food
 ///   Assets:Cash           -10 CHF
 ///   Expenses:Groceries
 /// "#;
 ///
-/// let beancount = beancount_parser::parse::<f64>(input).unwrap();
+/// let beancount: BeancountFile<f64> = input.parse().unwrap();
 /// let DirectiveContent::Transaction(trx) = &beancount.directives[0].content else {
 ///   unreachable!("was not a transaction")
 /// };
@@ -175,14 +175,14 @@ impl Borrow<str> for Tag {
 ///
 /// # Example
 /// ```
-/// # use beancount_parser::{DirectiveContent};
+/// # use beancount_parser::{BeancountFile, DirectiveContent};
 /// let input = r#"
 /// 2014-02-05 * "Invoice for January" ^invoice-pepe-studios-jan14
 ///    Income:Clients:PepeStudios           -8450.00 USD
 ///    Assets:AccountsReceivable
 /// "#;
 ///
-/// let beancount = beancount_parser::parse::<f64>(input).unwrap();
+/// let beancount: BeancountFile<f64> = input.parse().unwrap();
 /// let DirectiveContent::Transaction(trx) = &beancount.directives[0].content else {
 ///   unreachable!("was not a transaction")
 /// };

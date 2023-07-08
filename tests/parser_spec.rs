@@ -2,7 +2,7 @@ use std::{collections::HashSet, path::Path};
 
 use rstest::rstest;
 
-use beancount_parser::{metadata, parse, Directive, DirectiveContent};
+use beancount_parser::{metadata, parse, BeancountFile, Directive, DirectiveContent};
 
 const COMMENTS: &str = include_str!("samples/comments.beancount");
 const SIMPLE: &str = include_str!("samples/simple.beancount");
@@ -432,7 +432,10 @@ fn directive_should_contain_relevant_line_number() {
 }
 
 fn parse_single_directive(input: &str) -> Directive<f64> {
-    let directives = parse(input).expect("parsing should succeed").directives;
+    let directives = input
+        .parse::<BeancountFile<f64>>()
+        .expect("parsing should succeed")
+        .directives;
     assert_eq!(
         directives.len(),
         1,

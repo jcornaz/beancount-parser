@@ -3,7 +3,8 @@ use std::collections::HashSet;
 use rstest::rstest;
 
 use beancount_parser::{
-    metadata, parse, Directive, DirectiveContent, Posting, PostingPrice, Transaction,
+    metadata, parse, parse_iter, Directive, DirectiveContent, Entry, Posting, PostingPrice,
+    Transaction,
 };
 
 const COMMENTS: &str = include_str!("samples/comments.beancount");
@@ -16,11 +17,15 @@ const OFFICIAL: &str = include_str!("samples/official.beancount");
 #[case(SIMPLE, 3)]
 #[case(OFFICIAL, 1096)]
 fn should_find_all_transactions(#[case] input: &str, #[case] expected_count: usize) {
-    let actual_count = parse::<f64>(input)
-        .expect("parsing should succeed")
-        .directives
-        .into_iter()
-        .filter(|d| matches!(d.content, DirectiveContent::Transaction(_)))
+    let actual_count = parse_iter::<f64>(input)
+        .map(|res| res.expect("parsing should succeed"))
+        .filter_map(|entry| match entry {
+            Entry::Directive(Directive {
+                content: DirectiveContent::Transaction(trx),
+                ..
+            }) => Some(trx),
+            _ => None,
+        })
         .count();
     assert_eq!(actual_count, expected_count);
 }

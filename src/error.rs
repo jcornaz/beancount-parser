@@ -6,7 +6,8 @@ use crate::Span;
 ///
 /// # Example
 /// ```
-/// let result = beancount_parser::parse::<f64>("2022-05-21 oops");
+/// # use beancount_parser::BeancountFile;
+/// let result: Result<BeancountFile<f64>, beancount_parser::Error> = "2022-05-21 oops".parse();
 /// assert!(result.is_err());
 /// let error = result.unwrap_err();
 /// assert_eq!(error.line_number(), 1);

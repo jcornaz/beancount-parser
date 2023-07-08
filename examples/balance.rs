@@ -11,7 +11,9 @@ use std::{
 
 use rust_decimal::Decimal;
 
-use beancount_parser::{Account, Amount, Currency, Directive, DirectiveContent, Transaction};
+use beancount_parser::{
+    Account, Amount, BeancountFile, Currency, Directive, DirectiveContent, Transaction,
+};
 
 type Report = HashMap<Account, HashMap<Currency, Decimal>>;
 
@@ -29,7 +31,7 @@ fn load_from_files(mut files: Vec<PathBuf>) -> Result<Vec<Directive<Decimal>>, B
     while let Some(path) = files.pop() {
         input.clear();
         File::open(&path)?.read_to_string(&mut input)?;
-        let file = beancount_parser::parse::<Decimal>(&input)?;
+        let file: BeancountFile<Decimal> = input.parse()?;
         files.extend(file.includes.into_iter().map(|include| {
             if include.is_relative() {
                 path.parent().unwrap().join(include)

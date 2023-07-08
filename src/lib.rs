@@ -24,7 +24,7 @@
 //! "#;
 //!
 //! // Parse into the `BeancountFile` struct:
-//! let beancount: BeancountFile<f64> = beancount_parser::parse::<f64>(input)?;
+//! let beancount: BeancountFile<f64> = input.parse()?;
 //!
 //! let directive = &beancount.directives[0];
 //! assert_eq!(directive.date.year, 2023);
@@ -44,6 +44,7 @@
 //! ```
 
 use std::path::PathBuf;
+use std::str::FromStr;
 
 use nom::{
     branch::alt,
@@ -92,9 +93,22 @@ pub fn parse<D: Decimal>(input: &str) -> Result<BeancountFile<D>, Error> {
     parse_iter(input).collect()
 }
 
+impl<D: Decimal> FromStr for BeancountFile<D> {
+    type Err = Error;
+    fn from_str(input: &str) -> Result<Self, Self::Err> {
+        parse_iter(input).collect()
+    }
+}
+
 /// Parse the beancount file and return an iterator over `Result<Entry<D>, Result>`
 ///
+/// It is generic over the [`Decimal`] type `D`.
+///
 /// See [`Entry`]
+///
+/// # Errors
+///
+/// The iterator will emit an [`Error`] in case of invalid beancount syntax found.
 pub fn parse_iter<'a, D: Decimal + 'a>(
     input: &'a str,
 ) -> impl Iterator<Item = Result<Entry<D>, Error>> + 'a {
@@ -145,12 +159,13 @@ impl<D> BeancountFile<D> {
     /// # Example
     ///
     /// ```
+    /// use beancount_parser::BeancountFile;
     /// let input = r#"
     /// option "favorite_color" "blue"
     /// option "operating_currency" "CHF"
     /// option "operating_currency" "PLN"
     /// "#;
-    /// let beancount = beancount_parser::parse::<f64>(input).unwrap();
+    /// let beancount: BeancountFile<f64> = input.parse().unwrap();
     /// assert_eq!(beancount.option("favorite_color"), Some("blue"));
     /// assert_eq!(beancount.option("operating_currency"), Some("CHF"));
     /// assert_eq!(beancount.option("foo"), None);
@@ -177,7 +192,7 @@ impl<D> BeancountFile<D> {
 ///   Expenses:Groceries  10 CHF
 ///   Assets:Cash
 /// "#;
-/// let beancount: BeancountFile<f64> = beancount_parser::parse(input).unwrap();
+/// let beancount: BeancountFile<f64> = input.parse().unwrap();
 /// assert_eq!(beancount.directives.len(), 2);
 /// for directive in beancount.directives {
 ///    println!("line: {}", directive.line_number);
