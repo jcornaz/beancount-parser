@@ -43,6 +43,7 @@
 //! # Ok(()) }
 //! ```
 
+use std::collections::HashSet;
 use std::{fs::File, io::Read, path::PathBuf, str::FromStr};
 
 use nom::{
@@ -126,21 +127,33 @@ pub fn read_files<D: Decimal, F: FnMut(Entry<D>)>(
     files: impl IntoIterator<Item = PathBuf>,
     mut on_entry: F,
 ) -> Result<(), ReadFileError> {
-    let mut pending: Vec<PathBuf> = files.into_iter().collect();
+    let mut loaded: HashSet<PathBuf> = HashSet::new();
+    let mut pending: Vec<PathBuf> = files
+        .into_iter()
+        .map(|p| p.canonicalize())
+        .collect::<Result<_, _>>()?;
     let mut buffer = String::new();
     while let Some(path) = pending.pop() {
+        if loaded.contains(&path) {
+            continue;
+        }
+        loaded.insert(path.clone());
         buffer.clear();
         File::open(&path)?.read_to_string(&mut buffer)?;
         for result in parse_iter::<D>(&buffer) {
             let entry = result?;
             match entry {
                 Entry::Include(include) => {
-                    pending.push(if include.is_relative() {
+                    let path = if include.is_relative() {
                         let Some(parent) = path.parent() else { unreachable!("there must be a parent if the file was valid") };
                         parent.join(include)
                     } else {
                         include
-                    });
+                    };
+                    let path = path.canonicalize()?;
+                    if !loaded.contains(&path) {
+                        pending.push(path);
+                    }
                 }
                 entry => on_entry(entry),
             }

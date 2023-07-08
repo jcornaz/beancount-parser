@@ -11,7 +11,8 @@ option "operating_currency" "USD"
 ; Added includes to test that functionality
 include "./comments.beancount"
 include "./simple.beancount"
-
+include "./official.beancount"
+include "./cycle.beancount"
 
 
 * Commodities
