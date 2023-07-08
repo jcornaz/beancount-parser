@@ -19,7 +19,12 @@ fn main() -> Result<(), Box<dyn Error>> {
     let mut directives = Vec::<Directive<Decimal>>::new();
     beancount_parser::read_files(args().skip(1).map(Into::into), |entry| {
         if let Entry::Directive(d) = entry {
-            directives.push(d);
+            if matches!(
+                d.content,
+                DirectiveContent::Transaction(_) | DirectiveContent::Balance(_)
+            ) {
+                directives.push(d);
+            }
         }
     })?;
     let report = build_report(directives);
