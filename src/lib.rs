@@ -43,19 +43,20 @@
 //! # Ok(()) }
 //! ```
 
-use std::{collections::HashSet, path::PathBuf};
+use std::path::PathBuf;
 
 use nom::{
     branch::alt,
     bytes::complete::{tag, take_till},
     character::complete::{char, line_ending, not_line_ending, space0, space1},
     combinator::not,
-    combinator::{all_consuming, cut, eof, iterator, map, opt},
+    combinator::{cut, eof, iterator, map, opt},
     sequence::{delimited, preceded, terminated, tuple},
-    Finish, Parser,
+    Parser,
 };
 use nom_locate::position;
 
+use crate::iterator::Iter;
 pub use crate::{
     account::{Account, Balance, Close, Open, Pad},
     amount::{Amount, Currency, Decimal, Price},
@@ -89,10 +90,13 @@ mod transaction;
 ///
 /// Returns an [`Error`] in case of invalid beancount syntax found.
 pub fn parse<D: Decimal>(input: &str) -> Result<BeancountFile<D>, Error> {
-    match all_consuming(beancount_file)(Span::new(input)).finish() {
-        Ok((_, content)) => Ok(content),
-        Err(nom::error::Error { input, .. }) => Err(Error::new(input)),
-    }
+    parse_iter(input).collect()
+}
+
+fn parse_iter<'a, D: Decimal + 'a>(
+    input: &'a str,
+) -> impl Iterator<Item = Result<Entry<D>, Error>> + 'a {
+    Iter::new(iterator(Span::new(input), entry::<D>))
 }
 
 /// Main struct representing a parsed beancount file.
@@ -221,46 +225,6 @@ pub struct ConversionError;
 
 type Span<'a> = nom_locate::LocatedSpan<&'a str>;
 type IResult<'a, O> = nom::IResult<Span<'a>, O>;
-
-fn beancount_file<D: Decimal>(input: Span<'_>) -> IResult<'_, BeancountFile<D>> {
-    let mut iter = iterator(input, entry);
-    let mut options = Vec::new();
-    let mut includes = Vec::new();
-    let mut tag_stack = HashSet::new();
-    let mut directives = Vec::new();
-    for entry in &mut iter {
-        match entry {
-            RawEntry::Directive(mut d) => {
-                if let DirectiveContent::Transaction(trx) = &mut d.content {
-                    trx.tags.extend(tag_stack.iter().cloned());
-                }
-                directives.push(d);
-            }
-            RawEntry::Option(option) => {
-                options.push(option);
-            }
-            RawEntry::Include(path) => {
-                includes.push(path);
-            }
-            RawEntry::PushTag(tag) => {
-                tag_stack.insert(tag);
-            }
-            RawEntry::PopTag(tag) => {
-                tag_stack.remove(&tag);
-            }
-            RawEntry::Comment => (),
-        }
-    }
-    let (input, _) = iter.finish()?;
-    Ok((
-        input,
-        BeancountFile {
-            options,
-            includes,
-            directives,
-        },
-    ))
-}
 
 impl<D> FromIterator<Entry<D>> for BeancountFile<D> {
     fn from_iter<T: IntoIterator<Item = Entry<D>>>(iter: T) -> Self {

@@ -4,23 +4,25 @@ use nom::{combinator::ParserIterator, Finish};
 
 use crate::{DirectiveContent, Entry, Error, RawEntry, Span, Tag};
 
-pub(crate) struct Iter<I, E, F> {
-    inner: Option<ParserIterator<I, E, F>>,
+type InnerIter<'i, F> = ParserIterator<Span<'i>, nom::error::Error<Span<'i>>, F>;
+
+pub(crate) struct Iter<'i, F> {
+    inner: Option<InnerIter<'i, F>>,
     tag_stack: HashSet<Tag>,
 }
 
-impl<I, E, F> Iter<I, E, F> {
-    pub(crate) fn new(inner: ParserIterator<I, E, F>) -> Self {
+impl<'i, F> Iter<'i, F> {
+    pub fn new(value: InnerIter<'i, F>) -> Self {
         Self {
-            inner: Some(inner),
+            inner: Some(value),
             tag_stack: HashSet::new(),
         }
     }
 }
 
-impl<'i, D, F> Iterator for Iter<Span<'i>, nom::error::Error<Span<'i>>, F>
+impl<'i, D, F> Iterator for Iter<'i, F>
 where
-    ParserIterator<Span<'i>, nom::error::Error<Span<'i>>, F>: Iterator<Item = RawEntry<D>>,
+    for<'a> &'a mut InnerIter<'i, F>: Iterator<Item = RawEntry<D>>,
 {
     type Item = Result<Entry<D>, Error>;
     fn next(&mut self) -> Option<Self::Item> {
