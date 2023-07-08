@@ -5,43 +5,26 @@
 //!
 //! This example should play well with grep: `cargo run --example balance -- $LEDGER_PATH | grep Assets`
 
-use std::{
-    cmp::Ordering, collections::HashMap, env::args, error::Error, fs::File, io::Read, path::PathBuf,
-};
+use std::{cmp::Ordering, collections::HashMap, env::args, error::Error};
 
 use rust_decimal::Decimal;
 
 use beancount_parser::{
-    Account, Amount, BeancountFile, Currency, Directive, DirectiveContent, Transaction,
+    Account, Amount, Currency, Directive, DirectiveContent, Entry, Transaction,
 };
 
 type Report = HashMap<Account, HashMap<Currency, Decimal>>;
 
 fn main() -> Result<(), Box<dyn Error>> {
-    let files: Vec<PathBuf> = args().skip(1).map(Into::into).collect();
-    let directives = load_from_files(files)?;
+    let mut directives = Vec::<Directive<Decimal>>::new();
+    beancount_parser::read_files(args().skip(1).map(Into::into), |entry| {
+        if let Entry::Directive(d) = entry {
+            directives.push(d);
+        }
+    })?;
     let report = build_report(directives);
     print(&report);
     Ok(())
-}
-
-fn load_from_files(mut files: Vec<PathBuf>) -> Result<Vec<Directive<Decimal>>, Box<dyn Error>> {
-    let mut directives = Vec::<Directive<Decimal>>::new();
-    let mut input = String::new();
-    while let Some(path) = files.pop() {
-        input.clear();
-        File::open(&path)?.read_to_string(&mut input)?;
-        let file: BeancountFile<Decimal> = input.parse()?;
-        files.extend(file.includes.into_iter().map(|include| {
-            if include.is_relative() {
-                path.parent().unwrap().join(include)
-            } else {
-                include
-            }
-        }));
-        directives.extend(file.directives);
-    }
-    Ok(directives)
 }
 
 fn compare_directives<D>(a: &Directive<D>, b: &Directive<D>) -> Ordering {

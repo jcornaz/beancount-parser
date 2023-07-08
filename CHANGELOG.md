@@ -13,6 +13,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 * `parse_iter` which return an iterator over `Result<Entry<D>, Result>`
 * implement `Clone` for `Error`
 * implement `FromStr` for `BeancountFile<D>` where `D: Decimal`
+* `read_files` to read and parse files from disk, following the include directives
+
 
 ## [2.0.0-beta.1] - 2023-07-01
 

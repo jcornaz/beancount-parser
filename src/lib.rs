@@ -43,8 +43,7 @@
 //! # Ok(()) }
 //! ```
 
-use std::path::PathBuf;
-use std::str::FromStr;
+use std::{fs::File, io::Read, path::PathBuf, str::FromStr};
 
 use nom::{
     branch::alt,
@@ -62,7 +61,7 @@ pub use crate::{
     account::{Account, Balance, Close, Open, Pad},
     amount::{Amount, Currency, Decimal, Price},
     date::Date,
-    error::Error,
+    error::{Error, ReadFileError},
     event::Event,
     transaction::{Cost, Link, Posting, PostingPrice, Tag, Transaction},
 };
@@ -90,14 +89,7 @@ mod transaction;
 ///
 /// Returns an [`Error`] in case of invalid beancount syntax found.
 pub fn parse<D: Decimal>(input: &str) -> Result<BeancountFile<D>, Error> {
-    parse_iter(input).collect()
-}
-
-impl<D: Decimal> FromStr for BeancountFile<D> {
-    type Err = Error;
-    fn from_str(input: &str) -> Result<Self, Self::Err> {
-        parse_iter(input).collect()
-    }
+    input.parse()
 }
 
 /// Parse the beancount file and return an iterator over `Result<Entry<D>, Result>`
@@ -113,6 +105,48 @@ pub fn parse_iter<'a, D: Decimal + 'a>(
     input: &'a str,
 ) -> impl Iterator<Item = Result<Entry<D>, Error>> + 'a {
     Iter::new(iterator(Span::new(input), entry::<D>))
+}
+
+impl<D: Decimal> FromStr for BeancountFile<D> {
+    type Err = Error;
+    fn from_str(input: &str) -> Result<Self, Self::Err> {
+        parse_iter(input).collect()
+    }
+}
+
+/// Read the files from disk and parse their content.
+///
+/// It follows the `include` directives found.
+///
+/// # Errors
+///
+/// Returns an error if any file could not be read (IO error)
+/// or if there is a beancount syntax error in any file read
+pub fn read_files<D: Decimal, F: FnMut(Entry<D>)>(
+    files: impl IntoIterator<Item = PathBuf>,
+    mut on_entry: F,
+) -> Result<(), ReadFileError> {
+    let mut pending: Vec<PathBuf> = files.into_iter().collect();
+    let mut buffer = String::new();
+    while let Some(path) = pending.pop() {
+        buffer.clear();
+        File::open(&path)?.read_to_string(&mut buffer)?;
+        for result in parse_iter::<D>(&buffer) {
+            let entry = result?;
+            match entry {
+                Entry::Include(include) => {
+                    pending.push(if include.is_relative() {
+                        let Some(parent) = path.parent() else { unreachable!("there must be a parent if the file was valid") };
+                        parent.join(include)
+                    } else {
+                        include
+                    });
+                }
+                entry => on_entry(entry),
+            }
+        }
+    }
+    Ok(())
 }
 
 /// Main struct representing a parsed beancount file.
@@ -135,16 +169,14 @@ pub struct BeancountFile<D> {
     pub directives: Vec<Directive<D>>,
 }
 
-/// An beancount option
-///
-/// See: <https://beancount.github.io/docs/beancount_language_syntax.html#options>
-#[derive(Debug, Clone)]
-#[non_exhaustive]
-pub struct BeanOption {
-    /// Name of the option
-    pub name: String,
-    /// Value of the option
-    pub value: String,
+impl<D> Default for BeancountFile<D> {
+    fn default() -> Self {
+        Self {
+            options: Vec::new(),
+            includes: Vec::new(),
+            directives: Vec::new(),
+        }
+    }
 }
 
 impl<D> BeancountFile<D> {
@@ -176,6 +208,26 @@ impl<D> BeancountFile<D> {
             .iter()
             .find(|opt| opt.name == key)
             .map(|opt| &opt.value[..])
+    }
+}
+
+impl<D> Extend<Entry<D>> for BeancountFile<D> {
+    fn extend<T: IntoIterator<Item = Entry<D>>>(&mut self, iter: T) {
+        for entry in iter {
+            match entry {
+                Entry::Directive(d) => self.directives.push(d),
+                Entry::Option(o) => self.options.push(o),
+                Entry::Include(p) => self.includes.push(p),
+            }
+        }
+    }
+}
+
+impl<D> FromIterator<Entry<D>> for BeancountFile<D> {
+    fn from_iter<T: IntoIterator<Item = Entry<D>>>(iter: T) -> Self {
+        let mut file = BeancountFile::default();
+        file.extend(iter);
+        file
     }
 }
 
@@ -243,26 +295,6 @@ pub struct ConversionError;
 type Span<'a> = nom_locate::LocatedSpan<&'a str>;
 type IResult<'a, O> = nom::IResult<Span<'a>, O>;
 
-impl<D> FromIterator<Entry<D>> for BeancountFile<D> {
-    fn from_iter<T: IntoIterator<Item = Entry<D>>>(iter: T) -> Self {
-        let mut options = Vec::new();
-        let mut includes = Vec::new();
-        let mut directives = Vec::new();
-        for entry in iter {
-            match entry {
-                Entry::Directive(d) => directives.push(d),
-                Entry::Option(o) => options.push(o),
-                Entry::Include(p) => includes.push(p),
-            }
-        }
-        BeancountFile {
-            options,
-            includes,
-            directives,
-        }
-    }
-}
-
 /// Entry in the beancount syntax
 ///
 /// It is more general than `Directive` as an entry can also be option or an include.
@@ -282,6 +314,18 @@ enum RawEntry<D> {
     PushTag(Tag),
     PopTag(Tag),
     Comment,
+}
+
+/// An beancount option
+///
+/// See: <https://beancount.github.io/docs/beancount_language_syntax.html#options>
+#[derive(Debug, Clone)]
+#[non_exhaustive]
+pub struct BeanOption {
+    /// Name of the option
+    pub name: String,
+    /// Value of the option
+    pub value: String,
 }
 
 fn entry<D: Decimal>(input: Span<'_>) -> IResult<'_, RawEntry<D>> {

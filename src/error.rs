@@ -42,3 +42,34 @@ impl Display for Error {
 }
 
 impl std::error::Error for Error {}
+
+/// Error returned when reading a beancount file from disk
+#[derive(Debug)]
+#[allow(missing_docs, clippy::module_name_repetitions)]
+pub enum ReadFileError {
+    Io(std::io::Error),
+    Syntax(Error),
+}
+
+impl Display for ReadFileError {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self {
+            ReadFileError::Io(err) => write!(f, "IO error: {err}"),
+            ReadFileError::Syntax(err) => write!(f, "Syntax error: {err}"),
+        }
+    }
+}
+
+impl std::error::Error for ReadFileError {}
+
+impl From<std::io::Error> for ReadFileError {
+    fn from(value: std::io::Error) -> Self {
+        Self::Io(value)
+    }
+}
+
+impl From<Error> for ReadFileError {
+    fn from(value: Error) -> Self {
+        Self::Syntax(value)
+    }
+}
