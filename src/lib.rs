@@ -75,7 +75,6 @@ mod amount;
 mod date;
 mod error;
 mod event;
-#[allow(unused)]
 mod iterator;
 pub mod metadata;
 mod transaction;
@@ -93,7 +92,10 @@ pub fn parse<D: Decimal>(input: &str) -> Result<BeancountFile<D>, Error> {
     parse_iter(input).collect()
 }
 
-fn parse_iter<'a, D: Decimal + 'a>(
+/// Parse the beancount file and return an iterator over `Result<Entry<D>, Result>`
+///
+/// See [`Entry`]
+pub fn parse_iter<'a, D: Decimal + 'a>(
     input: &'a str,
 ) -> impl Iterator<Item = Result<Entry<D>, Error>> + 'a {
     Iter::new(iterator(Span::new(input), entry::<D>))
@@ -246,8 +248,12 @@ impl<D> FromIterator<Entry<D>> for BeancountFile<D> {
     }
 }
 
-#[allow(unused)]
-enum Entry<D> {
+/// Entry in the beancount syntax
+///
+/// It is more general than `Directive` as an entry can also be option or an include.
+#[allow(missing_docs)]
+#[non_exhaustive]
+pub enum Entry<D> {
     Directive(Directive<D>),
     Option(BeanOption),
     Include(PathBuf),

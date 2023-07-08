@@ -7,12 +7,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Added
+
+* `Entry` enum which is one of `Directive`, `Option`, `Include`
+* `parse_iter` which return an iterator over `Result<Entry<D>, Result>`
 
 ## [2.0.0-beta.1] - 2023-07-01
 
 I finally decided to re-use the old crate name `beancount-parser` instead of continuing with [beancount_parser_2](https://github.com/jcornaz/beancount_parser_2).
 
-This release contains exactly the same functionallity `beancount_parser_2` version `1.0.0-beta.3`.
+This release contains exactly the same functionality `beancount_parser_2` version `1.0.0-beta.3`.
 `beancount_parser_2` will be discontinued and archived soon.
 
 ### Breaking changes
