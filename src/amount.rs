@@ -46,7 +46,6 @@ pub struct Price<D> {
 ///
 /// For an example, look at the [`Price`] directive
 #[derive(Debug, Clone, PartialEq)]
-#[non_exhaustive]
 pub struct Amount<D> {
     /// The value (decimal) part
     pub value: D,
