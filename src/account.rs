@@ -80,6 +80,35 @@ pub struct Open {
     pub account: Account,
     /// Currency constraints
     pub currencies: HashSet<Currency>,
+    /// Booking method
+    pub booking_method: Option<BookingMethod>,
+}
+
+#[derive(Debug, Clone, Eq, PartialEq, Ord, PartialOrd)]
+pub struct BookingMethod(Arc<str>);
+
+impl AsRef<str> for BookingMethod {
+    fn as_ref(&self) -> &str {
+        &self.0
+    }
+}
+
+impl Borrow<str> for BookingMethod {
+    fn borrow(&self) -> &str {
+        self.0.borrow()
+    }
+}
+
+impl Display for BookingMethod {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        Display::fmt(&self.0, f)
+    }
+}
+
+impl From<&str> for BookingMethod {
+    fn from(value: &str) -> Self {
+        Self(Arc::from(value))
+    }
 }
 
 /// Close account directive
@@ -162,13 +191,14 @@ pub(super) fn parse(input: Span<'_>) -> IResult<'_, Account> {
 
 pub(super) fn open(input: Span<'_>) -> IResult<'_, Open> {
     let (input, account) = parse(input)?;
-    let (input, _) = space0(input)?;
-    let (input, currencies) = opt(currencies)(input)?;
+    let (input, currencies) = opt(preceded(space1, currencies))(input)?;
+    let (input, booking_method) = opt(preceded(space1, crate::string))(input)?;
     Ok((
         input,
         Open {
             account,
             currencies: currencies.unwrap_or_default(),
+            booking_method: booking_method.map(Into::into),
         },
     ))
 }

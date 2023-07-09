@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Added
 
 * The `Amount` type is now exhaustive
+* Support booking method in open account directive
 
 
 ## [2.0.0-beta.2] - 2023-07-08
