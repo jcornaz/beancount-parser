@@ -43,16 +43,13 @@
 //! # Ok(()) }
 //! ```
 
-use std::collections::HashSet;
-use std::{fs::File, io::Read, path::PathBuf, str::FromStr};
+use std::{collections::HashSet, fs::File, io::Read, path::PathBuf, str::FromStr};
 
-use nom::combinator::all_consuming;
 use nom::{
     branch::alt,
     bytes::complete::{tag, take_till},
     character::complete::{char, line_ending, not_line_ending, space0, space1},
-    combinator::not,
-    combinator::{cut, eof, iterator, map, opt},
+    combinator::{all_consuming, cut, eof, iterator, map, not, opt},
     sequence::{delimited, preceded, terminated, tuple},
     Finish, Parser,
 };
