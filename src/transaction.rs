@@ -41,7 +41,7 @@ use crate::{
 /// assert!(trx.tags.contains("food"));
 /// assert_eq!(trx.postings.len(), 2);
 /// ```
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 #[non_exhaustive]
 pub struct Transaction<D> {
     /// Transaction flag (`*` or `!` or `None` when using the `txn` keyword)
@@ -85,7 +85,7 @@ pub struct Transaction<D> {
 /// assert_eq!(price.value, 3.0);
 /// assert_eq!(price.currency.as_str(), "EUR");
 /// ```
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 #[non_exhaustive]
 pub struct Posting<D> {
     /// Transaction flag (`*` or `!` or `None` when absent)
@@ -105,7 +105,7 @@ pub struct Posting<D> {
 /// Cost of a posting
 ///
 /// It is the amount within `{` and `}`.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 #[non_exhaustive]
 pub struct Cost<D> {
     /// Cost basis of the posting
@@ -117,7 +117,7 @@ pub struct Cost<D> {
 /// Price of a posting
 ///
 /// It is the amount following the `@` or `@@` symbols
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum PostingPrice<D> {
     /// Unit cost (`@`)
     Unit(Amount<D>),

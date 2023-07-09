@@ -3,7 +3,7 @@ use std::fmt::Debug;
 use rstest::rstest;
 
 use beancount_parser::{
-    parse, parse_iter, BeancountFile, Currency, Date, DirectiveContent, Entry, Error,
+    parse, parse_iter, BeancountFile, Currency, Date, Directive, DirectiveContent, Entry, Error,
 };
 
 fn is_normal<T: Sized + Send + Sync + Unpin>() {}
@@ -73,4 +73,24 @@ fn reject_invalid_currency_from_str(
 ) {
     let currency: Result<Currency, _> = raw.try_into();
     assert!(currency.is_err());
+}
+
+#[rstest]
+fn directive_from_str(
+    #[values(
+        "2023-07-09 close Assets:Cash",
+        "2023-07-09 open Assets:Cash CHF",
+        "2023-07-09 * \"hello\"",
+        "2023-07-09 * \"hello\" \"world\"",
+        "2023-07-09 * \"hello\" #hello",
+        "2023-07-09 * \"hello\" ^hello",
+        "2023-07-09 * \"hello\"\n  title: \"cool\"",
+        "2023-07-09 * \"hello\"\n  Assets:Cash 10 CHF\n  Income:Gifts"
+    )]
+    input: &str,
+) {
+    let file: BeancountFile<f64> = input.parse().unwrap();
+    let from_file = file.directives.into_iter().next().unwrap();
+    let from_str: Directive<f64> = input.parse().unwrap();
+    assert_eq!(from_file, from_str);
 }

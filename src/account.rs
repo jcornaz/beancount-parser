@@ -73,7 +73,7 @@ impl Borrow<str> for Account {
 /// assert_eq!(open.account.as_str(), "Assets:Bank:Checking");
 /// assert_eq!(open.currencies.iter().next().unwrap().as_str(), "CHF");
 /// ```
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 #[non_exhaustive]
 pub struct Open {
     /// Account being open
@@ -121,7 +121,7 @@ impl From<&str> for BookingMethod {
 /// let DirectiveContent::Close(close) = &beancount.directives[0].content else { unreachable!() };
 /// assert_eq!(close.account.as_str(), "Assets:Bank:Checking");
 /// ```
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 #[non_exhaustive]
 pub struct Close {
     /// Account being closed
@@ -140,7 +140,7 @@ pub struct Close {
 /// assert_eq!(balance.amount.value, 10.0);
 /// assert_eq!(balance.amount.currency.as_str(), "CHF");
 /// ```
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 #[non_exhaustive]
 pub struct Balance<D> {
     /// Account being asserted
@@ -160,7 +160,7 @@ pub struct Balance<D> {
 /// assert_eq!(pad.account.as_str(), "Assets:BofA:Checking");
 /// assert_eq!(pad.source_account.as_str(), "Equity:Opening-Balances");
 /// ```
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 #[non_exhaustive]
 pub struct Pad {
     /// Account being padded

@@ -46,6 +46,7 @@
 use std::collections::HashSet;
 use std::{fs::File, io::Read, path::PathBuf, str::FromStr};
 
+use nom::combinator::all_consuming;
 use nom::{
     branch::alt,
     bytes::complete::{tag, take_till},
@@ -53,7 +54,7 @@ use nom::{
     combinator::not,
     combinator::{cut, eof, iterator, map, opt},
     sequence::{delimited, preceded, terminated, tuple},
-    Parser,
+    Finish, Parser,
 };
 use nom_locate::position;
 
@@ -62,7 +63,7 @@ pub use crate::{
     account::{Account, Balance, Close, Open, Pad},
     amount::{Amount, Currency, Decimal, Price},
     date::Date,
-    error::{Error, ReadFileError},
+    error::{ConversionError, Error, ReadFileError},
     event::Event,
     transaction::{Cost, Link, Posting, PostingPrice, Tag, Transaction},
 };
@@ -269,7 +270,7 @@ impl<D> FromIterator<Entry<D>> for BeancountFile<D> {
 ///    }
 /// }
 /// ```
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 #[non_exhaustive]
 pub struct Directive<D> {
     /// Date of the directive
@@ -284,9 +285,19 @@ pub struct Directive<D> {
     pub line_number: u32,
 }
 
+impl<D: Decimal> FromStr for Directive<D> {
+    type Err = Error;
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match all_consuming(directive)(Span::new(s)).finish() {
+            Ok((_, d)) => Ok(d),
+            Err(err) => Err(Error::new(err.input)),
+        }
+    }
+}
+
 /// Directive specific content
 #[allow(missing_docs)]
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 #[non_exhaustive]
 pub enum DirectiveContent<D> {
     Transaction(Transaction<D>),
@@ -298,12 +309,6 @@ pub enum DirectiveContent<D> {
     Commodity(Currency),
     Event(Event),
 }
-
-/// Error that may be returned by the various `TryFrom`/`TryInto` implementation
-/// to signify that the value cannot be converted to the desired type
-#[derive(Debug, Clone)]
-#[non_exhaustive]
-pub struct ConversionError;
 
 type Span<'a> = nom_locate::LocatedSpan<&'a str>;
 type IResult<'a, O> = nom::IResult<Span<'a>, O>;

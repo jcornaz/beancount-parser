@@ -32,7 +32,7 @@ use crate::{IResult, Span};
 /// assert_eq!(price.amount.value, 4.0);
 /// assert_eq!(price.amount.currency.as_str(), "PLN");
 /// ```
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Price<D> {
     /// Currency
     pub currency: Currency,

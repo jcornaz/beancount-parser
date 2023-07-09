@@ -13,7 +13,7 @@ use crate::{string, IResult, Span};
 /// assert_eq!(event.name, "Location");
 /// assert_eq!(event.value, "Switzerland");
 /// ```
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 #[non_exhaustive]
 pub struct Event {
     /// Name of the event

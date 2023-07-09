@@ -11,6 +11,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 * The `Amount` type is now exhaustive
 * Support booking method in open account directive
+* implement `std::error::Error` for `ConversionError`
+* implement `FromStr` for `Directive<D>` where `D: Decimal`
 
 
 ## [2.0.0-beta.2] - 2023-07-08

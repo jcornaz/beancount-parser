@@ -1,3 +1,5 @@
+#![allow(clippy::module_name_repetitions)]
+
 use std::fmt::{Debug, Display, Formatter};
 
 use crate::Span;
@@ -45,7 +47,7 @@ impl std::error::Error for Error {}
 
 /// Error returned when reading a beancount file from disk
 #[derive(Debug)]
-#[allow(missing_docs, clippy::module_name_repetitions)]
+#[allow(missing_docs)]
 pub enum ReadFileError {
     Io(std::io::Error),
     Syntax(Error),
@@ -73,3 +75,17 @@ impl From<Error> for ReadFileError {
         Self::Syntax(value)
     }
 }
+
+/// Error that may be returned by the various `TryFrom`/`TryInto` implementation
+/// to signify that the value cannot be converted to the desired type
+#[derive(Debug, Clone)]
+#[non_exhaustive]
+pub struct ConversionError;
+
+impl Display for ConversionError {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Cannot convert to the desired type")
+    }
+}
+
+impl std::error::Error for ConversionError {}
