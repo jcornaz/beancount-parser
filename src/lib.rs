@@ -43,6 +43,7 @@
 //! # Ok(()) }
 //! ```
 
+use std::cmp::Ordering;
 use std::{collections::HashSet, fs::File, io::Read, path::PathBuf, str::FromStr};
 
 use nom::{
@@ -289,6 +290,15 @@ impl<D: Decimal> FromStr for Directive<D> {
             Ok((_, d)) => Ok(d),
             Err(err) => Err(Error::new(err.input)),
         }
+    }
+}
+
+impl<D> PartialOrd for Directive<D>
+where
+    Directive<D>: PartialEq,
+{
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(self.date.cmp(&other.date))
     }
 }
 

@@ -94,3 +94,16 @@ fn directive_from_str(
     let from_str: Directive<f64> = input.parse().unwrap();
     assert_eq!(from_file, from_str);
 }
+
+#[rstest]
+#[case("2023-07-09 open Assets:Cash", "2023-07-10 open Assets:Cash")]
+#[case("2023-07-09 open Assets:Cash", "2023-08-08 open Assets:Cash")]
+#[case("2023-07-09 open Assets:Cash", "2024-06-08 open Assets:Cash")]
+fn directive_ord(#[case] smaller: Directive<f64>, #[case] bigger: Directive<f64>) {
+    assert!(smaller < bigger);
+    assert!(smaller <= bigger);
+    assert_eq!(smaller, smaller.clone());
+    assert_eq!(bigger, bigger.clone());
+    assert!(bigger > smaller);
+    assert!(bigger >= smaller);
+}
