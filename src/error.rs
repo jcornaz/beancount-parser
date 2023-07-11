@@ -60,22 +60,10 @@ impl Error {
 #[derive(Debug, Error)]
 #[cfg_attr(feature = "miette", derive(Diagnostic))]
 pub enum ReadFileError {
-    #[error("IO error: {0}")]
-    Io(std::io::Error),
-    #[error("Syntax error: {0}")]
-    Syntax(Error),
-}
-
-impl From<std::io::Error> for ReadFileError {
-    fn from(value: std::io::Error) -> Self {
-        Self::Io(value)
-    }
-}
-
-impl From<Error> for ReadFileError {
-    fn from(value: Error) -> Self {
-        Self::Syntax(value)
-    }
+    #[error("IO error")]
+    Io(#[from] std::io::Error),
+    #[error("Syntax error")]
+    Syntax(#[from] Error),
 }
 
 /// Error that may be returned by the various `TryFrom`/`TryInto` implementation
