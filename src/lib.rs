@@ -103,7 +103,7 @@ pub fn parse<D: Decimal>(input: &str) -> Result<BeancountFile<D>, Error> {
 pub fn parse_iter<'a, D: Decimal + 'a>(
     input: &'a str,
 ) -> impl Iterator<Item = Result<Entry<D>, Error>> + 'a {
-    Iter::new(iterator(Span::new(input), entry::<D>))
+    Iter::new(input, iterator(Span::new(input), entry::<D>))
 }
 
 impl<D: Decimal> FromStr for BeancountFile<D> {
@@ -287,7 +287,7 @@ impl<D: Decimal> FromStr for Directive<D> {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match all_consuming(directive)(Span::new(s)).finish() {
             Ok((_, d)) => Ok(d),
-            Err(err) => Err(Error::new(err.input)),
+            Err(err) => Err(Error::new(s, err.input)),
         }
     }
 }

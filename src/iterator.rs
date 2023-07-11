@@ -7,13 +7,15 @@ use crate::{DirectiveContent, Entry, Error, RawEntry, Span, Tag};
 type InnerIter<'i, F> = ParserIterator<Span<'i>, nom::error::Error<Span<'i>>, F>;
 
 pub(crate) struct Iter<'i, F> {
+    source: &'i str,
     inner: Option<InnerIter<'i, F>>,
     tag_stack: HashSet<Tag>,
 }
 
 impl<'i, F> Iter<'i, F> {
-    pub fn new(value: InnerIter<'i, F>) -> Self {
+    pub(crate) fn new(source: &'i str, value: InnerIter<'i, F>) -> Self {
         Self {
+            source,
             inner: Some(value),
             tag_stack: HashSet::new(),
         }
@@ -52,7 +54,9 @@ where
         }
         match self.inner.take().unwrap().finish().finish() {
             Ok((rest, _)) if rest.fragment().is_empty() => None,
-            Ok((input, _)) | Err(nom::error::Error { input, .. }) => Some(Err(Error::new(input))),
+            Ok((input, _)) | Err(nom::error::Error { input, .. }) => {
+                Some(Err(Error::new(self.source, input)))
+            }
         }
     }
 }

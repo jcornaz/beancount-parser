@@ -3,7 +3,7 @@
 use std::fmt::Debug;
 
 #[cfg(feature = "miette")]
-use miette::Diagnostic;
+use miette::{Diagnostic, SourceSpan};
 use thiserror::Error;
 
 use crate::Span;
@@ -22,12 +22,28 @@ use crate::Span;
 #[cfg_attr(feature = "miette", derive(Diagnostic))]
 #[error("Invalid beancount syntax at line: {line_number}")]
 pub struct Error {
+    #[cfg(feature = "miette")]
+    #[source_code]
+    src: String,
+    #[cfg(feature = "miette")]
+    #[label]
+    span: SourceSpan,
     line_number: u32,
 }
 
 impl Error {
-    pub(crate) fn new(span: Span<'_>) -> Self {
+    #[cfg(not(feature = "miette"))]
+    pub(crate) fn new(_: impl Into<String>, span: Span<'_>) -> Self {
         Self {
+            line_number: span.location_line(),
+        }
+    }
+
+    #[cfg(feature = "miette")]
+    pub(crate) fn new(src: impl Into<String>, span: Span<'_>) -> Self {
+        Self {
+            src: src.into(),
+            span: span.location_offset().into(),
             line_number: span.location_line(),
         }
     }
