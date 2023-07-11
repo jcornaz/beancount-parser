@@ -1,6 +1,10 @@
 #![allow(clippy::module_name_repetitions)]
 
-use std::fmt::{Debug, Display, Formatter};
+use std::fmt::Debug;
+
+#[cfg(feature = "miette")]
+use miette::Diagnostic;
+use thiserror::Error;
 
 use crate::Span;
 
@@ -14,7 +18,9 @@ use crate::Span;
 /// let error = result.unwrap_err();
 /// assert_eq!(error.line_number(), 1);
 /// ```
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Error)]
+#[cfg_attr(feature = "miette", derive(Diagnostic))]
+#[error("Invalid beancount syntax at line: {line_number}")]
 pub struct Error {
     line_number: u32,
 }
@@ -33,36 +39,16 @@ impl Error {
     }
 }
 
-impl Display for Error {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(
-            f,
-            "invalid beancount syntax at line: {}",
-            self.line_number()
-        )
-    }
-}
-
-impl std::error::Error for Error {}
-
 /// Error returned when reading a beancount file from disk
-#[derive(Debug)]
 #[allow(missing_docs)]
+#[derive(Debug, Error)]
+#[cfg_attr(feature = "miette", derive(Diagnostic))]
 pub enum ReadFileError {
+    #[error("IO error: {0}")]
     Io(std::io::Error),
+    #[error("Syntax error: {0}")]
     Syntax(Error),
 }
-
-impl Display for ReadFileError {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        match self {
-            ReadFileError::Io(err) => write!(f, "IO error: {err}"),
-            ReadFileError::Syntax(err) => write!(f, "Syntax error: {err}"),
-        }
-    }
-}
-
-impl std::error::Error for ReadFileError {}
 
 impl From<std::io::Error> for ReadFileError {
     fn from(value: std::io::Error) -> Self {
@@ -78,14 +64,7 @@ impl From<Error> for ReadFileError {
 
 /// Error that may be returned by the various `TryFrom`/`TryInto` implementation
 /// to signify that the value cannot be converted to the desired type
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Error)]
 #[non_exhaustive]
+#[error("Cannot convert to the desired type")]
 pub struct ConversionError;
-
-impl Display for ConversionError {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "Cannot convert to the desired type")
-    }
-}
-
-impl std::error::Error for ConversionError {}

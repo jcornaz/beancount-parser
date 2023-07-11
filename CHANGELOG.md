@@ -8,6 +8,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Unreleased]
 
 
+### Added
+
+* Cargo feature flag `miette`, which enable implementation of `miette::Diagnostic` for error types
+
+
 ## [2.0.0-beta.3] - 2023-07-09
 
 ### Added

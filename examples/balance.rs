@@ -1,11 +1,11 @@
 //! This example is a cli tool that take some files as argument, parse them and spit out the balance of each accounts
 //!
-//! To try it out run `cargo run --example balance -- tests/samples/official.beancount`
-//! Or, use your own ledger: `cargo run --example balance -- $LEDGER_PATH`
+//! To try it out run `just run balance tests/samples/official.beancount`
+//! Or, use your own ledger: `just run balance $LEDGER_PATH`
 //!
-//! This example should play well with grep: `cargo run --example balance -- $LEDGER_PATH | grep Assets`
+//! This example should play well with `grep`: `just run balance $LEDGER_PATH | grep Assets`
 
-use std::{cmp::Ordering, collections::HashMap, env::args, error::Error};
+use std::{cmp::Ordering, collections::HashMap, env::args};
 
 use rust_decimal::Decimal;
 
@@ -15,7 +15,7 @@ use beancount_parser::{
 
 type Report = HashMap<Account, HashMap<Currency, Decimal>>;
 
-fn main() -> Result<(), Box<dyn Error>> {
+fn main() -> miette::Result<()> {
     let mut directives = Vec::<Directive<Decimal>>::new();
     beancount_parser::read_files(args().skip(1).map(Into::into), |entry| {
         if let Entry::Directive(d) = entry {

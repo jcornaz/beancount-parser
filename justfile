@@ -15,7 +15,7 @@ verify: test lint doc check-msrv
 
 # Run the desired example
 run example *args:
-    cargo run --example {{example}} -- {{args}}
+    cargo run --all-features --example {{example}} -- {{args}}
 
 # Watch the source files and run `just verify` when source changes
 watch:
