@@ -7,8 +7,37 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Breaking changes (since version 1.16)
 
-### Added
+This is a full rewrite of the parser from scratch.
+Most types have been either removed or changed in an incompatible way.
+
+Here are some key differences with the previous API:
+
+* The types no longer have a lifetime parameter, so that they can be manipulated more easily, even after the 
+  input string is discarded.
+* Struct fields are public, which makes much easier to destruct and pattern-match the results of the parser.
+* The directive type is now a struct (not an enum) that contains common directive data (date and metadata).
+  And there is a new `DirectiveContent` enum which is roughly equivalent to the previous `Directive` enum.
+* The parser is more strict about what beancount syntax is considered valid.
+
+Check the [documentation](https://docs.rs/beancount-parser) to see how the new API looks like.
+
+
+> **Note**
+>
+> You may depend on both the version 1 and 2 at the same time like this:
+>
+> ```toml
+> [dependencies]
+> # version 1, in rust code `use beancount_parser::...`
+> beancount-parser = { version = "1" } 
+> # version 2, in rust code `use beancount_parser_2::...`
+> beancount-parser-2 = { package = "beancount-parser", version = "2.0.0" }
+> ```
+
+
+### Added (since version 2.0.0-beta.3)
 
 * Cargo feature flag `miette`, which enable implementation of `miette::Diagnostic` for error types
 
