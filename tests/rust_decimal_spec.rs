@@ -1,3 +1,5 @@
+#![allow(clippy::items_after_test_module)]
+
 use rstest::rstest;
 use rust_decimal::Decimal;
 
