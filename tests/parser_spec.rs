@@ -244,8 +244,8 @@ fn should_parse_event() {
 fn should_parse_price_commodity() {
     let input = "2022-08-26 price VHT          121.03 USD";
     let DirectiveContent::Price(price) = parse_single_directive(input).content else {
-    panic!("was not an price directive");
-};
+        panic!("was not an price directive");
+    };
     assert_eq!(price.currency.as_str(), "VHT");
 }
 
@@ -253,8 +253,8 @@ fn should_parse_price_commodity() {
 fn should_parse_price_amount() {
     let input = "2022-08-26 price VHT          121.03 USD";
     let DirectiveContent::Price(price) = parse_single_directive(input).content else {
-    panic!("was not an price directive");
-};
+        panic!("was not an price directive");
+    };
     assert_eq!(price.amount.value, 121.03);
     assert_eq!(price.amount.currency.as_str(), "USD");
 }

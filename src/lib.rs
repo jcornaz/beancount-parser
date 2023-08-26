@@ -143,7 +143,9 @@ pub fn read_files<D: Decimal, F: FnMut(Entry<D>)>(
             match entry {
                 Entry::Include(include) => {
                     let path = if include.is_relative() {
-                        let Some(parent) = path.parent() else { unreachable!("there must be a parent if the file was valid") };
+                        let Some(parent) = path.parent() else {
+                            unreachable!("there must be a parent if the file was valid")
+                        };
                         parent.join(include)
                     } else {
                         include

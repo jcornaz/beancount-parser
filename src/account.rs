@@ -209,7 +209,7 @@ fn currencies(input: Span<'_>) -> IResult<'_, HashSet<Currency>> {
     let mut iter = iterator(input, preceded(sep, amount::currency));
     let mut currencies = HashSet::new();
     currencies.insert(first);
-    currencies.extend(iter.into_iter());
+    currencies.extend(&mut iter);
     let (input, _) = iter.finish()?;
     Ok((input, currencies))
 }
