@@ -356,7 +356,7 @@ fn entry<D: Decimal>(input: Span<'_>) -> IResult<'_, RawEntry<D>> {
         }),
         include.map(|p| RawEntry::Include(p)),
         tag_stack_operation,
-        line.map(|_| RawEntry::Comment),
+        line.map(|()| RawEntry::Comment),
     ))(input)
 }
 
@@ -420,7 +420,7 @@ fn option(input: Span<'_>) -> IResult<'_, (&str, &str)> {
     let (input, _) = tag("option")(input)?;
     let (input, key) = preceded(space1, string)(input)?;
     let (input, value) = preceded(space1, string)(input)?;
-    let (input, _) = end_of_line(input)?;
+    let (input, ()) = end_of_line(input)?;
     Ok((input, (key, value)))
 }
 
@@ -457,7 +457,7 @@ fn line(input: Span<'_>) -> IResult<'_, ()> {
 }
 
 fn empty_line(input: Span<'_>) -> IResult<'_, ()> {
-    let (input, _) = not(eof)(input)?;
+    let (input, ()) = not(eof)(input)?;
     end_of_line(input)
 }
 

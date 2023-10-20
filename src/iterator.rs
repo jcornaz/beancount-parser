@@ -55,8 +55,8 @@ where
             }
         }
         match self.inner.take().unwrap().finish().finish() {
-            Ok((rest, _)) if rest.fragment().is_empty() => None,
-            Ok((input, _)) | Err(nom::error::Error { input, .. }) => {
+            Ok((rest, ())) if rest.fragment().is_empty() => None,
+            Ok((input, ())) | Err(nom::error::Error { input, .. }) => {
                 Some(Err(Error::new(self.source, input)))
             }
         }

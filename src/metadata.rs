@@ -76,9 +76,9 @@ pub enum Value<D> {
 }
 
 pub(crate) fn parse<D: Decimal>(input: Span<'_>) -> IResult<'_, Map<D>> {
-    let mut iter = iterator(input, alt((entry.map(Some), empty_line.map(|_| None))));
+    let mut iter = iterator(input, alt((entry.map(Some), empty_line.map(|()| None))));
     let map: HashMap<_, _> = iter.flatten().collect();
-    let (input, _) = iter.finish()?;
+    let (input, ()) = iter.finish()?;
     Ok((input, map))
 }
 
@@ -95,6 +95,6 @@ fn entry<D: Decimal>(input: Span<'_>) -> IResult<'_, (Key, Value<D>)> {
         amount::expression.map(Value::Number),
         amount::currency.map(Value::Currency),
     ))(input)?;
-    let (input, _) = end_of_line(input)?;
+    let (input, ()) = end_of_line(input)?;
     Ok((input, (Key((*key.fragment()).into()), value)))
 }

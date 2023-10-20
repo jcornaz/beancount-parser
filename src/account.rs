@@ -210,7 +210,7 @@ fn currencies(input: Span<'_>) -> IResult<'_, HashSet<Currency>> {
     let mut currencies = HashSet::new();
     currencies.insert(first);
     currencies.extend(&mut iter);
-    let (input, _) = iter.finish()?;
+    let (input, ()) = iter.finish()?;
     Ok((input, currencies))
 }
 

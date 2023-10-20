@@ -119,7 +119,7 @@ fn exp_p2<D: Decimal>(input: Span<'_>) -> IResult<'_, D> {
         '-' => a - b,
         op => unreachable!("unsupported operator: {}", op),
     });
-    let (input, _) = iter.finish()?;
+    let (input, ()) = iter.finish()?;
     Ok((input, value))
 }
 
@@ -134,7 +134,7 @@ fn exp_p1<D: Decimal>(input: Span<'_>) -> IResult<'_, D> {
         '/' => a / b,
         op => unreachable!("unsupported operator: {}", op),
     });
-    let (input, _) = iter.finish()?;
+    let (input, ()) = iter.finish()?;
     Ok((input, value))
 }
 

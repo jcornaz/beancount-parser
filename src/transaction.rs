@@ -235,11 +235,11 @@ fn do_parse<D: Decimal>(
     move |input| {
         let (input, payee_and_narration) = opt(preceded(space1, payee_and_narration))(input)?;
         let (input, (tags, links)) = tags_and_links(input)?;
-        let (input, _) = end_of_line(input)?;
+        let (input, ()) = end_of_line(input)?;
         let (input, metadata) = metadata::parse(input)?;
-        let mut iter = iterator(input, alt((posting.map(Some), empty_line.map(|_| None))));
+        let mut iter = iterator(input, alt((posting.map(Some), empty_line.map(|()| None))));
         let postings = iter.flatten().collect();
-        let (input, _) = iter.finish()?;
+        let (input, ()) = iter.finish()?;
         let narration = payee_and_narration.map(|(_, n)| n).map(ToOwned::to_owned);
         let payee = payee_and_narration
             .and_then(|(p, _)| p)
@@ -305,7 +305,7 @@ fn tags_and_links(input: Span<'_>) -> IResult<'_, (HashSet<Tag>, HashSet<Link>)>
             (tags, links)
         },
     );
-    let (input, _) = tags_and_links_iter.finish()?;
+    let (input, ()) = tags_and_links_iter.finish()?;
     Ok((input, (tags, links)))
 }
 
@@ -342,7 +342,7 @@ fn posting<D: Decimal>(input: Span<'_>) -> IResult<'_, Posting<D>> {
             )),
         )),
     )))(input)?;
-    let (input, _) = end_of_line(input)?;
+    let (input, ()) = end_of_line(input)?;
     let (input, metadata) = metadata::parse(input)?;
     let (amount, cost, price) = match amounts {
         Some((a, l, p)) => (Some(a), l, p),
