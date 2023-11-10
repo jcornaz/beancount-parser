@@ -9,16 +9,22 @@ A [beancount] file parser library for rust
 
 [beancount]: https://beancount.github.io/docs/index.html
 
+
 ## Goal
 
 Parse a [beancount file](https://beancount.github.io/docs/beancount_language_syntax.html) into a rust data structure
 
 
-## Non goals
+## Non-goals
 
 Do not verify beancount rules, such as "transaction must balance to zero", "account must be open", balance assertions, etc.
 
 Do not provide any "business" logic to analyze or manipulate the ledger. No balance, no currency translation, etc.
+
+
+## Alternatives
+
+* [beancount_parser_lima](https://docs.rs/beancount-parser-lima/latest/beancount_parser_lima)
 
 
 ## MSRV
