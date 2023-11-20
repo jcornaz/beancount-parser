@@ -9,6 +9,7 @@ ignore = []
 default = "deny"
 unlicensed = "deny"
 copyleft = "deny"
+unused-allowed-license = "allow"
 allow = [
   "Unlicense",
   "MIT",
