@@ -29,6 +29,18 @@ rstest = { version = "0.18.2", default-features = false }
 rust_decimal = { version = "1.33.1", default-features = false }
 miette = { version = "5.10.0", features = ["fancy"] }
 
+[lints.rust]
+future_incompatible = "deny"
+nonstandard_style = "deny"
+unsafe_code = "deny"
+private_interfaces = "deny"
+private_bounds = "deny"
+rust_2018_idioms = "warn"
+missing_docs = "warn"
+
+[lints.clippy]
+pedantic = "warn"
+
 [[bench]]
 name = "benchmark"
 harness = false
