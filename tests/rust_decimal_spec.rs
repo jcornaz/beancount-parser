@@ -28,8 +28,7 @@ fn parse_single_directive(input: &str) -> Directive<Decimal> {
     assert_eq!(
         directives.len(),
         1,
-        "unexpected number of directives: {:?}",
-        directives
+        "unexpected number of directives: {directives:?}"
     );
     directives.into_iter().next().unwrap()
 }

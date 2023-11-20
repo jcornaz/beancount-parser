@@ -62,7 +62,7 @@ fn should_parse_transaction_description(#[case] input: &str, #[case] expected: O
     let DirectiveContent::Transaction(trx) = parse_single_directive(input).content else {
         panic!("was not a transaction");
     };
-    assert_eq!(trx.narration.as_deref(), expected)
+    assert_eq!(trx.narration.as_deref(), expected);
 }
 
 #[rstest]
@@ -77,7 +77,7 @@ fn should_parse_transaction_payee(#[case] input: &str, #[case] expected: Option<
     let DirectiveContent::Transaction(trx) = parse_single_directive(input).content else {
         panic!("was not a transaction");
     };
-    assert_eq!(trx.payee.as_deref(), expected)
+    assert_eq!(trx.payee.as_deref(), expected);
 }
 
 #[rstest]
@@ -92,8 +92,8 @@ fn should_parse_transaction_links(#[case] input: &str, #[case] expected: &[&str]
     };
     assert_eq!(
         trx.links.iter().map(AsRef::as_ref).collect::<HashSet<_>>(),
-        expected.iter().cloned().collect::<HashSet<_>>()
-    )
+        expected.iter().copied().collect::<HashSet<_>>()
+    );
 }
 
 #[rstest]
@@ -108,8 +108,8 @@ fn should_parse_transaction_tags(#[case] input: &str, #[case] expected: &[&str])
     };
     assert_eq!(
         trx.tags.iter().map(AsRef::as_ref).collect::<HashSet<_>>(),
-        expected.iter().cloned().collect::<HashSet<_>>()
-    )
+        expected.iter().copied().collect::<HashSet<_>>()
+    );
 }
 
 #[rstest]
@@ -125,7 +125,7 @@ fn should_parse_transaction_flag(#[case] input: &str, #[case] expected: Option<c
     let DirectiveContent::Transaction(trx) = parse_single_directive(input).content else {
         panic!("was not a transaction");
     };
-    assert_eq!(trx.flag, expected)
+    assert_eq!(trx.flag, expected);
 }
 
 #[rstest]
@@ -332,12 +332,12 @@ fn should_parse_cost_date(
 
 #[rstest]
 fn should_include_tag_stack() {
-    let input = r#"
+    let input = r"
 pushtag #foo
 pushtag #bar
 2022-05-27 * #baz
 poptag #foo
-2022-05-28 *"#;
+2022-05-28 *";
     let beancount = parse::<f64>(input).unwrap();
     let transactions: Vec<_> = beancount
         .directives
@@ -421,8 +421,7 @@ fn parse_single_directive(input: &str) -> Directive<f64> {
     assert_eq!(
         directives.len(),
         1,
-        "unexpected number of directives: {:?}",
-        directives
+        "unexpected number of directives: {directives:?}"
     );
     directives.into_iter().next().unwrap()
 }

@@ -138,7 +138,11 @@ fn should_parse_open_account_currency(#[case] input: &str, #[case] expected_curr
         panic!("was not an open directive");
     };
     let expected: HashSet<&str> = expected_currencies.iter().copied().collect();
-    let actual: HashSet<&str> = open.currencies.iter().map(|c| c.as_str()).collect();
+    let actual: HashSet<&str> = open
+        .currencies
+        .iter()
+        .map(beancount_parser::Currency::as_str)
+        .collect();
     assert_eq!(actual, expected);
 }
 
@@ -151,7 +155,12 @@ fn should_parse_open_account_booking_method(#[case] input: &str, #[case] expecte
     let DirectiveContent::Open(open) = parse_single_directive(input).content else {
         panic!("was not an open directive");
     };
-    assert_eq!(open.booking_method.as_ref().map(|m| m.as_ref()), expected);
+    assert_eq!(
+        open.booking_method
+            .as_ref()
+            .map(std::convert::AsRef::as_ref),
+        expected
+    );
 }
 
 #[rstest]
@@ -453,8 +462,7 @@ fn parse_single_directive(input: &str) -> Directive<f64> {
     assert_eq!(
         directives.len(),
         1,
-        "unexpected number of directives: {:?}",
-        directives
+        "unexpected number of directives: {directives:?}"
     );
     directives.into_iter().next().unwrap()
 }
