@@ -10,6 +10,9 @@ repository = "https://github.com/jcornaz/beancount-parser"
 categories = ["parser-implementations"]
 keywords = ["parsing", "beancount", "accounting"]
 
+[badges.maintenance]
+status = "passively-maintained"
+
 [package.metadata.docs.rs]
 all-features = true
 rustdoc-args = ["--cfg", "docsrs"]
