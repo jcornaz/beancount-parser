@@ -7,6 +7,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+
+## [2.0.1] - 2024-01-07
+
 ### Fixed
 
 Accept commodities ending with a number ([#63](https://github.com/jcornaz/beancount-parser/pull/63)). Thanks @doriath for the fix.
@@ -477,7 +480,8 @@ Announce new status of the project in readme: The project is now in "maintenance
  - `Parser` iterator type
 
 
-[Unreleased]: https://github.com/jcornaz/beancount-parser/compare/v2.0.0...HEAD
+[Unreleased]: https://github.com/jcornaz/beancount-parser/compare/v2.0.1...HEAD
+[2.0.1]: https://github.com/jcornaz/beancount-parser/compare/v2.0.0...v2.0.1
 [2.0.0]: https://github.com/jcornaz/beancount-parser/compare/v2.0.0-beta.3...v2.0.0
 [2.0.0-beta.3]: https://github.com/jcornaz/beancount-parser/compare/v2.0.0-beta.2...v2.0.0-beta.3
 [2.0.0-beta.2]: https://github.com/jcornaz/beancount-parser/compare/v2.0.0-beta.1...v2.0.0-beta.2
