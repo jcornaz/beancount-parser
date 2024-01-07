@@ -7,6 +7,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Fixed
+
+Accept commodities ending with a number ([#63](https://github.com/jcornaz/beancount-parser/pull/63)). Thanks @doriath for the fix.
 
 ## [2.0.0] - 2023-07-11
 
