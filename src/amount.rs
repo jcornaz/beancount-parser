@@ -173,7 +173,12 @@ pub(crate) fn currency(input: Span<'_>) -> IResult<'_, Currency> {
             take_while(|c: char| {
                 c.is_uppercase() || c.is_numeric() || c == '-' || c == '_' || c == '.' || c == '\''
             }),
-            |s: &Span<'_>| s.fragment().chars().last().map_or(true, char::is_uppercase),
+            |s: &Span<'_>| {
+                s.fragment()
+                    .chars()
+                    .last()
+                    .map_or(true, |c| c.is_uppercase() || c.is_numeric())
+            },
         ),
     )))(input)?;
     Ok((input, Currency(Arc::from(*currency.fragment()))))

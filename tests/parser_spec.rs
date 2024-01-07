@@ -240,6 +240,15 @@ fn should_parse_commodity() {
 }
 
 #[rstest]
+fn should_parse_commodity_that_ends_with_number() {
+    let input = "1792-01-01 commodity A1";
+    let DirectiveContent::Commodity(commodity) = parse_single_directive(input).content else {
+        panic!("was not an commodity directive");
+    };
+    assert_eq!(commodity.as_str(), "A1");
+}
+
+#[rstest]
 fn should_parse_event() {
     let input = "2020-12-09 event \"location\" \"New Metropolis\"";
     let DirectiveContent::Event(event) = parse_single_directive(input).content else {
@@ -377,7 +386,6 @@ fn should_reject_invalid_input(
         "2014-05-01 open Assets:Checking Hello",
         "2014-05-01 open Assets:Checking USD CHF",
         "2014-05-01 open Assets:Checking 1SD",
-        "2014-05-01 open Assets:Checking US2",
         "2014-05-01 open Assets:Checking US-",
         "2014-05-01 open Assets:Checking -US",
         "2014-05-01close Assets:Cash",
