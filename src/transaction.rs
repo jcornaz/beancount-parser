@@ -13,9 +13,10 @@ use nom::{
     Parser,
 };
 
+use crate::string_escapable;
 use crate::{
     account, account::Account, amount, amount::Amount, date, empty_line, end_of_line, metadata,
-    string, Date, Decimal, IResult, Span,
+    Date, Decimal, IResult, Span,
 };
 
 /// A transaction
@@ -240,10 +241,10 @@ fn do_parse<D: Decimal>(
         let mut iter = iterator(input, alt((posting.map(Some), empty_line.map(|()| None))));
         let postings = iter.flatten().collect();
         let (input, ()) = iter.finish()?;
-        let narration = payee_and_narration.map(|(_, n)| n).map(ToOwned::to_owned);
-        let payee = payee_and_narration
-            .and_then(|(p, _)| p)
-            .map(ToOwned::to_owned);
+        let (payee, narration) = match payee_and_narration {
+            Some((payee, narration)) => (payee, Some(narration)),
+            None => (None, None),
+        };
         Ok((
             input,
             (
@@ -309,9 +310,9 @@ fn tags_and_links(input: Span<'_>) -> IResult<'_, (HashSet<Tag>, HashSet<Link>)>
     Ok((input, (tags, links)))
 }
 
-fn payee_and_narration(input: Span<'_>) -> IResult<'_, (Option<&str>, &str)> {
-    let (input, s1) = string(input)?;
-    let (input, s2) = opt(preceded(space1, string))(input)?;
+fn payee_and_narration(input: Span<'_>) -> IResult<'_, (Option<String>, String)> {
+    let (input, s1) = string_escapable(input)?;
+    let (input, s2) = opt(preceded(space1, string_escapable))(input)?;
     Ok((
         input,
         match s2 {

@@ -53,6 +53,7 @@ fn should_find_all_postings(#[case] input: &str, #[case] expected_count: usize) 
 #[rstest]
 #[case("2023-05-15 txn", None)]
 #[case("2023-05-15 txn \"Hello world!\"", Some("Hello world!"))]
+#[case::escaped_double_quotes("2023-05-15 txn \"Hello \\\"world\\\"!\"", Some("Hello \"world\"!"))]
 #[case("2023-05-15 txn \"payee\" \"narration\"", Some("narration"))]
 #[case(
     "2023-05-15 txn \"Hello world!\" ; And a comment",

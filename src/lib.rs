@@ -45,7 +45,7 @@ use std::{collections::HashSet, fs::File, io::Read, path::PathBuf, str::FromStr}
 
 use nom::{
     branch::alt,
-    bytes::complete::{tag, take_till},
+    bytes::complete::{tag, take_till, take_while},
     character::complete::{char, line_ending, not_line_ending, space0, space1},
     combinator::{all_consuming, cut, eof, iterator, map, not, opt},
     sequence::{delimited, preceded, terminated, tuple},
@@ -464,4 +464,24 @@ fn string(input: Span<'_>) -> IResult<'_, &str> {
         delimited(char('"'), take_till(|c: char| c == '"'), char('"')),
         |s: Span<'_>| *s.fragment(),
     )(input)
+}
+
+fn string_escapable(input: Span<'_>) -> IResult<'_, String> {
+    let (input, _) = char('"')(input)?;
+    let mut string = String::new();
+    let take_data = take_while(|c: char| c != '"' && c != '\\');
+    let (mut input, mut part) = take_data(input)?;
+    while !part.fragment().is_empty() {
+        string.push_str(part.fragment());
+        let (new_input, opt) = opt(tag("\\\""))(input)?;
+        if opt.is_none() {
+            break;
+        }
+        string.push('"');
+        let (new_input, new_part) = take_data(new_input)?;
+        input = new_input;
+        part = new_part;
+    }
+    let (input, _) = char('"')(input)?;
+    Ok((input, string))
 }

@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Fixed
+
+* Accept escaped double quotes (`\"`) in transaction description and payee.
+
 
 ## [2.0.1] - 2024-01-07
 
