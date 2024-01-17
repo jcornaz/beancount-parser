@@ -1,6 +1,6 @@
 use nom::character::complete::space1;
 
-use crate::{string_escapable, IResult, Span};
+use crate::{string, IResult, Span};
 
 /// An event
 ///
@@ -23,8 +23,8 @@ pub struct Event {
 }
 
 pub(super) fn parse(input: Span<'_>) -> IResult<'_, Event> {
-    let (input, name) = string_escapable(input)?;
+    let (input, name) = string(input)?;
     let (input, _) = space1(input)?;
-    let (input, value) = string_escapable(input)?;
+    let (input, value) = string(input)?;
     Ok((input, Event { name, value }))
 }

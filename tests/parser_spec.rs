@@ -217,10 +217,10 @@ fn should_parse_option_with_comment() {
 
 #[rstest]
 fn should_parse_include() {
-    let includes = parse::<f64>(r#"include "./a/path/to/file.beancount""#)
+    let includes = parse::<f64>(r#"include "./a/path/to/\"file\".beancount""#)
         .unwrap()
         .includes;
-    let expected = [Path::new("./a/path/to/file.beancount")];
+    let expected = [Path::new("./a/path/to/\"file\".beancount")];
     assert_eq!(includes, expected);
 }
 

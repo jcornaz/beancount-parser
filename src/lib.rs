@@ -45,7 +45,7 @@ use std::{collections::HashSet, fs::File, io::Read, path::PathBuf, str::FromStr}
 
 use nom::{
     branch::alt,
-    bytes::complete::{tag, take_till, take_while},
+    bytes::complete::{tag, take_while},
     character::complete::{char, line_ending, not_line_ending, space0, space1},
     combinator::{all_consuming, cut, eof, iterator, map, not, opt},
     sequence::{delimited, preceded, terminated, tuple},
@@ -411,8 +411,8 @@ fn directive<D: Decimal>(input: Span<'_>) -> IResult<'_, Directive<D>> {
 
 fn option(input: Span<'_>) -> IResult<'_, (String, String)> {
     let (input, _) = tag("option")(input)?;
-    let (input, key) = preceded(space1, string_escapable)(input)?;
-    let (input, value) = preceded(space1, string_escapable)(input)?;
+    let (input, key) = preceded(space1, string)(input)?;
+    let (input, value) = preceded(space1, string)(input)?;
     let (input, ()) = end_of_line(input)?;
     Ok((input, (key, value)))
 }
@@ -454,14 +454,7 @@ fn empty_line(input: Span<'_>) -> IResult<'_, ()> {
     end_of_line(input)
 }
 
-fn string(input: Span<'_>) -> IResult<'_, &str> {
-    map(
-        delimited(char('"'), take_till(|c: char| c == '"'), char('"')),
-        |s: Span<'_>| *s.fragment(),
-    )(input)
-}
-
-fn string_escapable(input: Span<'_>) -> IResult<'_, String> {
+fn string(input: Span<'_>) -> IResult<'_, String> {
     let (input, _) = char('"')(input)?;
     let mut string = String::new();
     let take_data = take_while(|c: char| c != '"' && c != '\\');

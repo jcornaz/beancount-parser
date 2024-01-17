@@ -13,7 +13,7 @@ use nom::{
     Parser,
 };
 
-use crate::string_escapable;
+use crate::string;
 use crate::{
     account, account::Account, amount, amount::Amount, date, empty_line, end_of_line, metadata,
     Date, Decimal, IResult, Span,
@@ -311,8 +311,8 @@ fn tags_and_links(input: Span<'_>) -> IResult<'_, (HashSet<Tag>, HashSet<Link>)>
 }
 
 fn payee_and_narration(input: Span<'_>) -> IResult<'_, (Option<String>, String)> {
-    let (input, s1) = string_escapable(input)?;
-    let (input, s2) = opt(preceded(space1, string_escapable))(input)?;
+    let (input, s1) = string(input)?;
+    let (input, s2) = opt(preceded(space1, string))(input)?;
     Ok((
         input,
         match s2 {
