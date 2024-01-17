@@ -11,6 +11,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 * Accept escaped double quotes (`\"`) in:
   * transaction description and payee
+  * event name and value
   * booking method in open-account directive
 
 

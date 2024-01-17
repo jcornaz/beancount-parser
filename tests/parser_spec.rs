@@ -254,12 +254,12 @@ fn should_parse_commodity_that_ends_with_number() {
 
 #[rstest]
 fn should_parse_event() {
-    let input = "2020-12-09 event \"location\" \"New Metropolis\"";
+    let input = "2020-12-09 event \"location\" \"New \\\"Metropolis\\\"\"";
     let DirectiveContent::Event(event) = parse_single_directive(input).content else {
         panic!("was not an commodity directive");
     };
     assert_eq!(event.name, "location");
-    assert_eq!(event.value, "New Metropolis");
+    assert_eq!(event.value, "New \"Metropolis\"");
 }
 
 #[rstest]
