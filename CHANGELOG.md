@@ -14,6 +14,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
   * event name and value
   * metadata value
   * booking method in open-account directive
+  * option key and value
 
 
 ## [2.0.1] - 2024-01-07

@@ -346,12 +346,7 @@ pub struct BeanOption {
 fn entry<D: Decimal>(input: Span<'_>) -> IResult<'_, RawEntry<D>> {
     alt((
         directive.map(RawEntry::Directive),
-        option.map(|(name, value)| {
-            RawEntry::Option(BeanOption {
-                name: name.into(),
-                value: value.into(),
-            })
-        }),
+        option.map(|(name, value)| RawEntry::Option(BeanOption { name, value })),
         include.map(|p| RawEntry::Include(p)),
         tag_stack_operation,
         line.map(|()| RawEntry::Comment),
@@ -414,10 +409,10 @@ fn directive<D: Decimal>(input: Span<'_>) -> IResult<'_, Directive<D>> {
     ))
 }
 
-fn option(input: Span<'_>) -> IResult<'_, (&str, &str)> {
+fn option(input: Span<'_>) -> IResult<'_, (String, String)> {
     let (input, _) = tag("option")(input)?;
-    let (input, key) = preceded(space1, string)(input)?;
-    let (input, value) = preceded(space1, string)(input)?;
+    let (input, key) = preceded(space1, string_escapable)(input)?;
+    let (input, value) = preceded(space1, string_escapable)(input)?;
     let (input, ()) = end_of_line(input)?;
     Ok((input, (key, value)))
 }

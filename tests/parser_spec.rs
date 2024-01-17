@@ -185,8 +185,8 @@ fn should_parse_close_account(#[case] input: &str, #[case] expected_account: &st
 
 #[rstest]
 fn should_parse_option() {
-    let beancount = parse::<f64>(r#"option "Hello" "world!""#).unwrap();
-    assert_eq!(beancount.option("Hello"), Some("world!"));
+    let beancount = parse::<f64>(r#"option "He\"llo" "world\"!\"""#).unwrap();
+    assert_eq!(beancount.option("He\"llo"), Some("world\"!\""));
 }
 
 #[rstest]
