@@ -323,6 +323,11 @@ fn should_parse_price_amount() {
     metadata::Value::String("Hello world!".into())
 )]
 #[case(
+    "2022-05-18 *\n  goodTitle: \"Hello \\\"world\\\"!\"",
+    "goodTitle",
+    metadata::Value::String("Hello \"world\"!".into())
+)]
+#[case(
     "2022-05-18 *\n  good-title: \"Hello world!\"",
     "good-title",
     metadata::Value::String("Hello world!".into())

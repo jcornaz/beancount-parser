@@ -30,7 +30,7 @@ use nom::{
     Parser,
 };
 
-use crate::{amount, empty_line, end_of_line, string, Currency, Decimal, IResult, Span};
+use crate::{amount, empty_line, end_of_line, string_escapable, Currency, Decimal, IResult, Span};
 
 /// Metadata map
 ///
@@ -91,7 +91,7 @@ fn entry<D: Decimal>(input: Span<'_>) -> IResult<'_, (Key, Value<D>)> {
     let (input, _) = char(':')(input)?;
     let (input, _) = space1(input)?;
     let (input, value) = alt((
-        string.map(ToOwned::to_owned).map(Value::String),
+        string_escapable.map(Value::String),
         amount::expression.map(Value::Number),
         amount::currency.map(Value::Currency),
     ))(input)?;
