@@ -9,7 +9,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Fixed
 
-* Accept escaped double quotes (`\"`) in transaction description and payee.
+* Accept escaped double quotes (`\"`) in:
+  * transaction description and payee
+  * booking method in open-account directive
 
 
 ## [2.0.1] - 2024-01-07

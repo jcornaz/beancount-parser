@@ -192,13 +192,13 @@ pub(super) fn parse(input: Span<'_>) -> IResult<'_, Account> {
 pub(super) fn open(input: Span<'_>) -> IResult<'_, Open> {
     let (input, account) = parse(input)?;
     let (input, currencies) = opt(preceded(space1, currencies))(input)?;
-    let (input, booking_method) = opt(preceded(space1, crate::string))(input)?;
+    let (input, booking_method) = opt(preceded(space1, crate::string_escapable))(input)?;
     Ok((
         input,
         Open {
             account,
             currencies: currencies.unwrap_or_default(),
-            booking_method: booking_method.map(Into::into),
+            booking_method: booking_method.map(|s| s.as_str().into()),
         },
     ))
 }

@@ -151,6 +151,10 @@ fn should_parse_open_account_currency(#[case] input: &str, #[case] expected_curr
 #[case("2014-05-01 open Assets:Checking \"STRICT\"", Some("STRICT"))]
 #[case("2014-05-01 open Assets:Checking CHF \"STRICT\"", Some("STRICT"))]
 #[case("2014-05-01 open Assets:Checking \t \"STRICT\"", Some("STRICT"))]
+#[case(
+    "2014-05-01 open Assets:Checking \t \"named \\\"hello\\\"\"",
+    Some("named \"hello\"")
+)]
 fn should_parse_open_account_booking_method(#[case] input: &str, #[case] expected: Option<&str>) {
     let DirectiveContent::Open(open) = parse_single_directive(input).content else {
         panic!("was not an open directive");
