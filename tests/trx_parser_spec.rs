@@ -196,6 +196,7 @@ fn price_should_be_empty_if_absent(
 
 #[rstest]
 #[case("10 CHF", 10.0, "CHF")]
+#[case("1,000 CHF", 1_000.0, "CHF")]
 #[case("0 USD", 0.0, "USD")]
 #[case("-1 EUR", -1.0, "EUR")]
 #[case("1.2 PLN", 1.2, "PLN")]

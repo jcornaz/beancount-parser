@@ -153,9 +153,9 @@ fn literal<D: Decimal>(input: Span<'_>) -> IResult<'_, D> {
     map_res(
         recognize(tuple((
             opt(char('-')),
-            take_while1(|c: char| c.is_numeric() || c == '.'),
+            take_while1(|c: char| c.is_numeric() || c == '.' || c == ','),
         ))),
-        |s: Span<'_>| s.fragment().parse(),
+        |s: Span<'_>| s.fragment().replace(',', "").parse(),
     )(input)
 }
 
