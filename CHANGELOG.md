@@ -9,8 +9,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Fixed
 
-* Accept `,` as a thousand separator in amounts
-* Accept `.` in transaction links
+* Accept comma (`,`) as a thousand separator in amounts
+* Accept dot (`.`) in transaction links
+* Accept escaped backslash (`\\`) in string
 
 
 ## [2.0.2] - 2024-01-17

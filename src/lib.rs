@@ -47,7 +47,7 @@ use nom::{
     branch::alt,
     bytes::complete::{tag, take_while},
     character::complete::{char, line_ending, not_line_ending, space0, space1},
-    combinator::{all_consuming, cut, eof, iterator, map, not, opt},
+    combinator::{all_consuming, cut, eof, iterator, map, not, opt, value},
     sequence::{delimited, preceded, terminated, tuple},
     Finish, Parser,
 };
@@ -461,11 +461,10 @@ fn string(input: Span<'_>) -> IResult<'_, String> {
     let (mut input, mut part) = take_data(input)?;
     while !part.fragment().is_empty() {
         string.push_str(part.fragment());
-        let (new_input, opt) = opt(tag("\\\""))(input)?;
-        if opt.is_none() {
-            break;
-        }
-        string.push('"');
+        let (new_input, escaped) =
+            opt(alt((value('"', tag("\\\"")), value('\\', tag("\\\\")))))(input)?;
+        let Some(escaped) = escaped else { break };
+        string.push(escaped);
         let (new_input, new_part) = take_data(new_input)?;
         input = new_input;
         part = new_part;
