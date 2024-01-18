@@ -84,6 +84,7 @@ fn should_parse_transaction_payee(#[case] input: &str, #[case] expected: Option<
 #[rstest]
 #[case("2023-05-15 txn \"Hello world!\"", &[])]
 #[case("2023-05-15 txn \"Hello world!\" ^a", &["a"])]
+#[case("2023-05-15 txn \"Hello world!\" ^a.b", &["a.b"])]
 #[case("2023-05-15 txn \"Hello world!\" #a", &[])]
 #[case("2023-05-15 txn \"Hello world!\" ^link-a ^link-b", &["link-a", "link-b"])]
 #[case("2023-05-15 txn \"Hello world!\" ^link-a #tag ^link-b", &["link-a", "link-b"])]

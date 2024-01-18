@@ -281,7 +281,7 @@ pub(super) fn parse_link(input: Span<'_>) -> IResult<'_, Link> {
     map(
         preceded(
             char_tag('^'),
-            take_while(|c: char| c.is_alphanumeric() || c == '-' || c == '_'),
+            take_while(|c: char| c.is_alphanumeric() || c == '-' || c == '_' || c == '.'),
         ),
         |s: Span<'_>| Link((*s.fragment()).into()),
     )(input)
