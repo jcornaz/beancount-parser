@@ -105,14 +105,14 @@ pub(crate) fn parse<D: Decimal>(input: Span<'_>) -> IResult<'_, Amount<D>> {
 }
 
 pub(super) fn expression<D: Decimal>(input: Span<'_>) -> IResult<'_, D> {
-    exp_p2(input)
+    alt((negation, sum))(input)
 }
 
-fn exp_p2<D: Decimal>(input: Span<'_>) -> IResult<'_, D> {
-    let (input, value) = exp_p1(input)?;
+fn sum<D: Decimal>(input: Span<'_>) -> IResult<'_, D> {
+    let (input, value) = product(input)?;
     let mut iter = iterator(
         input,
-        tuple((delimited(space0, one_of("+-"), space0), exp_p1)),
+        tuple((delimited(space0, one_of("+-"), space0), product)),
     );
     let value = iter.fold(value, |a, (op, b)| match op {
         '+' => a + b,
@@ -123,11 +123,11 @@ fn exp_p2<D: Decimal>(input: Span<'_>) -> IResult<'_, D> {
     Ok((input, value))
 }
 
-fn exp_p1<D: Decimal>(input: Span<'_>) -> IResult<'_, D> {
-    let (input, value) = exp_p0(input)?;
+fn product<D: Decimal>(input: Span<'_>) -> IResult<'_, D> {
+    let (input, value) = atom(input)?;
     let mut iter = iterator(
         input,
-        tuple((delimited(space0, one_of("*/"), space0), exp_p0)),
+        tuple((delimited(space0, one_of("*/"), space0), atom)),
     );
     let value = iter.fold(value, |a, (op, b)| match op {
         '*' => a * b,
@@ -138,8 +138,8 @@ fn exp_p1<D: Decimal>(input: Span<'_>) -> IResult<'_, D> {
     Ok((input, value))
 }
 
-fn exp_p0<D: Decimal>(input: Span<'_>) -> IResult<'_, D> {
-    alt((literal, group, negation))(input)
+fn atom<D: Decimal>(input: Span<'_>) -> IResult<'_, D> {
+    alt((literal, group))(input)
 }
 
 fn group<D: Decimal>(input: Span<'_>) -> IResult<'_, D> {
@@ -153,7 +153,7 @@ fn group<D: Decimal>(input: Span<'_>) -> IResult<'_, D> {
 fn negation<D: Decimal>(input: Span<'_>) -> IResult<'_, D> {
     let (input, _) = char('-')(input)?;
     let (input, _) = space0(input)?;
-    let (input, expr) = expression::<D>(input)?;
+    let (input, expr) = group::<D>(input)?;
     Ok((input, -expr))
 }
 
@@ -161,9 +161,10 @@ fn literal<D: Decimal>(input: Span<'_>) -> IResult<'_, D> {
     map_res(
         recognize(tuple((
             opt(char('-')),
+            space0,
             take_while1(|c: char| c.is_numeric() || c == '.' || c == ','),
         ))),
-        |s: Span<'_>| s.fragment().replace(',', "").parse(),
+        |s: Span<'_>| s.fragment().replace([',', ' '], "").parse(),
     )(input)
 }
 
