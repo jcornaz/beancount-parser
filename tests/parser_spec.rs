@@ -426,6 +426,7 @@ fn should_reject_invalid_input(
     )]
     input: &str,
 ) {
+    println!("{input}");
     let result = parse::<f64>(input);
     assert!(result.is_err(), "{result:#?}");
 }

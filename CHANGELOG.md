@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Fixed
 
 * Accept negation of grouped expression (example: `-(2 * 3)`)
+* Do not require space between strings and tags/links
 
 
 ## [2.0.3] - 2024-01-18

@@ -295,7 +295,7 @@ pub(super) fn parse_tag_or_link(input: Span<'_>) -> IResult<'_, TagOrLink> {
 }
 
 fn tags_and_links(input: Span<'_>) -> IResult<'_, (HashSet<Tag>, HashSet<Link>)> {
-    let mut tags_and_links_iter = iterator(input, preceded(space1, parse_tag_or_link));
+    let mut tags_and_links_iter = iterator(input, preceded(space0, parse_tag_or_link));
     let (tags, links) = tags_and_links_iter.fold(
         (HashSet::new(), HashSet::new()),
         |(mut tags, mut links), x| {
