@@ -201,6 +201,8 @@ fn price_should_be_empty_if_absent(
 #[case("1,000 CHF", 1_000.0, "CHF")]
 #[case("0 USD", 0.0, "USD")]
 #[case("-1 EUR", -1.0, "EUR")]
+#[case("-(1) EUR", -1.0, "EUR")]
+#[case("-(-2 + 1) EUR", 1.0, "EUR")]
 #[case("1.2 PLN", 1.2, "PLN")]
 #[case(".1 PLN", 0.1, "PLN")]
 #[case("1. CHF", 1.0, "CHF")]

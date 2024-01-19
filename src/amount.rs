@@ -139,14 +139,22 @@ fn exp_p1<D: Decimal>(input: Span<'_>) -> IResult<'_, D> {
 }
 
 fn exp_p0<D: Decimal>(input: Span<'_>) -> IResult<'_, D> {
-    alt((
-        literal,
-        delimited(
-            terminated(char('('), space0),
-            expression,
-            preceded(space0, char(')')),
-        ),
-    ))(input)
+    alt((literal, group, negation))(input)
+}
+
+fn group<D: Decimal>(input: Span<'_>) -> IResult<'_, D> {
+    delimited(
+        terminated(char('('), space0),
+        expression,
+        preceded(space0, char(')')),
+    )(input)
+}
+
+fn negation<D: Decimal>(input: Span<'_>) -> IResult<'_, D> {
+    let (input, _) = char('-')(input)?;
+    let (input, _) = space0(input)?;
+    let (input, expr) = expression::<D>(input)?;
+    Ok((input, -expr))
 }
 
 fn literal<D: Decimal>(input: Span<'_>) -> IResult<'_, D> {
