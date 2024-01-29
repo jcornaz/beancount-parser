@@ -147,6 +147,10 @@ pub struct Balance<D> {
     pub account: Account,
     /// Amount the amount should have on the date
     pub amount: Amount<D>,
+    /// Explicit precision tolerance
+    ///
+    /// See: <https://beancount.github.io/docs/precision_tolerances.html#explicit-tolerances-on-balance-assertions>
+    pub tolerance: Option<D>,
 }
 
 /// Pad directive
@@ -222,8 +226,25 @@ pub(super) fn close(input: Span<'_>) -> IResult<'_, Close> {
 pub(super) fn balance<D: Decimal>(input: Span<'_>) -> IResult<'_, Balance<D>> {
     let (input, account) = parse(input)?;
     let (input, _) = space1(input)?;
-    let (input, amount) = amount::parse(input)?;
-    Ok((input, Balance { account, amount }))
+    let (input, value) = amount::expression(input)?;
+    let (input, tolerance) = opt(preceded(space0, tolerance))(input)?;
+    let (input, _) = space1(input)?;
+    let (input, currency) = amount::currency(input)?;
+    Ok((
+        input,
+        Balance {
+            account,
+            amount: Amount { value, currency },
+            tolerance,
+        },
+    ))
+}
+
+fn tolerance<D: Decimal>(input: Span<'_>) -> IResult<'_, D> {
+    let (input, _) = char('~')(input)?;
+    let (input, _) = space0(input)?;
+    let (input, tolerance) = amount::expression(input)?;
+    Ok((input, tolerance))
 }
 
 pub(super) fn pad(input: Span<'_>) -> IResult<'_, Pad> {

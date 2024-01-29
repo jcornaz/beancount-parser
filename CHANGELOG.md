@@ -8,6 +8,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Unreleased]
 
 
+### Added
+
+* `Balance::tolerance` field
+
+### Fixed
+
+* Accept tolerance syntax
+
+
 ## [2.0.4] - 2024-01-19
 
 ### Fixed

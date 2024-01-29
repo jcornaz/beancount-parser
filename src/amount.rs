@@ -104,7 +104,7 @@ pub(crate) fn parse<D: Decimal>(input: Span<'_>) -> IResult<'_, Amount<D>> {
     Ok((input, Amount { value, currency }))
 }
 
-pub(super) fn expression<D: Decimal>(input: Span<'_>) -> IResult<'_, D> {
+pub(crate) fn expression<D: Decimal>(input: Span<'_>) -> IResult<'_, D> {
     alt((negation, sum))(input)
 }
 

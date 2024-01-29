@@ -84,20 +84,35 @@ fn should_parse_pad_source_account(#[case] input: &str, #[case] expected: &str) 
 
 #[rstest]
 #[case(
-    "2020-04-10 balance Assets:US:BofA:Checking        2473 USD",
-    2473,
-    "USD"
+    "2013-09-10 balance Assets:US:Vanguard  305.205 RGAGX",
+    305.205,
+    None,
+    "RGAGX"
+)]
+#[case(
+    "2013-09-10 balance Assets:US:Vanguard  305.205 ~ 0.002 RGAGX",
+    305.205,
+    Some(0.002),
+    "RGAGX"
+)]
+#[case(
+    "2013-09-10 balance Assets:US:Vanguard  305.205~0.002 RGAGX",
+    305.205,
+    Some(0.002),
+    "RGAGX"
 )]
 fn should_parse_balance_assertion_amount(
     #[case] input: &str,
-    #[case] expected_value: impl Into<f64>,
+    #[case] expected_value: f64,
+    #[case] expected_tolerance: Option<f64>,
     #[case] expected_currency: &str,
 ) {
     let DirectiveContent::Balance(assertion) = parse_single_directive(input).content else {
         panic!("was not an open directive");
     };
-    assert_eq!(assertion.amount.value, expected_value.into());
+    assert_eq!(assertion.amount.value, expected_value);
     assert_eq!(assertion.amount.currency.as_str(), expected_currency);
+    assert_eq!(assertion.tolerance, expected_tolerance);
 }
 
 #[rstest]
