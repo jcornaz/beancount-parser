@@ -4,7 +4,7 @@ use std::{collections::HashSet, path::Path};
 
 use rstest::rstest;
 
-use beancount_parser::{metadata, parse, BeancountFile, Directive, DirectiveContent};
+use beancount_parser::{metadata, parse, Account, BeancountFile, Directive, DirectiveContent};
 
 const COMMENTS: &str = include_str!("samples/comments.beancount");
 const SIMPLE: &str = include_str!("samples/simple.beancount");
@@ -113,6 +113,31 @@ fn should_parse_balance_assertion_amount(
     assert_eq!(assertion.amount.value, expected_value);
     assert_eq!(assertion.amount.currency.as_str(), expected_currency);
     assert_eq!(assertion.tolerance, expected_tolerance);
+}
+
+#[rstest]
+#[case::assets("Assets:A")]
+#[case::liabilities("Liabilities:A")]
+#[case::equity("Equity:A")]
+#[case::expenses("Expenses:A")]
+#[case::income("Income:A")]
+#[case::one_component("Assets:Cash")]
+#[case::multiple_components("Assets:Cash:Wallet")]
+#[case::dash("Assets:Hello-world")]
+#[case::num_at_end("Assets:Cash2")]
+#[case::num_at_start("Assets:2Cash")]
+fn account_from_str_should_parse_valid_account(#[case] input: &str) {
+    let account: Account = input.parse().unwrap();
+    assert_eq!(account.as_str(), input);
+}
+
+#[rstest]
+#[case("oops")]
+#[case("Assets:")]
+#[case("Assets::Cash")]
+fn account_from_str_should_fail_for_invalid_input(#[case] input: &str) {
+    let result: Result<Account, _> = input.parse();
+    assert!(result.is_err(), "{result:?}");
 }
 
 #[rstest]

@@ -2,6 +2,7 @@ use std::{
     borrow::Borrow,
     collections::HashSet,
     fmt::{Display, Formatter},
+    str::FromStr,
     sync::Arc,
 };
 
@@ -9,17 +10,18 @@ use nom::{
     branch::alt,
     bytes::{complete::tag, complete::take_while},
     character::complete::{char, satisfy, space0, space1},
-    combinator::{cut, iterator, opt, recognize},
+    combinator::{all_consuming, cut, iterator, opt, recognize},
     multi::many1_count,
     sequence::{delimited, preceded},
+    Finish,
 };
 
 use crate::{
     amount::{self, Amount, Currency},
-    Decimal,
+    Decimal, Span,
 };
 
-use super::{IResult, Span};
+use super::IResult;
 
 /// Account
 ///
@@ -59,6 +61,21 @@ impl AsRef<str> for Account {
 impl Borrow<str> for Account {
     fn borrow(&self) -> &str {
         self.0.borrow()
+    }
+}
+
+impl FromStr for Account {
+    type Err = crate::Error;
+
+    fn from_str(input: &str) -> Result<Self, Self::Err> {
+        let spanned = Span::new(input);
+        match all_consuming(parse)(spanned).finish() {
+            Ok((_, account)) => Ok(account),
+            Err(err) => {
+                println!("{err:?}");
+                Err(Self::Err::new(input, spanned))
+            }
+        }
     }
 }
 
@@ -272,7 +289,7 @@ mod chumksy {
             just("Assets"),
             just("Liabilities"),
             just("Equity"),
-            just("Incomes"),
+            just("Income"),
             just("Expenses"),
         ));
         let component = filter(|c: &char| c.is_alphanumeric() || *c == '-')
@@ -280,7 +297,7 @@ mod chumksy {
             .at_least(1);
         category
             .map(ToOwned::to_owned)
-            .then(just(':').ignore_then(component).repeated())
+            .then(just(':').ignore_then(component).repeated().at_least(1))
             .foldl(|mut account, component| {
                 account.push(':');
                 account.extend(component);
@@ -296,15 +313,16 @@ mod chumksy {
         use rstest::rstest;
 
         #[rstest]
-        #[case("Assets")]
-        #[case("Liabilities")]
-        #[case("Equity")]
-        #[case("Incomes")]
-        #[case("Expenses")]
-        #[case("Assets:Cash")]
-        #[case("Assets:A:B")]
-        #[case("Assets:A2:2B")]
-        #[case("Assets:hello-world")]
+        #[case::assets("Assets:A")]
+        #[case::liabilities("Liabilities:A")]
+        #[case::equity("Equity:A")]
+        #[case::expenses("Expenses:A")]
+        #[case::income("Income:A")]
+        #[case::one_component("Assets:Cash")]
+        #[case::multiple_components("Assets:Cash:Wallet")]
+        #[case::dash("Assets:Hello-world")]
+        #[case::num_at_end("Assets:Cash2")]
+        #[case::num_at_start("Assets:2Cash")]
         fn should_parse_valid_account(#[case] input: &str) {
             let account: Account = account().then_ignore(end()).parse(input).unwrap();
             assert_eq!(account.as_str(), input);
@@ -312,6 +330,7 @@ mod chumksy {
 
         #[rstest]
         #[case("Hello")]
+        #[case("Assets")]
         #[case("Assets:")]
         #[case("Assets::A")]
         fn should_not_parse_invalid_account(#[case] input: &str) {
