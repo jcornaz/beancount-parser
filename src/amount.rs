@@ -244,23 +244,26 @@ mod chumsky {
             let product = product(atom);
             sum(product)
         })
+        .labelled("expression")
     }
 
     fn sum<D: Decimal>(atom: impl ChumskyParser<D> + Clone) -> impl ChumskyParser<D> + Clone {
         atom.clone()
             .then(just('+').or(just('-')).padded().then(atom).repeated())
-            .foldl(|sum, (op, value)| if op == '+' { sum + value } else { sum - value })
+            .foldl(|sum, (op, value)| match op {
+                '+' => sum + value,
+                '-' => sum - value,
+                op => unreachable!("unknown sum operator: {op}"),
+            })
     }
 
     fn product<D: Decimal>(atom: impl ChumskyParser<D> + Clone) -> impl ChumskyParser<D> + Clone {
         atom.clone()
             .then(just('*').or(just('/')).padded().then(atom).repeated())
-            .foldl(|product, (op, value)| {
-                if op == '*' {
-                    product * value
-                } else {
-                    product / value
-                }
+            .foldl(|product, (op, value)| match op {
+                '*' => product * value,
+                '/' => product / value,
+                op => unreachable!("unknown product operator: {op}"),
             })
     }
 
@@ -293,6 +296,7 @@ mod chumsky {
                     .parse()
                     .map_err(|_| ChumskyError::custom(span, "not a number"))
             })
+            .labelled("numeric value")
     }
 
     #[cfg(test)]
