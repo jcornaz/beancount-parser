@@ -239,9 +239,23 @@ mod chumsky {
     use chumsky::prelude::*;
 
     fn value<D: Decimal>() -> impl ChumskyParser<D> {
-        text::digits(10).try_map(|string: String, span| {
-            D::from_str(&string).map_err(|_| ChumskyError::custom(span, "not a number"))
-        })
+        let digit = filter(|c: &char| c.is_ascii_digit());
+        let int_part = digit.repeated().at_least(1).chain::<char, _, _>(
+            just(',')
+                .chain(digit.repeated().at_least(1))
+                .repeated()
+                .flatten(),
+        );
+        let fract_part = just('.').chain::<char, _, _>(digit.repeated()).or_not();
+        int_part
+            .chain::<char, _, _>(fract_part)
+            .collect::<String>()
+            .try_map(|string: String, span| {
+                string
+                    .replace(',', "")
+                    .parse()
+                    .map_err(|_| ChumskyError::custom(span, "not a number"))
+            })
     }
 
     #[cfg(test)]
@@ -250,13 +264,32 @@ mod chumsky {
         use rstest::rstest;
 
         #[rstest]
-        #[case("42", 42.)]
+        #[case::zero("0", 0.)]
+        #[case::zero_one("01", 1.)]
+        #[case::zero_dot("0.", 0.)]
+        #[case::int("42", 42.)]
+        #[case::with_fract_part("42.42", 42.42)]
+        #[case::thousand("1000", 1_000.)]
+        #[case::thousand_sep("1,000", 1_000.)]
         fn should_parse_integer(#[case] input: &str, #[case] expected: f64) {
-            let value: f64 = value().parse(input).unwrap();
+            let value: f64 = value().then_ignore(end()).parse(input).unwrap();
             assert!(
                 (value - expected).abs() <= f64::EPSILON,
                 "{value} should equal {expected}"
             );
+        }
+
+        #[rstest]
+        #[case::empty("")]
+        #[case::alpha("x")]
+        #[case::start_with_dot(".0")]
+        #[case::start_with_thousand_sep(",1")]
+        #[case::two_dots("1..")]
+        #[case::comma_in_fract_part("1.2,3")]
+        #[case::comma_dot("1,.0")]
+        fn should_not_parse_invalid_value(#[case] input: &str) {
+            let result = value::<f64>().then_ignore(end()).parse(input);
+            assert!(result.is_err(), "{result:?}");
         }
     }
 }

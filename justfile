@@ -1,5 +1,7 @@
 set dotenv-load
 
+export RUST_BACKTRACE := "1"
+
 @_choose:
 	just --list --unsorted
 
