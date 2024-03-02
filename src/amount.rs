@@ -231,3 +231,32 @@ impl<D> Decimal for D where
         + PartialOrd
 {
 }
+
+#[cfg(test)]
+mod chumsky {
+    use crate::{ChumskyError, ChumskyParser, Decimal};
+
+    use chumsky::prelude::*;
+
+    fn value<D: Decimal>() -> impl ChumskyParser<D> {
+        text::digits(10).try_map(|string: String, span| {
+            D::from_str(&string).map_err(|_| ChumskyError::custom(span, "not a number"))
+        })
+    }
+
+    #[cfg(test)]
+    mod tests {
+        use super::*;
+        use rstest::rstest;
+
+        #[rstest]
+        #[case("42", 42.)]
+        fn should_parse_integer(#[case] input: &str, #[case] expected: f64) {
+            let value: f64 = value().parse(input).unwrap();
+            assert!(
+                (value - expected).abs() <= f64::EPSILON,
+                "{value} should equal {expected}"
+            );
+        }
+    }
+}
