@@ -31,6 +31,7 @@ criterion = "0.5.1"
 rstest = { version = "0.18.2", default-features = false }
 rust_decimal = { version = "1.34", default-features = false }
 miette = { version = "5.10", features = ["fancy"] }
+chumsky = "0.9.3"
 
 [lints.rust]
 future_incompatible = "deny"
