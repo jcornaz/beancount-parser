@@ -238,7 +238,44 @@ mod chumsky {
 
     use chumsky::prelude::*;
 
-    fn value<D: Decimal>() -> impl ChumskyParser<D> {
+    fn expression<D: Decimal + 'static>() -> impl ChumskyParser<D> {
+        recursive::<_, D, _, _, _>(|expr| {
+            let atom = atom(expr);
+            let product = product(atom);
+            sum(product)
+        })
+    }
+
+    fn sum<D: Decimal>(atom: impl ChumskyParser<D> + Clone) -> impl ChumskyParser<D> + Clone {
+        atom.clone()
+            .then(just('+').or(just('-')).padded().then(atom).repeated())
+            .foldl(|sum, (op, value)| if op == '+' { sum + value } else { sum - value })
+    }
+
+    fn product<D: Decimal>(atom: impl ChumskyParser<D> + Clone) -> impl ChumskyParser<D> + Clone {
+        atom.clone()
+            .then(just('*').or(just('/')).padded().then(atom).repeated())
+            .foldl(|product, (op, value)| {
+                if op == '*' {
+                    product * value
+                } else {
+                    product / value
+                }
+            })
+    }
+
+    fn atom<D: Decimal>(expr: impl ChumskyParser<D> + Clone) -> impl ChumskyParser<D> + Clone {
+        just('-')
+            .or_not()
+            .then(
+                expr.padded()
+                    .delimited_by(just('('), just(')'))
+                    .or(literal::<D>()),
+            )
+            .map(|(neg_op, b)| if neg_op == Some('-') { -b } else { b })
+    }
+
+    fn literal<D: Decimal>() -> impl ChumskyParser<D> + Copy {
         let digit = filter(|c: &char| c.is_ascii_digit());
         let int_part = digit.repeated().at_least(1).chain::<char, _, _>(
             just(',')
@@ -264,6 +301,28 @@ mod chumsky {
         use rstest::rstest;
 
         #[rstest]
+        #[case::literal("42", 42)]
+        #[case::neg_literal("-42", -42)]
+        #[case::double_neg("-42", -42)]
+        #[case::neg_parenthesis("-(42)", -42)]
+        #[case::neg_parenthesis_2("-(-42)", 42)]
+        #[case::addition("1+2+3", 6)]
+        #[case::addition_with_space("1 + 2", 3)]
+        #[case::substraction("10-2-5", 3)]
+        #[case::substraction_with_space("5 - 3", 2)]
+        #[case::multiplication("2*3*4", 24)]
+        #[case::multiplication_with_space("2 * 3", 6)]
+        #[case::division("6/3", 2)]
+        #[case::division_with_space("6 / 3", 2)]
+        #[case::operator_priority("1 + 2 * 3", 7)]
+        #[case::parenthesis("(1+2)*3", 9)]
+        #[case::parenthesis_nested("( 1 + ( 2 + 2 ) * 4 ) * 3", 51)]
+        fn should_parse_valid_expression(#[case] input: &str, #[case] expected: i32) {
+            let result: i32 = expression().then_ignore(end()).parse(input).unwrap();
+            assert_eq!(result, expected);
+        }
+
+        #[rstest]
         #[case::zero("0", 0.)]
         #[case::zero_one("01", 1.)]
         #[case::zero_dot("0.", 0.)]
@@ -272,7 +331,7 @@ mod chumsky {
         #[case::thousand("1000", 1_000.)]
         #[case::thousand_sep("1,000", 1_000.)]
         fn should_parse_integer(#[case] input: &str, #[case] expected: f64) {
-            let value: f64 = value().then_ignore(end()).parse(input).unwrap();
+            let value: f64 = literal().then_ignore(end()).parse(input).unwrap();
             assert!(
                 (value - expected).abs() <= f64::EPSILON,
                 "{value} should equal {expected}"
@@ -288,7 +347,7 @@ mod chumsky {
         #[case::comma_in_fract_part("1.2,3")]
         #[case::comma_dot("1,.0")]
         fn should_not_parse_invalid_value(#[case] input: &str) {
-            let result = value::<f64>().then_ignore(end()).parse(input);
+            let result = literal::<f64>().then_ignore(end()).parse(input);
             assert!(result.is_err(), "{result:?}");
         }
     }
