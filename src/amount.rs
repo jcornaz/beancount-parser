@@ -231,20 +231,20 @@ impl<D> Decimal for D where
 }
 
 #[cfg(test)]
-mod chumsky {
+pub(crate) mod chumsky {
     use super::{Amount, Currency};
     use crate::{ChumskyError, ChumskyParser, Decimal};
 
     use chumsky::{prelude::*, text::whitespace};
 
-    fn amount<D: Decimal + 'static>() -> impl ChumskyParser<Amount<D>> {
+    pub(crate) fn amount<D: Decimal + 'static>() -> impl ChumskyParser<Amount<D>> {
         expression::<D>()
             .then_ignore(whitespace())
             .then(currency())
             .map(|(value, currency)| Amount { value, currency })
     }
 
-    fn currency() -> impl ChumskyParser<Currency> {
+    pub(crate) fn currency() -> impl ChumskyParser<Currency> {
         filter(|c: &char| c.is_ascii_uppercase())
             .chain(
                 filter(|c: &char| c.is_ascii_uppercase() || c.is_ascii_digit())

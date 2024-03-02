@@ -388,3 +388,57 @@ fn cost<D: Decimal>(input: Span<'_>) -> IResult<'_, Cost<D>> {
     let (input, _) = preceded(space0, char_tag('}'))(input)?;
     Ok((input, Cost { amount: cost, date }))
 }
+
+#[cfg(test)]
+mod chumsky {
+    use crate::{ChumskyParser, Decimal};
+    use chumsky::prelude::*;
+
+    use super::Cost;
+
+    fn cost<D: Decimal + 'static>() -> impl ChumskyParser<Cost<D>> {
+        crate::amount::chumsky::amount()
+            .or_not()
+            .padded()
+            .delimited_by(just('{'), just('}'))
+            .map(|amount| Cost { amount, date: None })
+            .labelled("cost")
+    }
+
+    #[cfg(test)]
+    mod tests {
+        use crate::Date;
+
+        use super::*;
+        use rstest::rstest;
+
+        #[rstest]
+        fn should_parse_empty_cost(#[values("{}", "{ }")] input: &str) {
+            let cost: Cost<i32> = cost().parse(input).unwrap();
+            assert_eq!(cost.amount, None);
+            assert_eq!(cost.date, None);
+        }
+
+        #[rstest]
+        fn should_parse_cost_amount(#[values("{1 EUR}", "{ 1 EUR }")] input: &str) {
+            let cost: Cost<i32> = cost().parse(input).unwrap();
+            let amount = cost.amount.unwrap();
+            assert_eq!(amount.value, 1);
+            assert_eq!(amount.currency.as_str(), "EUR");
+        }
+
+        #[rstest]
+        #[ignore = "not implemented"]
+        fn should_parse_cost_date(#[values("{2024-03-02}", "{ 1 EUR , 2024-03-02 }")] input: &str) {
+            let cost: Cost<i32> = cost().parse(input).unwrap();
+            assert_eq!(
+                cost.date,
+                Some(Date {
+                    year: 2024,
+                    month: 3,
+                    day: 2,
+                })
+            );
+        }
+    }
+}
