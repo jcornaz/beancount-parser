@@ -10,7 +10,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
-* implement `FromStr` for `Account`
+* implement `FromStr` for `Account` and `Date`
+* `Date::new(year: u16, month: u8, day: u8) -> Self`
 
 
 ## [2.1.0] - 2024-01-29
