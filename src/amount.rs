@@ -10,8 +10,7 @@ use nom::{
     branch::alt,
     bytes::complete::{take_while, take_while1},
     character::complete::{char, one_of, satisfy, space0, space1},
-    combinator::all_consuming,
-    combinator::{iterator, map_res, opt, recognize, verify},
+    combinator::{all_consuming, iterator, map_res, opt, recognize, verify},
     sequence::{delimited, preceded, terminated, tuple},
     Finish,
 };
@@ -233,10 +232,17 @@ impl<D> Decimal for D where
 
 #[cfg(test)]
 mod chumsky {
-    use super::Currency;
+    use super::{Amount, Currency};
     use crate::{ChumskyError, ChumskyParser, Decimal};
 
-    use chumsky::prelude::*;
+    use chumsky::{prelude::*, text::whitespace};
+
+    fn amount<D: Decimal + 'static>() -> impl ChumskyParser<Amount<D>> {
+        expression::<D>()
+            .then_ignore(whitespace())
+            .then(currency())
+            .map(|(value, currency)| Amount { value, currency })
+    }
 
     fn currency() -> impl ChumskyParser<Currency> {
         filter(|c: &char| c.is_ascii_uppercase())
@@ -382,6 +388,13 @@ mod chumsky {
         fn should_not_parse_invalid_currency(#[case] input: &str) {
             let result: Result<Currency, _> = currency().parse(input);
             assert!(result.is_err(), "{result:?}");
+        }
+
+        #[rstest]
+        fn should_parse_valid_amount() {
+            let amount: Amount<i32> = amount().parse("1 + 3 CHF").unwrap();
+            assert_eq!(amount.value, 4);
+            assert_eq!(amount.currency.as_str(), "CHF");
         }
     }
 }
