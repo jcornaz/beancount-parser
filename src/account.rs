@@ -274,12 +274,12 @@ mod chumksy {
             just("Equity"),
             just("Incomes"),
             just("Expenses"),
-        ))
-        .map(ToOwned::to_owned);
+        ));
         let component = filter(|c: &char| c.is_alphanumeric() || *c == '-')
             .repeated()
             .at_least(1);
         category
+            .map(ToOwned::to_owned)
             .then(just(':').ignore_then(component).repeated())
             .foldl(|mut account, component| {
                 account.push(':');
