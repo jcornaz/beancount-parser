@@ -472,3 +472,12 @@ fn string(input: Span<'_>) -> IResult<'_, String> {
     let (input, _) = char('"')(input)?;
     Ok((input, string))
 }
+
+#[cfg(test)]
+type ChumskyError = chumsky::error::Simple<char>;
+
+#[cfg(test)]
+trait ChumskyParser<O>: chumsky::Parser<char, O, Error = ChumskyError> {}
+
+#[cfg(test)]
+impl<O, P: chumsky::Parser<char, O, Error = ChumskyError>> ChumskyParser<O> for P {}

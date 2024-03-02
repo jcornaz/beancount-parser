@@ -259,3 +259,64 @@ pub(super) fn pad(input: Span<'_>) -> IResult<'_, Pad> {
         },
     ))
 }
+
+#[cfg(test)]
+mod chumksy {
+    use crate::ChumskyParser;
+
+    use super::Account;
+    use chumsky::prelude::*;
+
+    fn account() -> impl ChumskyParser<Account> {
+        let category = choice((
+            just("Assets"),
+            just("Liabilities"),
+            just("Equity"),
+            just("Incomes"),
+            just("Expenses"),
+        ))
+        .map(ToOwned::to_owned);
+        let component = filter(|c: &char| c.is_alphanumeric() || *c == '-')
+            .repeated()
+            .at_least(1);
+        category
+            .then(just(':').ignore_then(component).repeated())
+            .foldl(|mut account, component| {
+                account.push(':');
+                account.extend(component);
+                account
+            })
+            .map(|s| Account(s.into()))
+            .labelled("account")
+    }
+
+    #[cfg(test)]
+    mod tests {
+        use super::*;
+        use rstest::rstest;
+
+        #[rstest]
+        #[case("Assets")]
+        #[case("Liabilities")]
+        #[case("Equity")]
+        #[case("Incomes")]
+        #[case("Expenses")]
+        #[case("Assets:Cash")]
+        #[case("Assets:A:B")]
+        #[case("Assets:A2:2B")]
+        #[case("Assets:hello-world")]
+        fn should_parse_valid_account(#[case] input: &str) {
+            let account: Account = account().then_ignore(end()).parse(input).unwrap();
+            assert_eq!(account.as_str(), input);
+        }
+
+        #[rstest]
+        #[case("Hello")]
+        #[case("Assets:")]
+        #[case("Assets::A")]
+        fn should_not_parse_invalid_account(#[case] input: &str) {
+            let result = account().then_ignore(end()).parse(input);
+            assert!(result.is_err(), "{result:?}");
+        }
+    }
+}
