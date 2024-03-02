@@ -123,3 +123,90 @@ mod tests {
         assert!(result.is_err(), "{result:?}");
     }
 }
+
+#[cfg(test)]
+pub(crate) mod chumsky {
+    use crate::{ChumskyError, ChumskyParser, Date};
+
+    use chumsky::prelude::*;
+
+    pub(crate) fn date() -> impl ChumskyParser<Date> {
+        year()
+            .then_ignore(just('-'))
+            .then(month())
+            .then_ignore(just('-'))
+            .then(day())
+            .map(|((year, month), day)| Date::new(year, month, day))
+            .labelled("date")
+    }
+
+    fn year() -> impl ChumskyParser<u16> {
+        filter(|c: &char| c.is_ascii_digit())
+            .repeated()
+            .exactly(4)
+            .collect::<String>()
+            .from_str()
+            .unwrapped()
+            .labelled("year")
+    }
+
+    fn month() -> impl ChumskyParser<u8> {
+        filter(|c: &char| c.is_ascii_digit())
+            .repeated()
+            .exactly(2)
+            .collect::<String>()
+            .from_str()
+            .unwrapped()
+            .validate(|m: u8, span, emit| {
+                if m == 0 || m > 12 {
+                    emit(ChumskyError::custom(span, "must be between 1 and 12"));
+                }
+                m
+            })
+            .labelled("month")
+    }
+
+    fn day() -> impl ChumskyParser<u8> {
+        filter(|c: &char| c.is_ascii_digit())
+            .repeated()
+            .exactly(2)
+            .collect::<String>()
+            .from_str()
+            .unwrapped()
+            .validate(|d: u8, span, emit| {
+                if d == 0 || d > 31 {
+                    emit(ChumskyError::custom(span, "must be between 1 and 31"));
+                }
+                d
+            })
+            .labelled("day")
+    }
+
+    #[cfg(test)]
+    mod tests {
+        use super::*;
+        use rstest::rstest;
+
+        #[rstest]
+        #[case::first_day_of_year("2023-01-01", Date::new(2023, 1, 1))]
+        #[case::last_day_of_year("2023-12-31", Date::new(2023, 12, 31))]
+        fn should_parse_valid_date(#[case] input: &str, #[case] expected: Date) {
+            let date: Date = date().then_ignore(end()).parse(input).unwrap();
+            assert_eq!(date, expected);
+        }
+
+        #[rstest]
+        #[case("2023-13-01")]
+        #[case("2023-10-32")]
+        #[case("2023-01-00")]
+        #[case("2023-00-01")]
+        #[case("2023-1-2")]
+        #[case("2023-01-2")]
+        #[case("2023-1-02")]
+        #[case("23-01-02")]
+        fn should_not_parse_invalid_date(#[case] input: &str) {
+            let result: Result<Date, _> = date().then_ignore(end()).parse(input);
+            assert!(result.is_err(), "{result:?}");
+        }
+    }
+}
