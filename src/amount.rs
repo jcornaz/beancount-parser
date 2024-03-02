@@ -1,7 +1,6 @@
-use std::borrow::Borrow;
 use std::{
-    fmt::Debug,
-    fmt::{Display, Formatter},
+    borrow::Borrow,
+    fmt::{Debug, Display, Formatter},
     ops::{Add, Div, Mul, Neg, Sub},
     str::FromStr,
     sync::Arc,
@@ -234,12 +233,24 @@ impl<D> Decimal for D where
 
 #[cfg(test)]
 mod chumsky {
+    use super::Currency;
     use crate::{ChumskyError, ChumskyParser, Decimal};
 
     use chumsky::prelude::*;
 
+    fn currency() -> impl ChumskyParser<Currency> {
+        filter(|c: &char| c.is_ascii_uppercase())
+            .chain(
+                filter(|c: &char| c.is_ascii_uppercase() || c.is_ascii_digit())
+                    .or(one_of("'.-_"))
+                    .repeated(),
+            )
+            .collect::<String>()
+            .map(|s| Currency(s.into()))
+    }
+
     fn expression<D: Decimal + 'static>() -> impl ChumskyParser<D> {
-        recursive::<_, D, _, _, _>(|expr| {
+        recursive(|expr| {
             let atom = atom(expr);
             let product = product(atom);
             sum(product)
@@ -352,6 +363,24 @@ mod chumsky {
         #[case::comma_dot("1,.0")]
         fn should_not_parse_invalid_value(#[case] input: &str) {
             let result = literal::<f64>().then_ignore(end()).parse(input);
+            assert!(result.is_err(), "{result:?}");
+        }
+
+        #[rstest]
+        #[case::normal("CHF")]
+        #[case::with_special_chars("USD'42-CHF_EUR.PLN")]
+        #[case::end_with_digit("A2")]
+        fn should_parse_valid_currency(#[case] input: &str) {
+            let currency: Currency = currency().parse(input).unwrap();
+            assert_eq!(currency.as_str(), input);
+        }
+
+        #[rstest]
+        #[case::empty("")]
+        #[case::lowercase("chf")]
+        #[case::start_with_digit("2A")]
+        fn should_not_parse_invalid_currency(#[case] input: &str) {
+            let result: Result<Currency, _> = currency().parse(input);
             assert!(result.is_err(), "{result:?}");
         }
     }
