@@ -488,7 +488,7 @@ mod chumksy {
 
     use crate::ChumskyParser;
 
-    fn string() -> impl ChumskyParser<String> {
+    pub(crate) fn string() -> impl ChumskyParser<String> {
         choice((just("\\\"").to('"'), just("\\\\").to('\\'), just('"').not()))
             .repeated()
             .delimited_by(just('"'), just('"'))

@@ -154,6 +154,7 @@ pub(crate) mod chumsky {
         let value = choice((
             crate::amount::chumsky::expression::<D>().map(Value::Number),
             crate::amount::chumsky::currency().map(Value::Currency),
+            crate::chumksy::string().map(Value::String),
         ));
 
         key.then_ignore(just(':').padded()).then(value)
@@ -171,6 +172,7 @@ pub(crate) mod chumsky {
         #[case::snake_key("foo_bar: 1", "foo_bar", Value::Number(1))]
         #[case::camel_case_key("fooBar: 1", "fooBar", Value::Number(1))]
         #[case::currency("currency: CHF", "currency", Value::Currency("CHF".parse().unwrap()))]
+        #[case::string("hello: \"world\"", "hello", Value::String("world".into()))]
         fn should_parse_valid_metadata_entry(
             #[case] input: &str,
             #[case] expected_key: Key,
