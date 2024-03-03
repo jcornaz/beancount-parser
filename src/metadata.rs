@@ -18,6 +18,7 @@ use std::{
     borrow::Borrow,
     collections::HashMap,
     fmt::{Debug, Display, Formatter},
+    str::FromStr,
     sync::Arc,
 };
 
@@ -25,7 +26,7 @@ use nom::{
     branch::alt,
     bytes::complete::take_while,
     character::complete::{char, satisfy, space1},
-    combinator::{iterator, recognize},
+    combinator::{all_consuming, iterator, map, recognize},
     sequence::preceded,
     Parser,
 };
@@ -61,6 +62,17 @@ impl Borrow<str> for Key {
     }
 }
 
+impl FromStr for Key {
+    type Err = crate::Error;
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let span = Span::new(s);
+        match all_consuming(key)(span) {
+            Ok((_, key)) => Ok(key),
+            Err(_) => Err(crate::Error::new(s, span)),
+        }
+    }
+}
+
 /// Metadata value
 ///
 /// See the [`metadata`](crate::metadata) module for an example
@@ -84,10 +96,7 @@ pub(crate) fn parse<D: Decimal>(input: Span<'_>) -> IResult<'_, Map<D>> {
 
 fn entry<D: Decimal>(input: Span<'_>) -> IResult<'_, (Key, Value<D>)> {
     let (input, _) = space1(input)?;
-    let (input, key) = recognize(preceded(
-        satisfy(char::is_lowercase),
-        take_while(|c: char| c.is_alphanumeric() || c == '-' || c == '_'),
-    ))(input)?;
+    let (input, key) = key(input)?;
     let (input, _) = char(':')(input)?;
     let (input, _) = space1(input)?;
     let (input, value) = alt((
@@ -96,5 +105,34 @@ fn entry<D: Decimal>(input: Span<'_>) -> IResult<'_, (Key, Value<D>)> {
         amount::currency.map(Value::Currency),
     ))(input)?;
     let (input, ()) = end_of_line(input)?;
-    Ok((input, (Key((*key.fragment()).into()), value)))
+    Ok((input, (key, value)))
+}
+
+fn key(input: Span<'_>) -> IResult<'_, Key> {
+    map(
+        recognize(preceded(
+            satisfy(char::is_lowercase),
+            take_while(|c: char| c.is_alphanumeric() || c == '-' || c == '_'),
+        )),
+        |s: Span<'_>| Key((*s.fragment()).into()),
+    )(input)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    use rstest::rstest;
+
+    #[rstest]
+    fn key_from_str_should_parse_key() {
+        let key: Key = "foo".parse().unwrap();
+        assert_eq!(key.as_ref(), "foo");
+    }
+
+    #[rstest]
+    fn key_from_str_should_not_parse_invalid_key() {
+        let key: Result<Key, _> = "foo bar".parse();
+        assert!(key.is_err(), "{key:?}");
+    }
 }
