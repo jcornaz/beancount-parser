@@ -405,6 +405,7 @@ mod chumsky {
             .then(crate::account::chumksy::account())
             .then_ignore(whitespace())
             .then(crate::amount::chumsky::amount().or_not())
+            .then(whitespace().ignore_then(cost::<D>()).or_not())
             .then(
                 choice((
                     just('@')
@@ -418,11 +419,11 @@ mod chumsky {
                 ))
                 .or_not(),
             )
-            .map(|(((flag, account), amount), price)| Posting {
+            .map(|((((flag, account), amount), cost), price)| Posting {
                 flag,
                 account,
                 amount,
-                cost: None,
+                cost,
                 price,
                 metadata: HashMap::new(),
             })
@@ -500,6 +501,16 @@ mod chumsky {
         ) {
             let posting: Posting<i32> = posting().parse(input).unwrap();
             assert_eq!(posting.price, expected);
+        }
+
+        #[rstest]
+        #[case::none("Assets:Cash 1 CHF", None)]
+        #[case::empty("Assets:Cash 1 CHF {}", Some(Cost::default()))]
+        #[case::some("Assets:Cash 1 CHF {2023-03-03}", Some(Cost { date: Some(Date::new(2023,3,3)), ..Cost::default() }))]
+        #[case::some_before_price("Assets:Cash 1 CHF {2023-03-03} @ 3 PLN", Some(Cost { date: Some(Date::new(2023,3,3)), ..Cost::default() }))]
+        fn should_parse_posting_cost(#[case] input: &str, #[case] expected: Option<Cost<i32>>) {
+            let posting: Posting<i32> = posting().parse(input).unwrap();
+            assert_eq!(posting.cost, expected);
         }
 
         #[rstest]
