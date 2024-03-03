@@ -12,7 +12,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 * implement `FromStr` for `Account`, `Date`, `Currency` and `metadata::Key`
 * implement `Default` for `Cost<D>`
-* `Date::new(year: u16, month: u8, day: u8) -> Self`
+* `Date::new` constructor
 
 
 ## [2.1.0] - 2024-01-29
