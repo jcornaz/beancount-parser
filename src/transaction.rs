@@ -391,10 +391,26 @@ fn cost<D: Decimal>(input: Span<'_>) -> IResult<'_, Cost<D>> {
 
 #[cfg(test)]
 mod chumsky {
-    use crate::{ChumskyParser, Decimal};
-    use chumsky::prelude::*;
+    use std::collections::HashMap;
+
+    use crate::{ChumskyParser, Decimal, Posting};
+    use chumsky::{prelude::*, text::whitespace};
 
     use super::Cost;
+
+    fn posting<D: Decimal + 'static>() -> impl ChumskyParser<Posting<D>> {
+        crate::account::chumksy::account()
+            .then_ignore(whitespace())
+            .then(crate::amount::chumsky::amount().or_not())
+            .map(|(account, amount)| Posting {
+                flag: None,
+                account,
+                amount,
+                cost: None,
+                price: None,
+                metadata: HashMap::new(),
+            })
+    }
 
     fn cost<D: Decimal + 'static>() -> impl ChumskyParser<Cost<D>> {
         choice((
@@ -434,6 +450,20 @@ mod chumsky {
 
         use super::*;
         use rstest::rstest;
+
+        #[rstest]
+        fn should_parse_posting_account() {
+            let posting: Posting<i32> = posting().parse("Assets:Cash").unwrap();
+            assert_eq!(posting.account.as_str(), "Assets:Cash");
+        }
+
+        #[rstest]
+        fn should_parse_posting_amount() {
+            let posting: Posting<i32> = posting().parse("Assets:Cash 42 CHF").unwrap();
+            let amount = posting.amount.unwrap();
+            assert_eq!(amount.value, 42);
+            assert_eq!(amount.currency.as_str(), "CHF");
+        }
 
         #[rstest]
         fn should_parse_empty_cost(#[values("{}", "{ }")] input: &str) {

@@ -278,13 +278,13 @@ pub(super) fn pad(input: Span<'_>) -> IResult<'_, Pad> {
 }
 
 #[cfg(test)]
-mod chumksy {
+pub(crate) mod chumksy {
     use crate::ChumskyParser;
 
     use super::Account;
     use chumsky::prelude::*;
 
-    fn account() -> impl ChumskyParser<Account> {
+    pub(crate) fn account() -> impl ChumskyParser<Account> {
         let category = choice((
             just("Assets"),
             just("Liabilities"),
