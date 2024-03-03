@@ -399,11 +399,14 @@ mod chumsky {
     use super::Cost;
 
     fn posting<D: Decimal + 'static>() -> impl ChumskyParser<Posting<D>> {
-        crate::account::chumksy::account()
+        one_of("*!")
+            .then_ignore(whitespace())
+            .or_not()
+            .then(crate::account::chumksy::account())
             .then_ignore(whitespace())
             .then(crate::amount::chumsky::amount().or_not())
-            .map(|(account, amount)| Posting {
-                flag: None,
+            .map(|((flag, account), amount)| Posting {
+                flag,
                 account,
                 amount,
                 cost: None,
@@ -446,7 +449,7 @@ mod chumsky {
 
     #[cfg(test)]
     mod tests {
-        use crate::Date;
+        use crate::{Amount, Date};
 
         use super::*;
         use rstest::rstest;
@@ -458,11 +461,20 @@ mod chumsky {
         }
 
         #[rstest]
-        fn should_parse_posting_amount() {
-            let posting: Posting<i32> = posting().parse("Assets:Cash 42 CHF").unwrap();
-            let amount = posting.amount.unwrap();
-            assert_eq!(amount.value, 42);
-            assert_eq!(amount.currency.as_str(), "CHF");
+        #[case::none("Assets:Cash", None)]
+        #[case::some("Assets:Cash 42 PLN", Some(Amount { value: 42, currency: "PLN".parse().unwrap() }))]
+        fn should_parse_posting_amount(#[case] input: &str, #[case] expected: Option<Amount<i32>>) {
+            let posting: Posting<i32> = posting().parse(input).unwrap();
+            assert_eq!(posting.amount, expected);
+        }
+
+        #[rstest]
+        #[case::no_flag("Assets:Cash 1 CHF", None)]
+        #[case::cleared("* Assets:Cash 1 CHF", Some('*'))]
+        #[case::pending("! Assets:Cash 1 CHF", Some('!'))]
+        fn should_parse_posting_flag(#[case] input: &str, #[case] expected: Option<char>) {
+            let posting: Posting<i32> = posting().parse(input).unwrap();
+            assert_eq!(posting.flag, expected);
         }
 
         #[rstest]
