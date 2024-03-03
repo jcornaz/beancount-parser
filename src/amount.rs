@@ -88,9 +88,17 @@ impl Borrow<str> for Currency {
 impl<'a> TryFrom<&'a str> for Currency {
     type Error = crate::ConversionError;
     fn try_from(value: &'a str) -> Result<Self, Self::Error> {
-        match all_consuming(currency)(Span::new(value)).finish() {
+        value.parse().map_err(|_| crate::ConversionError)
+    }
+}
+
+impl FromStr for Currency {
+    type Err = crate::Error;
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let span = Span::new(s);
+        match all_consuming(currency)(span).finish() {
             Ok((_, currency)) => Ok(currency),
-            Err(_) => Err(crate::ConversionError),
+            Err(_) => Err(crate::Error::new(s, span)),
         }
     }
 }
@@ -228,6 +236,28 @@ impl<D> Decimal for D where
         + PartialEq
         + PartialOrd
 {
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use rstest::rstest;
+
+    #[rstest]
+    #[case("CHF")]
+    fn currency_from_str_should_parse_valid_currency(#[case] input: &str) {
+        let currency: Currency = input.parse().unwrap();
+        assert_eq!(currency.as_str(), input);
+    }
+
+    #[rstest]
+    #[case("")]
+    #[case(" ")]
+    #[case("oops")]
+    fn currency_from_str_should_not_parse_invalid_currency(#[case] input: &str) {
+        let currency: Result<Currency, _> = input.parse();
+        assert!(currency.is_err(), "{currency:?}");
+    }
 }
 
 #[cfg(test)]

@@ -10,7 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 
-* implement `FromStr` for `Account` and `Date`
+* implement `FromStr` for `Account`, `Date` and `Currency`
 * implement `Default` for `Cost<D>`
 * `Date::new(year: u16, month: u8, day: u8) -> Self`
 
