@@ -393,7 +393,7 @@ fn cost<D: Decimal>(input: Span<'_>) -> IResult<'_, Cost<D>> {
 mod chumsky {
     use std::collections::HashMap;
 
-    use crate::{ChumskyParser, Decimal, Posting};
+    use crate::{ChumskyParser, Decimal, Posting, PostingPrice};
     use chumsky::{prelude::*, text::whitespace};
 
     use super::Cost;
@@ -405,12 +405,25 @@ mod chumsky {
             .then(crate::account::chumksy::account())
             .then_ignore(whitespace())
             .then(crate::amount::chumsky::amount().or_not())
-            .map(|((flag, account), amount)| Posting {
+            .then(
+                choice((
+                    just('@')
+                        .padded()
+                        .ignore_then(crate::amount::chumsky::amount())
+                        .map(PostingPrice::Unit),
+                    just("@@")
+                        .padded()
+                        .ignore_then(crate::amount::chumsky::amount())
+                        .map(PostingPrice::Total),
+                ))
+                .or_not(),
+            )
+            .map(|(((flag, account), amount), price)| Posting {
                 flag,
                 account,
                 amount,
                 cost: None,
-                price: None,
+                price,
                 metadata: HashMap::new(),
             })
     }
@@ -449,7 +462,7 @@ mod chumsky {
 
     #[cfg(test)]
     mod tests {
-        use crate::{Amount, Date};
+        use crate::{Amount, Date, PostingPrice};
 
         use super::*;
         use rstest::rstest;
@@ -475,6 +488,18 @@ mod chumsky {
         fn should_parse_posting_flag(#[case] input: &str, #[case] expected: Option<char>) {
             let posting: Posting<i32> = posting().parse(input).unwrap();
             assert_eq!(posting.flag, expected);
+        }
+
+        #[rstest]
+        #[case::none("Assets:Cash 1 CHF", None)]
+        #[case::unit("Assets:Cash 1 CHF @ 2 EUR", Some(PostingPrice::Unit(Amount { value: 2, currency: "EUR".parse().unwrap() })))]
+        #[case::total("Assets:Cash 1 CHF @@ 2 EUR", Some(PostingPrice::Total(Amount { value: 2, currency: "EUR".parse().unwrap() })))]
+        fn should_parse_posting_price(
+            #[case] input: &str,
+            #[case] expected: Option<PostingPrice<i32>>,
+        ) {
+            let posting: Posting<i32> = posting().parse(input).unwrap();
+            assert_eq!(posting.price, expected);
         }
 
         #[rstest]
