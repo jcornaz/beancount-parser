@@ -391,10 +391,37 @@ fn cost<D: Decimal>(input: Span<'_>) -> IResult<'_, Cost<D>> {
 
 #[cfg(test)]
 mod chumsky {
-    use crate::{ChumskyParser, Decimal, Posting, PostingPrice};
+    use std::collections::HashSet;
+
+    use crate::{ChumskyParser, Decimal, Posting, PostingPrice, Transaction};
     use chumsky::{prelude::*, text::whitespace};
 
     use super::Cost;
+
+    fn transaction<D: Decimal + 'static>() -> impl ChumskyParser<Transaction<D>> {
+        let flag = choice((
+            just("txn").to(None),
+            just('!').map(Some),
+            just('*').map(Some),
+        ));
+        let payee_and_narration = choice((
+            crate::chumksy::string()
+                .map(Some)
+                .then_ignore(whitespace())
+                .then(crate::chumksy::string().map(Some)),
+            crate::chumksy::string().map(|n| (None, Some(n))),
+            empty().to((None, None)),
+        ));
+        flag.then(whitespace().ignore_then(payee_and_narration))
+            .map(|(flag, (payee, narration))| Transaction {
+                flag,
+                payee,
+                narration,
+                tags: HashSet::new(),
+                links: HashSet::new(),
+                postings: Vec::new(),
+            })
+    }
 
     fn posting<D: Decimal + 'static>() -> impl ChumskyParser<Posting<D>> {
         one_of("*!")
@@ -469,10 +496,33 @@ mod chumsky {
 
     #[cfg(test)]
     mod tests {
-        use crate::{metadata, Amount, Date, PostingPrice};
+        use crate::{metadata, Amount, Date, PostingPrice, Transaction};
 
         use super::*;
         use rstest::rstest;
+
+        #[rstest]
+        #[case("txn", None)]
+        #[case("*", Some('*'))]
+        #[case("!", Some('!'))]
+        fn should_parse_transaction_flag(#[case] input: &str, #[case] expected: Option<char>) {
+            let trx: Transaction<i32> = transaction().parse(input).unwrap();
+            assert_eq!(trx.flag, expected);
+        }
+
+        #[rstest]
+        #[case("*", None, None)]
+        #[case("* \"Hello\"", None, Some("Hello"))]
+        #[case("* \"Hello\" \"World\"", Some("Hello"), Some("World"))]
+        fn should_parse_transaction_description_and_payee(
+            #[case] input: &str,
+            #[case] expected_payee: Option<&str>,
+            #[case] expected_narration: Option<&str>,
+        ) {
+            let trx: Transaction<i32> = transaction().parse(input).unwrap();
+            assert_eq!(trx.payee.as_deref(), expected_payee);
+            assert_eq!(trx.narration.as_deref(), expected_narration);
+        }
 
         #[rstest]
         fn should_parse_posting_account() {
