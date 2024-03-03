@@ -140,10 +140,16 @@ mod tests {
 #[cfg(test)]
 pub(crate) mod chumsky {
 
+    use std::collections::HashMap;
+
     use super::{Key, Value};
     use crate::{ChumskyParser, Decimal};
 
     use chumsky::prelude::*;
+
+    fn map<D: Decimal + 'static>() -> impl ChumskyParser<HashMap<Key, Value<D>>> {
+        entry().padded().repeated().collect().labelled("metadata")
+    }
 
     fn entry<D: Decimal + 'static>() -> impl ChumskyParser<(Key, Value<D>)> {
         let key = filter(|c: &char| c.is_alphanumeric())
@@ -157,13 +163,26 @@ pub(crate) mod chumsky {
             crate::chumksy::string().map(Value::String),
         ));
 
-        key.then_ignore(just(':').padded()).then(value)
+        key.then_ignore(just(':').padded())
+            .then(value)
+            .labelled("metadata entry")
     }
 
     #[cfg(test)]
     mod tests {
         use super::*;
         use rstest::rstest;
+
+        #[rstest]
+        fn should_parse_metadata_map() {
+            let input = "foo: 1\n  bar: 2\n\nbaz: 3";
+            let mut expected = HashMap::<Key, Value<i32>>::new();
+            expected.insert("foo".parse().unwrap(), Value::Number(1));
+            expected.insert("bar".parse().unwrap(), Value::Number(2));
+            expected.insert("baz".parse().unwrap(), Value::Number(3));
+            let actual = map().then_ignore(end()).parse(input).unwrap();
+            assert_eq!(actual, expected);
+        }
 
         #[rstest]
         #[case::num("foo: 42", "foo", Value::Number(42))]
