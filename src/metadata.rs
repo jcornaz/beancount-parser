@@ -136,3 +136,47 @@ mod tests {
         assert!(key.is_err(), "{key:?}");
     }
 }
+
+#[cfg(test)]
+pub(crate) mod chumsky {
+
+    use super::{Key, Value};
+    use crate::{ChumskyParser, Decimal};
+
+    use chumsky::prelude::*;
+
+    fn entry<D: Decimal + 'static>() -> impl ChumskyParser<(Key, Value<D>)> {
+        let key = filter(|c: &char| c.is_alphanumeric())
+            .repeated()
+            .collect::<String>()
+            .map(|s| Key(s.into()));
+        let value = crate::amount::chumsky::expression::<D>().map(Value::Number);
+        key.then_ignore(just(':').padded()).then(value)
+    }
+
+    #[cfg(test)]
+    mod tests {
+        use super::*;
+        use rstest::rstest;
+
+        #[rstest]
+        #[case::num("foo: 42", "foo", Value::Number(42))]
+        #[case::num("foo: (41 + 1)", "foo", Value::Number(42))]
+        fn should_parse_valid_metadata_entry(
+            #[case] input: &str,
+            #[case] expected_key: Key,
+            #[case] expected_value: Value<i32>,
+        ) {
+            let (key, value): (Key, Value<i32>) = entry().then_ignore(end()).parse(input).unwrap();
+            assert_eq!(key, expected_key);
+            assert_eq!(value, expected_value);
+        }
+
+        #[rstest]
+        #[case::space_in_key("hello world: 1")]
+        fn should_not_parse_invalid_metadata(#[case] input: &str) {
+            let result: Result<(Key, Value<i32>), _> = entry().then_ignore(end()).parse(input);
+            assert!(result.is_err(), "{result:?}");
+        }
+    }
+}

@@ -285,7 +285,7 @@ pub(crate) mod chumsky {
             .map(|s| Currency(s.into()))
     }
 
-    fn expression<D: Decimal + 'static>() -> impl ChumskyParser<D> {
+    pub(crate) fn expression<D: Decimal + 'static>() -> impl ChumskyParser<D> {
         recursive(|expr| {
             let atom = atom(expr);
             let product = product(atom);
