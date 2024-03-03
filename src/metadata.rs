@@ -147,7 +147,7 @@ pub(crate) mod chumsky {
 
     use chumsky::prelude::*;
 
-    fn map<D: Decimal + 'static>() -> impl ChumskyParser<HashMap<Key, Value<D>>> {
+    pub(crate) fn map<D: Decimal + 'static>() -> impl ChumskyParser<HashMap<Key, Value<D>>> {
         entry().padded().repeated().collect().labelled("metadata")
     }
 

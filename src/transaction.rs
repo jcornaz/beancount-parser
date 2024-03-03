@@ -391,8 +391,6 @@ fn cost<D: Decimal>(input: Span<'_>) -> IResult<'_, Cost<D>> {
 
 #[cfg(test)]
 mod chumsky {
-    use std::collections::HashMap;
-
     use crate::{ChumskyParser, Decimal, Posting, PostingPrice};
     use chumsky::{prelude::*, text::whitespace};
 
@@ -419,14 +417,22 @@ mod chumsky {
                 ))
                 .or_not(),
             )
-            .map(|((((flag, account), amount), cost), price)| Posting {
-                flag,
-                account,
-                amount,
-                cost,
-                price,
-                metadata: HashMap::new(),
-            })
+            .then(
+                crate::metadata::chumsky::map()
+                    .padded()
+                    .or_not()
+                    .map(Option::unwrap_or_default),
+            )
+            .map(
+                |(((((flag, account), amount), cost), price), metadata)| Posting {
+                    flag,
+                    account,
+                    amount,
+                    cost,
+                    price,
+                    metadata,
+                },
+            )
     }
 
     fn cost<D: Decimal + 'static>() -> impl ChumskyParser<Cost<D>> {
@@ -463,7 +469,7 @@ mod chumsky {
 
     #[cfg(test)]
     mod tests {
-        use crate::{Amount, Date, PostingPrice};
+        use crate::{metadata, Amount, Date, PostingPrice};
 
         use super::*;
         use rstest::rstest;
@@ -511,6 +517,16 @@ mod chumsky {
         fn should_parse_posting_cost(#[case] input: &str, #[case] expected: Option<Cost<i32>>) {
             let posting: Posting<i32> = posting().parse(input).unwrap();
             assert_eq!(posting.cost, expected);
+        }
+
+        #[rstest]
+        fn should_parse_posting_metadata() {
+            let input = "Assets:Cash 10 CHF @ 40 PLN\n  hello: \"world\"";
+            let posting: Posting<i32> = posting().parse(input).unwrap();
+            assert_eq!(
+                posting.metadata.get("hello"),
+                Some(&metadata::Value::String("world".into()))
+            );
         }
 
         #[rstest]
