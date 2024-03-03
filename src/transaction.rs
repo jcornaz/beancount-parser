@@ -106,7 +106,7 @@ pub struct Posting<D> {
 /// Cost of a posting
 ///
 /// It is the amount within `{` and `}`.
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Default, Clone, PartialEq)]
 #[non_exhaustive]
 pub struct Cost<D> {
     /// Cost basis of the posting
@@ -397,12 +397,35 @@ mod chumsky {
     use super::Cost;
 
     fn cost<D: Decimal + 'static>() -> impl ChumskyParser<Cost<D>> {
-        crate::amount::chumsky::amount()
-            .or_not()
-            .padded()
-            .delimited_by(just('{'), just('}'))
-            .map(|amount| Cost { amount, date: None })
-            .labelled("cost")
+        choice((
+            crate::amount::chumsky::amount()
+                .then(
+                    just(',')
+                        .padded()
+                        .ignore_then(crate::date::chumsky::date())
+                        .or_not(),
+                )
+                .map(|(amount, date)| Cost {
+                    amount: Some(amount),
+                    date,
+                }),
+            crate::date::chumsky::date()
+                .then(
+                    just(',')
+                        .padded()
+                        .ignore_then(crate::amount::chumsky::amount())
+                        .or_not(),
+                )
+                .map(|(date, amount)| Cost {
+                    amount,
+                    date: Some(date),
+                }),
+        ))
+        .or_not()
+        .padded()
+        .delimited_by(just('{'), just('}'))
+        .map(Option::unwrap_or_default)
+        .labelled("cost")
     }
 
     #[cfg(test)]
@@ -420,7 +443,9 @@ mod chumsky {
         }
 
         #[rstest]
-        fn should_parse_cost_amount(#[values("{1 EUR}", "{ 1 EUR }")] input: &str) {
+        fn should_parse_cost_amount(
+            #[values("{1 EUR}", "{ 1 EUR }, {2024-03-03, 1 EUR}")] input: &str,
+        ) {
             let cost: Cost<i32> = cost().parse(input).unwrap();
             let amount = cost.amount.unwrap();
             assert_eq!(amount.value, 1);
@@ -428,8 +453,10 @@ mod chumsky {
         }
 
         #[rstest]
-        #[ignore = "not implemented"]
-        fn should_parse_cost_date(#[values("{2024-03-02}", "{ 1 EUR , 2024-03-02 }")] input: &str) {
+        fn should_parse_cost_date(
+            #[values("{2024-03-02}", "{ 1 EUR , 2024-03-02 }", "{ 2024-03-02, 2 EUR }")]
+            input: &str,
+        ) {
             let cost: Cost<i32> = cost().parse(input).unwrap();
             assert_eq!(
                 cost.date,
@@ -439,6 +466,14 @@ mod chumsky {
                     day: 2,
                 })
             );
+        }
+
+        #[rstest]
+        #[case::duplicated_date("{2023-03-03, 2023-03-04}")]
+        #[case::duplicated_amount("{1 EUR, 2 CHF}")]
+        fn should_not_parse_invalid_cost(#[case] input: &str) {
+            let result: Result<Cost<i32>, _> = cost().parse(input);
+            assert!(result.is_err(), "{result:?}");
         }
     }
 }
