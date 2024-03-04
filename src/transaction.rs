@@ -396,31 +396,57 @@ mod chumsky {
     use crate::{ChumskyParser, Decimal, Posting, PostingPrice, Transaction};
     use chumsky::{prelude::*, text::whitespace};
 
-    use super::Cost;
+    use super::{Cost, Link, Tag};
 
     fn transaction<D: Decimal + 'static>() -> impl ChumskyParser<Transaction<D>> {
-        let flag = choice((
-            just("txn").to(None),
-            just('!').map(Some),
-            just('*').map(Some),
-        ));
-        let payee_and_narration = choice((
-            crate::chumksy::string()
-                .map(Some)
-                .then_ignore(whitespace())
-                .then(crate::chumksy::string().map(Some)),
-            crate::chumksy::string().map(|n| (None, Some(n))),
-            empty().to((None, None)),
-        ));
-        flag.then(whitespace().ignore_then(payee_and_narration))
-            .map(|(flag, (payee, narration))| Transaction {
+        flag()
+            .then(payee_and_narration())
+            .then(tags_and_links())
+            .map(|((flag, (payee, narration)), (tags, links))| Transaction {
                 flag,
                 payee,
                 narration,
-                tags: HashSet::new(),
-                links: HashSet::new(),
+                tags,
+                links,
                 postings: Vec::new(),
             })
+    }
+
+    fn flag() -> impl ChumskyParser<Option<char>> {
+        choice((
+            just("txn").to(None),
+            just('!').map(Some),
+            just('*').map(Some),
+        ))
+    }
+
+    fn payee_and_narration() -> impl ChumskyParser<(Option<String>, Option<String>)> {
+        whitespace()
+            .ignore_then(crate::chumksy::string())
+            .then(whitespace().ignore_then(crate::chumksy::string()).or_not())
+            .or_not()
+            .map(|v| match v {
+                Some((p, Some(n))) => (Some(p), Some(n)),
+                Some((n, None)) => (None, Some(n)),
+                None => (None, None),
+            })
+    }
+
+    fn tags_and_links() -> impl ChumskyParser<(HashSet<Tag>, HashSet<Link>)> {
+        whitespace()
+            .ignore_then(just('#'))
+            .ignore_then(
+                filter(|c: &char| c.is_alphanumeric())
+                    .or(one_of("_-"))
+                    .repeated()
+                    .at_least(1)
+                    .collect::<String>()
+                    .map(|s| super::Tag(s.into())),
+            )
+            .padded()
+            .repeated()
+            .collect()
+            .map(|t| (t, HashSet::new()))
     }
 
     fn posting<D: Decimal + 'static>() -> impl ChumskyParser<Posting<D>> {
@@ -496,7 +522,7 @@ mod chumsky {
 
     #[cfg(test)]
     mod tests {
-        use crate::{metadata, Amount, Date, PostingPrice, Transaction};
+        use crate::{metadata, transaction::Tag, Amount, Date, PostingPrice, Transaction};
 
         use super::*;
         use rstest::rstest;
@@ -522,6 +548,27 @@ mod chumsky {
             let trx: Transaction<i32> = transaction().parse(input).unwrap();
             assert_eq!(trx.payee.as_deref(), expected_payee);
             assert_eq!(trx.narration.as_deref(), expected_narration);
+        }
+
+        #[rstest]
+        #[case("* \"hello\" \"world\"", &[])]
+        #[case("* \"hello\" \"world\" #foo #hello-world", &["foo", "hello-world"])]
+        #[case("* \"hello\" \"world\" #2023_05", &["2023_05"])]
+        fn should_parse_transaction_tags(#[case] input: &str, #[case] expected: &[&str]) {
+            let expected: HashSet<Tag> = expected.iter().map(|s| Tag((*s).into())).collect();
+            let trx = transaction::<i32>()
+                .then_ignore(end())
+                .parse(input)
+                .unwrap();
+            assert_eq!(trx.tags, expected);
+        }
+
+        #[rstest]
+        #[case::invalid_tag("* #")]
+        #[case::invalid_tag("* #!")]
+        fn should_not_parse_invalid_transaction(#[case] input: &str) {
+            let result: Result<Transaction<i32>, _> = transaction().then_ignore(end()).parse(input);
+            assert!(result.is_err(), "{result:?}");
         }
 
         #[rstest]
