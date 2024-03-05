@@ -402,14 +402,17 @@ mod chumsky {
         flag()
             .then(payee_and_narration())
             .then(tags_and_links())
-            .map(|((flag, (payee, narration)), (tags, links))| Transaction {
-                flag,
-                payee,
-                narration,
-                tags,
-                links,
-                postings: Vec::new(),
-            })
+            .then(posting().padded().repeated())
+            .map(
+                |(((flag, (payee, narration)), (tags, links)), postings)| Transaction {
+                    flag,
+                    payee,
+                    narration,
+                    tags,
+                    links,
+                    postings,
+                },
+            )
     }
 
     fn flag() -> impl ChumskyParser<Option<char>> {
@@ -543,8 +546,22 @@ mod chumsky {
         #[case("*", Some('*'))]
         #[case("!", Some('!'))]
         fn should_parse_transaction_flag(#[case] input: &str, #[case] expected: Option<char>) {
-            let trx: Transaction<i32> = transaction().parse(input).unwrap();
+            let trx: Transaction<i32> = transaction().then_ignore(end()).parse(input).unwrap();
             assert_eq!(trx.flag, expected);
+        }
+
+        #[rstest]
+        #[ignore = "not implemented"]
+        fn should_parse_transaction_postings() {
+            let input = "* \"foo\" #tag\n  Assets:Cash 1 CHF\n Income:A -1 CHF";
+            let trx: Transaction<i32> = transaction().then_ignore(end()).parse(input).unwrap();
+            assert_eq!(
+                trx.postings
+                    .iter()
+                    .map(|p| p.account.as_str())
+                    .collect::<Vec<_>>(),
+                vec!["Assets:Cash", "Income:A"]
+            );
         }
 
         #[rstest]
@@ -556,7 +573,7 @@ mod chumsky {
             #[case] expected_payee: Option<&str>,
             #[case] expected_narration: Option<&str>,
         ) {
-            let trx: Transaction<i32> = transaction().parse(input).unwrap();
+            let trx: Transaction<i32> = transaction().then_ignore(end()).parse(input).unwrap();
             assert_eq!(trx.payee.as_deref(), expected_payee);
             assert_eq!(trx.narration.as_deref(), expected_narration);
         }
@@ -591,13 +608,16 @@ mod chumsky {
         #[case::invalid_tag("* #")]
         #[case::invalid_tag("* #!")]
         fn should_not_parse_invalid_transaction(#[case] input: &str) {
-            let result: Result<Transaction<i32>, _> = transaction().then_ignore(end()).parse(input);
+            let result: Result<Transaction<i32>, _> = transaction()
+                .then_ignore(end())
+                .then_ignore(end())
+                .parse(input);
             assert!(result.is_err(), "{result:?}");
         }
 
         #[rstest]
         fn should_parse_posting_account() {
-            let posting: Posting<i32> = posting().parse("Assets:Cash").unwrap();
+            let posting: Posting<i32> = posting().then_ignore(end()).parse("Assets:Cash").unwrap();
             assert_eq!(posting.account.as_str(), "Assets:Cash");
         }
 
@@ -605,7 +625,7 @@ mod chumsky {
         #[case::none("Assets:Cash", None)]
         #[case::some("Assets:Cash 42 PLN", Some(Amount { value: 42, currency: "PLN".parse().unwrap() }))]
         fn should_parse_posting_amount(#[case] input: &str, #[case] expected: Option<Amount<i32>>) {
-            let posting: Posting<i32> = posting().parse(input).unwrap();
+            let posting: Posting<i32> = posting().then_ignore(end()).parse(input).unwrap();
             assert_eq!(posting.amount, expected);
         }
 
@@ -614,7 +634,7 @@ mod chumsky {
         #[case::cleared("* Assets:Cash 1 CHF", Some('*'))]
         #[case::pending("! Assets:Cash 1 CHF", Some('!'))]
         fn should_parse_posting_flag(#[case] input: &str, #[case] expected: Option<char>) {
-            let posting: Posting<i32> = posting().parse(input).unwrap();
+            let posting: Posting<i32> = posting().then_ignore(end()).parse(input).unwrap();
             assert_eq!(posting.flag, expected);
         }
 
@@ -626,7 +646,7 @@ mod chumsky {
             #[case] input: &str,
             #[case] expected: Option<PostingPrice<i32>>,
         ) {
-            let posting: Posting<i32> = posting().parse(input).unwrap();
+            let posting: Posting<i32> = posting().then_ignore(end()).parse(input).unwrap();
             assert_eq!(posting.price, expected);
         }
 
@@ -636,14 +656,14 @@ mod chumsky {
         #[case::some("Assets:Cash 1 CHF {2023-03-03}", Some(Cost { date: Some(Date::new(2023,3,3)), ..Cost::default() }))]
         #[case::some_before_price("Assets:Cash 1 CHF {2023-03-03} @ 3 PLN", Some(Cost { date: Some(Date::new(2023,3,3)), ..Cost::default() }))]
         fn should_parse_posting_cost(#[case] input: &str, #[case] expected: Option<Cost<i32>>) {
-            let posting: Posting<i32> = posting().parse(input).unwrap();
+            let posting: Posting<i32> = posting().then_ignore(end()).parse(input).unwrap();
             assert_eq!(posting.cost, expected);
         }
 
         #[rstest]
         fn should_parse_posting_metadata() {
             let input = "Assets:Cash 10 CHF @ 40 PLN\n  hello: \"world\"";
-            let posting: Posting<i32> = posting().parse(input).unwrap();
+            let posting: Posting<i32> = posting().then_ignore(end()).parse(input).unwrap();
             assert_eq!(
                 posting.metadata.get("hello"),
                 Some(&metadata::Value::String("world".into()))
@@ -652,16 +672,16 @@ mod chumsky {
 
         #[rstest]
         fn should_parse_empty_cost(#[values("{}", "{ }")] input: &str) {
-            let cost: Cost<i32> = cost().parse(input).unwrap();
+            let cost: Cost<i32> = cost().then_ignore(end()).parse(input).unwrap();
             assert_eq!(cost.amount, None);
             assert_eq!(cost.date, None);
         }
 
         #[rstest]
         fn should_parse_cost_amount(
-            #[values("{1 EUR}", "{ 1 EUR }, {2024-03-03, 1 EUR}")] input: &str,
+            #[values("{1 EUR}", "{ 1 EUR }", "{2024-03-03, 1 EUR}")] input: &str,
         ) {
-            let cost: Cost<i32> = cost().parse(input).unwrap();
+            let cost: Cost<i32> = cost().then_ignore(end()).parse(input).unwrap();
             let amount = cost.amount.unwrap();
             assert_eq!(amount.value, 1);
             assert_eq!(amount.currency.as_str(), "EUR");
@@ -672,7 +692,7 @@ mod chumsky {
             #[values("{2024-03-02}", "{ 1 EUR , 2024-03-02 }", "{ 2024-03-02, 2 EUR }")]
             input: &str,
         ) {
-            let cost: Cost<i32> = cost().parse(input).unwrap();
+            let cost: Cost<i32> = cost().then_ignore(end()).parse(input).unwrap();
             assert_eq!(
                 cost.date,
                 Some(Date {
@@ -687,7 +707,7 @@ mod chumsky {
         #[case::duplicated_date("{2023-03-03, 2023-03-04}")]
         #[case::duplicated_amount("{1 EUR, 2 CHF}")]
         fn should_not_parse_invalid_cost(#[case] input: &str) {
-            let result: Result<Cost<i32>, _> = cost().parse(input);
+            let result: Result<Cost<i32>, _> = cost().then_ignore(end()).parse(input);
             assert!(result.is_err(), "{result:?}");
         }
     }
