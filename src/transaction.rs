@@ -396,7 +396,7 @@ mod chumsky {
     use crate::{ChumskyParser, Decimal, Posting, PostingPrice, Transaction};
     use chumsky::{prelude::*, text::whitespace};
 
-    use super::{Cost, Link, Tag};
+    use super::{Cost, Link, Tag, TagOrLink};
 
     fn transaction<D: Decimal + 'static>() -> impl ChumskyParser<Transaction<D>> {
         flag()
@@ -433,20 +433,31 @@ mod chumsky {
     }
 
     fn tags_and_links() -> impl ChumskyParser<(HashSet<Tag>, HashSet<Link>)> {
-        whitespace()
-            .ignore_then(just('#'))
-            .ignore_then(
-                filter(|c: &char| c.is_alphanumeric())
-                    .or(one_of("_-"))
-                    .repeated()
-                    .at_least(1)
-                    .collect::<String>()
-                    .map(|s| super::Tag(s.into())),
-            )
-            .padded()
+        let ident = filter(|c: &char| c.is_alphanumeric())
+            .or(one_of("_-."))
             .repeated()
-            .collect()
-            .map(|t| (t, HashSet::new()))
+            .at_least(1)
+            .collect::<String>();
+        let tag_or_link = whitespace().ignore_then(choice((
+            just('#')
+                .ignore_then(ident.clone().map(|s| super::Tag(s.into())))
+                .map(TagOrLink::Tag),
+            just('^')
+                .ignore_then(ident.map(|s| super::Link(s.into())))
+                .map(TagOrLink::Link),
+        )));
+        empty()
+            .map(|()| (HashSet::<Tag>::new(), HashSet::<Link>::new()))
+            .then(tag_or_link.padded().repeated())
+            .foldl(
+                |(mut tags, mut links): (HashSet<Tag>, HashSet<Link>), tag_or_link| {
+                    match tag_or_link {
+                        TagOrLink::Tag(t) => tags.insert(t),
+                        TagOrLink::Link(t) => links.insert(t),
+                    };
+                    (tags, links)
+                },
+            )
     }
 
     fn posting<D: Decimal + 'static>() -> impl ChumskyParser<Posting<D>> {
@@ -561,6 +572,19 @@ mod chumsky {
                 .parse(input)
                 .unwrap();
             assert_eq!(trx.tags, expected);
+        }
+
+        #[rstest]
+        #[case("*", &[])]
+        #[case("* \"hello\" \"world\" ^foo.bar ^hello-world", &["foo.bar", "hello-world"])]
+        #[case("* #2023_05 ^2023-06 #2023_07", &["2023-06"])]
+        fn should_parse_transaction_links(#[case] input: &str, #[case] expected: &[&str]) {
+            let expected: HashSet<Link> = expected.iter().map(|s| Link((*s).into())).collect();
+            let trx = transaction::<i32>()
+                .then_ignore(end())
+                .parse(input)
+                .unwrap();
+            assert_eq!(trx.links, expected);
         }
 
         #[rstest]
