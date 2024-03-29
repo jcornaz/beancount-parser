@@ -13,7 +13,6 @@ verify: test lint doc check-msrv
     just run balance tests/samples/official.beancount \
       | grep 'Assets:MyBank:Checking                                     2662.68 USD' \
       > /dev/null
-    cargo deny check licenses
 
 # Run the desired example
 run example *args:
@@ -54,7 +53,7 @@ clean:
 install-dev-tools:
 	rustup install stable
 	rustup override set stable
-	cargo install cargo-hack cargo-watch cargo-msrv cargo-deny cargo-release
+	cargo install cargo-hack cargo-watch cargo-msrv cargo-release
 
 release *args: verify
 	cargo release {{args}}

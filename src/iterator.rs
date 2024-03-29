@@ -28,9 +28,7 @@ where
 {
     type Item = Result<Entry<D>, Error>;
     fn next(&mut self) -> Option<Self::Item> {
-        let Some(inner) = &mut self.inner else {
-            return None;
-        };
+        let inner = self.inner.as_mut()?;
         for entry in inner {
             match entry {
                 RawEntry::Directive(mut d) => {
