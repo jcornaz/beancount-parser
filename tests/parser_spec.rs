@@ -17,6 +17,7 @@ fn should_succeed_for_valid_input(#[values("", "\n", COMMENTS, SIMPLE, OFFICIAL)
 
 #[rstest]
 #[case("", 0)]
+#[case(OFFICIAL, 63)]
 #[case(SIMPLE, 12)]
 fn should_find_all_open_directives(#[case] input: &str, #[case] expected_count: usize) {
     let actual_count = parse::<f64>(input)
