@@ -8,6 +8,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Unreleased]
 
 
+## [2.2.0] - 2024-03-29
+
+
 ### Added
 
 * implement `FromStr` for `Account`, `Date`, `Currency` and `metadata::Key`
@@ -527,7 +530,8 @@ Announce new status of the project in readme: The project is now in "maintenance
  - `Parser` iterator type
 
 
-[Unreleased]: https://github.com/jcornaz/beancount-parser/compare/v2.1.0...HEAD
+[Unreleased]: https://github.com/jcornaz/beancount-parser/compare/v2.2.0...HEAD
+[2.2.0]: https://github.com/jcornaz/beancount-parser/compare/v2.1.0...v2.2.0
 [2.1.0]: https://github.com/jcornaz/beancount-parser/compare/v2.0.4...v2.1.0
 [2.0.4]: https://github.com/jcornaz/beancount-parser/compare/v2.0.3...v2.0.4
 [2.0.3]: https://github.com/jcornaz/beancount-parser/compare/v2.0.2...v2.0.3
