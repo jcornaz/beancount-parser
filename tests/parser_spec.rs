@@ -17,7 +17,7 @@ fn should_succeed_for_valid_input(#[values("", "\n", COMMENTS, SIMPLE, OFFICIAL)
 
 #[rstest]
 #[case("", 0)]
-#[case(SIMPLE, 10)]
+#[case(SIMPLE, 12)]
 fn should_find_all_open_directives(#[case] input: &str, #[case] expected_count: usize) {
     let actual_count = parse::<f64>(input)
         .expect("parsing should succeed")
@@ -126,6 +126,7 @@ fn should_parse_balance_assertion_amount(
 #[case::dash("Assets:Hello-world")]
 #[case::num_at_end("Assets:Cash2")]
 #[case::num_at_start("Assets:2Cash")]
+#[case::non_standard_name("Ausgaben:A")]
 fn account_from_str_should_parse_valid_account(#[case] input: &str) {
     let account: Account = input.parse().unwrap();
     assert_eq!(account.as_str(), input);
