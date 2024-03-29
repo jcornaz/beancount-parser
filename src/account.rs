@@ -7,8 +7,7 @@ use std::{
 };
 
 use nom::{
-    branch::alt,
-    bytes::{complete::tag, complete::take_while},
+    bytes::complete::take_while,
     character::complete::{char, satisfy, space0, space1},
     combinator::{all_consuming, cut, iterator, opt, recognize},
     multi::many1_count,
@@ -192,13 +191,10 @@ pub struct Pad {
 
 pub(super) fn parse(input: Span<'_>) -> IResult<'_, Account> {
     let (input, name) = recognize(preceded(
-        alt((
-            tag("Expenses"),
-            tag("Assets"),
-            tag("Liabilities"),
-            tag("Income"),
-            tag("Equity"),
-        )),
+        preceded(
+            satisfy(|c: char| c.is_uppercase() || c.is_ascii_digit()),
+            take_while(|c: char| c.is_alphanumeric() || c == '-'),
+        ),
         cut(many1_count(preceded(
             char(':'),
             preceded(
