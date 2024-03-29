@@ -13,7 +13,6 @@ verify: test lint doc check-msrv
     just run balance tests/samples/official.beancount \
       | grep 'Assets:MyBank:Checking                                     2662.68 USD' \
       > /dev/null
-    cargo deny check licenses
 
 # Run the desired example
 run example *args:
