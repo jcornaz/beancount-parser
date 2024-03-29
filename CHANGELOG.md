@@ -14,6 +14,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 * implement `Default` for `Cost<D>`
 * `Date::new` constructor
 
+### Fixed
+
+* Support non-standard account name (#75). Thanks to @Bergschrat1
+
 
 ## [2.1.0] - 2024-01-29
 
