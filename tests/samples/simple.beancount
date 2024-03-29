@@ -1,6 +1,7 @@
 2000-01-01 open Assets:AccountsReceivable:Michael  USD
 2000-01-01 open Assets:MyBank:Checking             USD
 2000-01-01 open Assets:MyBank:Savings              USD
+2000-01-01 open Aktiva:MyBank:Checking             USD
 2000-01-01 open Liabilities:CreditCard:CapitalOne
 2000-01-01 open Income:AcmeCorp:Salary
 2000-01-01 open Expenses:Taxes:TY2014:Federal
@@ -8,7 +9,12 @@
 2000-01-01 open Expenses:Taxes:TY2014:Medicare
 2000-01-01 open Expenses:Taxes:TY2014:StateNY
 2000-01-01 open Expenses:Taxes:TY2014:SDI
+2000-01-01 open Ausgaben:Taxes:TY2014:SDI
 
+2014-10-05 * "Costco" "Shopping for birthday"
+  Schulden:CreditCard:CapitalOne            -45.00    USD
+  Aktiva:AccountsReceivable:Michael          40.00    USD
+  Ausgaben:Shopping
 
 2014-10-05 * "Costco" "Shopping for birthday"
   Liabilities:CreditCard:CapitalOne         -45.00    USD
