@@ -126,6 +126,7 @@ fn should_parse_balance_assertion_amount(
 #[case::dash("Assets:Hello-world")]
 #[case::num_at_end("Assets:Cash2")]
 #[case::num_at_start("Assets:2Cash")]
+#[case::non_standard_name("Ausgaben:A")]
 fn account_from_str_should_parse_valid_account(#[case] input: &str) {
     let account: Account = input.parse().unwrap();
     assert_eq!(account.as_str(), input);
