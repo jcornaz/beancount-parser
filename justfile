@@ -7,10 +7,10 @@ export RUST_BACKTRACE := "0"
 
 # Perform all verifications (compile, test, lint, etc.)
 verify: test lint doc check-msrv
-    just run balance tests/samples/official.beancount \
+    just run balance tests/samples/includes.beancount \
       | grep 'Expenses:Taxes:Y2022:US:Federal:PreTax401k                18500.00 IRAUSD' \
       > /dev/null
-    just run balance tests/samples/official.beancount \
+    just run balance tests/samples/includes.beancount \
       | grep 'Assets:MyBank:Checking                                     2662.68 USD' \
       > /dev/null
 

@@ -17,7 +17,7 @@ const OFFICIAL: &str = include_str!("samples/official.beancount");
 #[case("", 0)]
 #[case(COMMENTS, 0)]
 #[case(SIMPLE, 4)]
-#[case(OFFICIAL, 1096)]
+#[case(OFFICIAL, 865)]
 fn should_find_all_transactions(#[case] input: &str, #[case] expected_count: usize) {
     let actual_count = parse_iter::<f64>(input)
         .map(|res| res.expect("parsing should succeed"))
@@ -36,7 +36,7 @@ fn should_find_all_transactions(#[case] input: &str, #[case] expected_count: usi
 #[case("", 0)]
 #[case(COMMENTS, 0)]
 #[case(SIMPLE, 15)]
-#[case(OFFICIAL, 3385)]
+#[case(OFFICIAL, 2665)]
 fn should_find_all_postings(#[case] input: &str, #[case] expected_count: usize) {
     let actual_count: usize = parse::<f64>(input)
         .expect("parsing should succeed")
