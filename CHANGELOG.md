@@ -7,6 +7,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+
+## [2.2.1] - 2024-04-28
+
 ### Fixes
 
 * Fix `Debug` implementation of `Error` which was dumping the whole input
@@ -534,7 +537,8 @@ Announce new status of the project in readme: The project is now in "maintenance
  - `Parser` iterator type
 
 
-[Unreleased]: https://github.com/jcornaz/beancount-parser/compare/v2.2.0...HEAD
+[Unreleased]: https://github.com/jcornaz/beancount-parser/compare/v2.2.1...HEAD
+[2.2.1]: https://github.com/jcornaz/beancount-parser/compare/v2.2.0...v2.2.1
 [2.2.0]: https://github.com/jcornaz/beancount-parser/compare/v2.1.0...v2.2.0
 [2.1.0]: https://github.com/jcornaz/beancount-parser/compare/v2.0.4...v2.1.0
 [2.0.4]: https://github.com/jcornaz/beancount-parser/compare/v2.0.3...v2.0.4
