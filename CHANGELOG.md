@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Fixes
+
+* Fix `Debug` implementation of `Error` which was dumping the whole input
+
 
 ## [2.2.0] - 2024-03-29
 

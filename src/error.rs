@@ -18,7 +18,7 @@ use crate::Span;
 /// let error = result.unwrap_err();
 /// assert_eq!(error.line_number(), 1);
 /// ```
-#[derive(Debug, Clone, Error)]
+#[derive(Clone, Error)]
 #[cfg_attr(feature = "miette", derive(Diagnostic))]
 #[error("Invalid beancount syntax at line: {line_number}")]
 pub struct Error {
@@ -29,6 +29,14 @@ pub struct Error {
     #[label]
     span: SourceSpan,
     line_number: u32,
+}
+
+impl Debug for Error {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Error")
+            .field("line_number", &self.line_number())
+            .finish()
+    }
 }
 
 impl Error {
