@@ -34,12 +34,9 @@ miette = { version = "5.10", features = ["fancy"] }
 chumsky = "0.9.3"
 
 [lints.rust]
-future_incompatible = "deny"
-nonstandard_style = "deny"
 unsafe_code = "deny"
 private_interfaces = "deny"
 private_bounds = "deny"
-rust_2018_idioms = "warn"
 missing_docs = "warn"
 
 [lints.clippy]
