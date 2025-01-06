@@ -10,6 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Dependencies
 
 * Lower version requirement for all dependencies
+* Lower MSRV to 1.65
 
 
 ## [2.2.1] - 2024-04-28
