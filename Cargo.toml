@@ -19,19 +19,19 @@ rustdoc-args = ["--cfg", "docsrs"]
 
 [dependencies]
 # Public
-miette = { version = "5.10", optional = true }
+miette = { version = "5", optional = true }
 
 # Private
-nom = { version = "7.1", default-features = false, features = ["std"] }
-nom_locate = { version = "4.2", default-features = false }
-thiserror = "1.0"
+nom = { version = "7", default-features = false, features = ["std"] }
+nom_locate = { version = "4", default-features = false }
+thiserror = "2"
 
 [dev-dependencies]
-criterion = "0.5.1"
-rstest = { version = "0.23.0", default-features = false }
-rust_decimal = { version = "1.36", default-features = false }
-miette = { version = "5.10", features = ["fancy"] }
-chumsky = "0.9.3"
+criterion = "0.5"
+rstest = { version = "0.24", default-features = false }
+rust_decimal = { version = "1", default-features = false }
+miette = { version = "5", features = ["fancy"] }
+chumsky = "0.9"
 
 [lints.rust]
 unsafe_code = "deny"
