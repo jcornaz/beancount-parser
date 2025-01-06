@@ -1,4 +1,4 @@
-#![allow(clippy::items_after_test_module, clippy::pedantic)]
+#![allow(clippy::items_after_test_module, clippy::pedantic, missing_docs)]
 
 use std::{collections::HashSet, path::Path};
 

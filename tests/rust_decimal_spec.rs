@@ -1,4 +1,4 @@
-#![allow(clippy::items_after_test_module)]
+#![allow(clippy::items_after_test_module, missing_docs)]
 
 use rstest::rstest;
 use rust_decimal::Decimal;
