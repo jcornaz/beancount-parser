@@ -22,7 +22,7 @@ rustdoc-args = ["--cfg", "docsrs"]
 miette = { version = "5", optional = true }
 
 # Private
-nom = { version = "7", default-features = false, features = ["std"] }
+nom = { version = "8", default-features = false, features = ["std"] }
 nom_locate = { version = "4", default-features = false }
 thiserror = "2"
 
