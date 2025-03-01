@@ -23,7 +23,7 @@ miette = { version = "5", optional = true }
 
 # Private
 nom = { version = "7", default-features = false, features = ["std"] }
-nom_locate = { version = "4", default-features = false }
+nom_locate = { version = "5", default-features = false }
 thiserror = "2"
 
 [dev-dependencies]
