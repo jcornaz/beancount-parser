@@ -27,7 +27,7 @@ nom_locate = { version = "4", default-features = false }
 thiserror = "2"
 
 [dev-dependencies]
-criterion = "0.6"
+criterion = "0.7"
 rstest = { version = "0.26", default-features = false }
 rust_decimal = { version = "1", default-features = false }
 miette = { version = "5", features = ["fancy"] }
