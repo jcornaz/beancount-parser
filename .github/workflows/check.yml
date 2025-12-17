@@ -8,7 +8,7 @@ on:
 
 jobs:
   verify:
-    runs-on: blacksmith-2vcpu-ubuntu-2404
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v6
@@ -21,7 +21,7 @@ jobs:
           tool: cargo-hack@0.6,just@1,cargo-msrv@0.17
       - run: just verify
   lint:
-    runs-on: blacksmith-2vcpu-ubuntu-2404
+    runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
       RUSTFLAGS: "-D warnings"
