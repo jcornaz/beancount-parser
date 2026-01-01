@@ -31,7 +31,7 @@ criterion = "0.8"
 rstest = { version = "0.26", default-features = false }
 rust_decimal = { version = "1", default-features = false }
 miette = { version = "5", features = ["fancy"] }
-chumsky = "0.9"
+chumsky = "0.12"
 
 [lints.rust]
 unsafe_code = "deny"
