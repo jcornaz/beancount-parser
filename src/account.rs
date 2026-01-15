@@ -97,6 +97,18 @@ pub struct Open {
     pub booking_method: Option<BookingMethod>,
 }
 
+impl Open {
+    /// Create an open directive from an account
+    #[must_use]
+    pub fn from_account(account: Account) -> Self {
+        Open {
+            account,
+            currencies: HashSet::new(),
+            booking_method: None,
+        }
+    }
+}
+
 #[derive(Debug, Clone, Eq, PartialEq, Ord, PartialOrd)]
 pub struct BookingMethod(Arc<str>);
 
@@ -141,6 +153,14 @@ pub struct Close {
     pub account: Account,
 }
 
+impl Close {
+    /// Create a close directive from an account
+    #[must_use]
+    pub fn from_account(account: Account) -> Self {
+        Close { account }
+    }
+}
+
 /// Balance assertion
 ///
 /// # Example
@@ -166,6 +186,17 @@ pub struct Balance<D> {
     pub tolerance: Option<D>,
 }
 
+impl<D> Balance<D> {
+    /// Create a new from account and amount, with unspecified tolerance
+    pub fn new(account: Account, amount: Amount<D>) -> Self {
+        Balance {
+            account,
+            amount,
+            tolerance: None,
+        }
+    }
+}
+
 /// Pad directive
 ///
 /// # Example
@@ -184,6 +215,17 @@ pub struct Pad {
     pub account: Account,
     /// Source account from which take the money
     pub source_account: Account,
+}
+
+impl Pad {
+    /// Create a new pad directive
+    #[must_use]
+    pub fn new(account: Account, source_account: Account) -> Self {
+        Pad {
+            account,
+            source_account,
+        }
+    }
 }
 
 pub(super) fn parse(input: Span<'_>) -> IResult<'_, Account> {

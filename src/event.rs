@@ -22,6 +22,14 @@ pub struct Event {
     pub value: String,
 }
 
+impl Event {
+    /// Create a new event
+    #[must_use]
+    pub fn new(name: String, value: String) -> Event {
+        Event { name, value }
+    }
+}
+
 pub(super) fn parse(input: Span<'_>) -> IResult<'_, Event> {
     let (input, name) = string(input)?;
     let (input, _) = space1(input)?;
