@@ -41,8 +41,6 @@
 //! # Ok(()) }
 //! ```
 
-use std::{collections::HashSet, fs::File, io::Read, path::PathBuf, str::FromStr};
-
 use nom::{
     branch::alt,
     bytes::complete::{tag, take_while},
@@ -52,6 +50,13 @@ use nom::{
     Finish, Parser,
 };
 use nom_locate::position;
+use std::{
+    collections::{HashSet, VecDeque},
+    fs::File,
+    io::Read,
+    path::PathBuf,
+    str::FromStr,
+};
 
 pub use crate::{
     account::{Account, Balance, Close, Open, Pad},
@@ -210,6 +215,126 @@ pub fn read_files_v2<D: Decimal, F: FnMut(Entry<D>)>(
         }
     }
     Ok(())
+}
+
+/// Iterator over the [`Entry`]s of parsing a beancount files, recursing through imports
+pub struct ReadFilesIter<D> {
+    loaded: HashSet<PathBuf>,
+    pending: Vec<PathBuf>, // not canonicalized
+    queued: VecDeque<Entry<D>>,
+    str_buffer: String,
+}
+impl<D> ReadFilesIter<D> {
+    /// The set of files that were loaded during iteration
+    #[must_use]
+    pub fn loaded(self) -> HashSet<PathBuf> {
+        self.loaded
+    }
+}
+
+impl<D: Decimal> ReadFilesIter<D> {
+    /// Create a new iterator of entries. Usually called through [`read_files_iter`]
+    pub fn new(files: impl IntoIterator<Item = PathBuf>) -> Self {
+        Self {
+            loaded: HashSet::new(),
+            pending: files.into_iter().collect(),
+            queued: VecDeque::new(),
+            str_buffer: String::new(),
+        }
+    }
+
+    fn load_next_file(&mut self) -> Result<bool, ReadFileErrorV2> {
+        while let Some(path) = self.pending.pop() {
+            let path = path
+                .canonicalize()
+                .map_err(|err| ReadFileErrorV2::from_io(path, err))?;
+            if self.loaded.contains(&path) {
+                continue;
+            }
+
+            self.loaded.insert(path.clone());
+
+            self.str_buffer.clear();
+            File::open(&path)
+                .and_then(|mut f| f.read_to_string(&mut self.str_buffer))
+                .map_err(|err| ReadFileErrorV2::from_io(path.clone(), err))?;
+
+            let entries = parse_iter::<D>(&self.str_buffer)
+                .collect::<Result<Vec<_>, _>>()
+                .map_err(|err| ReadFileErrorV2::from_syntax(path.clone(), err))?;
+
+            for entry in entries {
+                match entry {
+                    Entry::Include(include) => {
+                        let include_path = if include.is_relative() {
+                            let Some(parent) = path.parent() else {
+                                unreachable!("there must be a parent if the file was valid")
+                            };
+                            parent.join(include)
+                        } else {
+                            include
+                        };
+                        self.pending.push(include_path);
+                    }
+                    entry => self.queued.push_back(entry),
+                }
+            }
+
+            return Ok(true);
+        }
+        Ok(false)
+    }
+}
+
+impl<D: Decimal> Iterator for ReadFilesIter<D> {
+    type Item = Result<Entry<D>, ReadFileErrorV2>;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        loop {
+            if let Some(entry) = self.queued.pop_front() {
+                return Some(Ok(entry));
+            }
+
+            match self.load_next_file() {
+                Ok(true) => (),           // File loaded
+                Ok(false) => return None, // No more files
+                Err(e) => return Some(Err(e)),
+            }
+        }
+    }
+}
+
+/// Read files from disk and return an iterator over their entries.
+///
+/// It follows the `include` directives found in the files.
+///
+/// # Example
+///
+/// ```rust,no_run
+/// use beancount_parser::{read_files_iter, Entry};
+/// use std::path::PathBuf;
+///
+/// # fn main() -> Result<(), Box<dyn std::error::Error>> {
+/// let iter = read_files_iter::<f64>(std::iter::once(PathBuf::from("journal.beancount")));
+///
+/// for entry in iter {
+///     let entry = entry?;
+///     match entry {
+///         Entry::Directive(directive) => {
+///             println!("Found directive: {:?}", directive.content);
+///         }
+///         Entry::Option(option) => {
+///             println!("Found option: {} = {}", option.name, option.value);
+///         }
+///         Entry::Include(_) => unreachable!(),
+///         _ => {} // Entry is #[non_exhaustive]
+///     }
+/// }
+/// # Ok(())
+/// # }
+/// ```
+pub fn read_files_iter<D: Decimal>(files: impl IntoIterator<Item = PathBuf>) -> ReadFilesIter<D> {
+    ReadFilesIter::new(files)
 }
 
 /// Main struct representing a parsed beancount file.
