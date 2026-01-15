@@ -12,7 +12,7 @@ use nom::{
     combinator::{all_consuming, cut, iterator, opt, recognize},
     multi::many1_count,
     sequence::{delimited, preceded},
-    Finish,
+    Finish, Parser,
 };
 
 use crate::{
@@ -68,7 +68,7 @@ impl FromStr for Account {
 
     fn from_str(input: &str) -> Result<Self, Self::Err> {
         let spanned = Span::new(input);
-        match all_consuming(parse)(spanned).finish() {
+        match all_consuming(parse).parse(spanned).finish() {
             Ok((_, account)) => Ok(account),
             Err(err) => {
                 println!("{err:?}");
@@ -202,14 +202,15 @@ pub(super) fn parse(input: Span<'_>) -> IResult<'_, Account> {
                 take_while(|c: char| c.is_alphanumeric() || c == '-'),
             ),
         ))),
-    ))(input)?;
+    ))
+    .parse(input)?;
     Ok((input, Account(Arc::from(*name.fragment()))))
 }
 
 pub(super) fn open(input: Span<'_>) -> IResult<'_, Open> {
     let (input, account) = parse(input)?;
-    let (input, currencies) = opt(preceded(space1, currencies))(input)?;
-    let (input, booking_method) = opt(preceded(space1, crate::string))(input)?;
+    let (input, currencies) = opt(preceded(space1, currencies)).parse(input)?;
+    let (input, booking_method) = opt(preceded(space1, crate::string)).parse(input)?;
     Ok((
         input,
         Open {
@@ -240,7 +241,7 @@ pub(super) fn balance<D: Decimal>(input: Span<'_>) -> IResult<'_, Balance<D>> {
     let (input, account) = parse(input)?;
     let (input, _) = space1(input)?;
     let (input, value) = amount::expression(input)?;
-    let (input, tolerance) = opt(preceded(space0, tolerance))(input)?;
+    let (input, tolerance) = opt(preceded(space0, tolerance)).parse(input)?;
     let (input, _) = space1(input)?;
     let (input, currency) = amount::currency(input)?;
     Ok((

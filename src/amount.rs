@@ -11,8 +11,8 @@ use nom::{
     bytes::complete::{take_while, take_while1},
     character::complete::{char, one_of, satisfy, space0, space1},
     combinator::{all_consuming, iterator, map_res, opt, recognize, verify},
-    sequence::{delimited, preceded, terminated, tuple},
-    Finish,
+    sequence::{delimited, preceded, terminated},
+    Finish, Parser,
 };
 
 use crate::{IResult, Span};
@@ -96,7 +96,7 @@ impl FromStr for Currency {
     type Err = crate::Error;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let span = Span::new(s);
-        match all_consuming(currency)(span).finish() {
+        match all_consuming(currency).parse(span).finish() {
             Ok((_, currency)) => Ok(currency),
             Err(_) => Err(crate::Error::new(s, span)),
         }
@@ -111,16 +111,13 @@ pub(crate) fn parse<D: Decimal>(input: Span<'_>) -> IResult<'_, Amount<D>> {
 }
 
 pub(crate) fn expression<D: Decimal>(input: Span<'_>) -> IResult<'_, D> {
-    alt((negation, sum))(input)
+    alt((negation, sum)).parse(input)
 }
 
 fn sum<D: Decimal>(input: Span<'_>) -> IResult<'_, D> {
     let (input, value) = product(input)?;
-    let mut iter = iterator(
-        input,
-        tuple((delimited(space0, one_of("+-"), space0), product)),
-    );
-    let value = iter.fold(value, |a, (op, b)| match op {
+    let mut iter = iterator(input, (delimited(space0, one_of("+-"), space0), product));
+    let value = iter.by_ref().fold(value, |a, (op, b)| match op {
         '+' => a + b,
         '-' => a - b,
         op => unreachable!("unsupported operator: {}", op),
@@ -131,11 +128,8 @@ fn sum<D: Decimal>(input: Span<'_>) -> IResult<'_, D> {
 
 fn product<D: Decimal>(input: Span<'_>) -> IResult<'_, D> {
     let (input, value) = atom(input)?;
-    let mut iter = iterator(
-        input,
-        tuple((delimited(space0, one_of("*/"), space0), atom)),
-    );
-    let value = iter.fold(value, |a, (op, b)| match op {
+    let mut iter = iterator(input, (delimited(space0, one_of("*/"), space0), atom));
+    let value = iter.by_ref().fold(value, |a, (op, b)| match op {
         '*' => a * b,
         '/' => a / b,
         op => unreachable!("unsupported operator: {}", op),
@@ -145,7 +139,7 @@ fn product<D: Decimal>(input: Span<'_>) -> IResult<'_, D> {
 }
 
 fn atom<D: Decimal>(input: Span<'_>) -> IResult<'_, D> {
-    alt((literal, group))(input)
+    alt((literal, group)).parse(input)
 }
 
 fn group<D: Decimal>(input: Span<'_>) -> IResult<'_, D> {
@@ -153,7 +147,8 @@ fn group<D: Decimal>(input: Span<'_>) -> IResult<'_, D> {
         terminated(char('('), space0),
         expression,
         preceded(space0, char(')')),
-    )(input)
+    )
+    .parse(input)
 }
 
 fn negation<D: Decimal>(input: Span<'_>) -> IResult<'_, D> {
@@ -165,13 +160,14 @@ fn negation<D: Decimal>(input: Span<'_>) -> IResult<'_, D> {
 
 fn literal<D: Decimal>(input: Span<'_>) -> IResult<'_, D> {
     map_res(
-        recognize(tuple((
+        recognize((
             opt(char('-')),
             space0,
             take_while1(|c: char| c.is_numeric() || c == '.' || c == ','),
-        ))),
+        )),
         |s: Span<'_>| s.fragment().replace([',', ' '], "").parse(),
-    )(input)
+    )
+    .parse(input)
 }
 
 pub(crate) fn price<D: Decimal>(input: Span<'_>) -> IResult<'_, Price<D>> {
@@ -182,7 +178,7 @@ pub(crate) fn price<D: Decimal>(input: Span<'_>) -> IResult<'_, Price<D>> {
 }
 
 pub(crate) fn currency(input: Span<'_>) -> IResult<'_, Currency> {
-    let (input, currency) = recognize(tuple((
+    let (input, currency) = recognize((
         satisfy(char::is_uppercase),
         verify(
             take_while(|c: char| {
@@ -195,7 +191,8 @@ pub(crate) fn currency(input: Span<'_>) -> IResult<'_, Currency> {
                     .map_or(true, |c| c.is_uppercase() || c.is_numeric())
             },
         ),
-    )))(input)?;
+    ))
+    .parse(input)?;
     Ok((input, Currency(Arc::from(*currency.fragment()))))
 }
 
