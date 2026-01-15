@@ -87,6 +87,16 @@ pub enum Value<D> {
     Currency(Currency),
 }
 
+impl<D: Display> Display for Value<D> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Value::String(value) => write!(f, r#""{value}""#),
+            Value::Number(value) => Display::fmt(value, f),
+            Value::Currency(value) => Display::fmt(value, f),
+        }
+    }
+}
+
 pub(crate) fn parse<D: Decimal>(input: Span<'_>) -> IResult<'_, Map<D>> {
     let mut iter = iterator(input, alt((entry.map(Some), empty_line.map(|()| None))));
     let map: HashMap<_, _> = iter.by_ref().flatten().collect();
