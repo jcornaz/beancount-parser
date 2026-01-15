@@ -39,7 +39,13 @@
 //! # Ok(()) }
 //! ```
 
-use std::{collections::HashSet, fs::File, io::Read, path::PathBuf, str::FromStr};
+use std::{
+    collections::HashSet,
+    fs::File,
+    io::Read,
+    path::{Path, PathBuf},
+    str::FromStr,
+};
 
 use nom::{
     branch::alt,
@@ -373,6 +379,72 @@ pub enum DirectiveContent<D> {
     Event(Event),
 }
 
+impl<D> DirectiveContent<D> {
+    /// Returns `Some` if the directive content is a transaction
+    pub fn as_transaction(&self) -> Option<&Transaction<D>> {
+        match self {
+            DirectiveContent::Transaction(transaction) => Some(transaction),
+            _ => None,
+        }
+    }
+
+    /// Returns `Some` if the directive content is a price
+    pub fn as_price(&self) -> Option<&Price<D>> {
+        match self {
+            DirectiveContent::Price(price) => Some(price),
+            _ => None,
+        }
+    }
+
+    /// Returns `Some` if the directive content is a balance
+    pub fn as_balance(&self) -> Option<&Balance<D>> {
+        match self {
+            DirectiveContent::Balance(balance) => Some(balance),
+            _ => None,
+        }
+    }
+
+    /// Returns `Some` if the directive content is an open
+    pub fn as_open(&self) -> Option<&Open> {
+        match self {
+            DirectiveContent::Open(open) => Some(open),
+            _ => None,
+        }
+    }
+
+    /// Returns `Some` if the directive content is a close
+    pub fn as_close(&self) -> Option<&Close> {
+        match self {
+            DirectiveContent::Close(close) => Some(close),
+            _ => None,
+        }
+    }
+
+    /// Returns `Some` if the directive content is a pad
+    pub fn as_pad(&self) -> Option<&Pad> {
+        match self {
+            DirectiveContent::Pad(pad) => Some(pad),
+            _ => None,
+        }
+    }
+
+    /// Returns `Some` if the directive content is a commodity
+    pub fn as_commodity(&self) -> Option<&Currency> {
+        match self {
+            DirectiveContent::Commodity(currency) => Some(currency),
+            _ => None,
+        }
+    }
+
+    /// Returns `Some` if the directive content is an event
+    pub fn as_event(&self) -> Option<&Event> {
+        match self {
+            DirectiveContent::Event(event) => Some(event),
+            _ => None,
+        }
+    }
+}
+
 type Span<'a> = nom_locate::LocatedSpan<&'a str>;
 type IResult<'a, O> = nom::IResult<Span<'a>, O>;
 
@@ -386,6 +458,31 @@ pub enum Entry<D> {
     Directive(Directive<D>),
     Option(BeanOption),
     Include(PathBuf),
+}
+impl<D> Entry<D> {
+    /// Returns `Some` if the entry is a directive
+    pub fn as_directive(&self) -> Option<&Directive<D>> {
+        match self {
+            Entry::Directive(directive) => Some(directive),
+            _ => None,
+        }
+    }
+
+    /// Returns `Some` if the entry is an option
+    pub fn as_option(&self) -> Option<&BeanOption> {
+        match self {
+            Entry::Option(option) => Some(option),
+            _ => None,
+        }
+    }
+
+    /// Returns `Some` if the entry is an include
+    pub fn as_include(&self) -> Option<&Path> {
+        match self {
+            Entry::Include(include) => Some(include),
+            _ => None,
+        }
+    }
 }
 
 enum RawEntry<D> {
