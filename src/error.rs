@@ -68,8 +68,12 @@ impl Error {
 #[derive(Debug, Error)]
 #[cfg_attr(feature = "miette", derive(Diagnostic))]
 pub enum ReadFileError {
-    #[error("IO error")]
-    Io(#[from] std::io::Error),
+    #[error("IO error in {path}: {source}")]
+    Io {
+        path: std::path::PathBuf,
+        #[source]
+        source: std::io::Error,
+    },
     #[error("Syntax error")]
     Syntax(#[from] Error),
 }

@@ -126,7 +126,12 @@ pub fn read_files<D: Decimal, F: FnMut(Entry<D>)>(
     let mut loaded: HashSet<PathBuf> = HashSet::new();
     let mut pending: Vec<PathBuf> = files
         .into_iter()
-        .map(|p| p.canonicalize())
+        .map(|p| {
+            p.canonicalize().map_err(|source| ReadFileError::Io {
+                path: p.clone(),
+                source,
+            })
+        })
         .collect::<Result<_, _>>()?;
     let mut buffer = String::new();
     while let Some(path) = pending.pop() {
@@ -135,7 +140,12 @@ pub fn read_files<D: Decimal, F: FnMut(Entry<D>)>(
         }
         loaded.insert(path.clone());
         buffer.clear();
-        File::open(&path)?.read_to_string(&mut buffer)?;
+        File::open(&path)
+            .and_then(|mut f| f.read_to_string(&mut buffer))
+            .map_err(|source| ReadFileError::Io {
+                path: path.clone(),
+                source,
+            })?;
         for result in parse_iter::<D>(&buffer) {
             let entry = result?;
             match entry {
@@ -148,7 +158,9 @@ pub fn read_files<D: Decimal, F: FnMut(Entry<D>)>(
                     } else {
                         include
                     };
-                    let path = path.canonicalize()?;
+                    let path = path
+                        .canonicalize()
+                        .map_err(|source| ReadFileError::Io { path, source })?;
                     if !loaded.contains(&path) {
                         pending.push(path);
                     }
