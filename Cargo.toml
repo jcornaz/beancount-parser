@@ -20,6 +20,7 @@ rustdoc-args = ["--cfg", "docsrs"]
 [dependencies]
 # Public
 miette = { version = "7", optional = true }
+indexmap = "2.11"
 
 # Private
 nom = { version = "8", default-features = false, features = ["std"] }
