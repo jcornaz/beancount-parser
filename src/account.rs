@@ -1,11 +1,11 @@
 use std::{
     borrow::Borrow,
-    collections::HashSet,
     fmt::{Display, Formatter},
     str::FromStr,
     sync::Arc,
 };
 
+use indexmap::IndexSet;
 use nom::{
     bytes::complete::take_while,
     character::complete::{char, satisfy, space0, space1},
@@ -95,7 +95,7 @@ pub struct Open {
     /// Account being open
     pub account: Account,
     /// Currency constraints
-    pub currencies: HashSet<Currency>,
+    pub currencies: IndexSet<Currency>,
     /// Booking method
     pub booking_method: Option<BookingMethod>,
 }
@@ -221,11 +221,11 @@ pub(super) fn open(input: Span<'_>) -> IResult<'_, Open> {
     ))
 }
 
-fn currencies(input: Span<'_>) -> IResult<'_, HashSet<Currency>> {
+fn currencies(input: Span<'_>) -> IResult<'_, IndexSet<Currency>> {
     let (input, first) = amount::currency(input)?;
     let sep = delimited(space0, char(','), space0);
     let mut iter = iterator(input, preceded(sep, amount::currency));
-    let mut currencies = HashSet::new();
+    let mut currencies = IndexSet::new();
     currencies.insert(first);
     currencies.extend(&mut iter);
     let (input, ()) = iter.finish()?;
