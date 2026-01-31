@@ -66,7 +66,7 @@ impl FromStr for Key {
     type Err = crate::Error;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let span = Span::new(s);
-        match all_consuming(key)(span) {
+        match all_consuming(key).parse(span) {
             Ok((_, key)) => Ok(key),
             Err(_) => Err(crate::Error::new(s, span)),
         }
@@ -89,7 +89,7 @@ pub enum Value<D> {
 
 pub(crate) fn parse<D: Decimal>(input: Span<'_>) -> IResult<'_, Map<D>> {
     let mut iter = iterator(input, alt((entry.map(Some), empty_line.map(|()| None))));
-    let map: HashMap<_, _> = iter.flatten().collect();
+    let map: HashMap<_, _> = iter.by_ref().flatten().collect();
     let (input, ()) = iter.finish()?;
     Ok((input, map))
 }
@@ -103,7 +103,8 @@ fn entry<D: Decimal>(input: Span<'_>) -> IResult<'_, (Key, Value<D>)> {
         string.map(Value::String),
         amount::expression.map(Value::Number),
         amount::currency.map(Value::Currency),
-    ))(input)?;
+    ))
+    .parse(input)?;
     let (input, ()) = end_of_line(input)?;
     Ok((input, (key, value)))
 }
@@ -115,7 +116,8 @@ fn key(input: Span<'_>) -> IResult<'_, Key> {
             take_while(|c: char| c.is_alphanumeric() || c == '-' || c == '_'),
         )),
         |s: Span<'_>| Key((*s.fragment()).into()),
-    )(input)
+    )
+    .parse(input)
 }
 
 #[cfg(test)]

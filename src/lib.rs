@@ -48,7 +48,7 @@ use nom::{
     bytes::complete::{tag, take_while},
     character::complete::{char, line_ending, not_line_ending, space0, space1},
     combinator::{all_consuming, cut, eof, iterator, map, not, opt, value},
-    sequence::{delimited, preceded, terminated, tuple},
+    sequence::{delimited, preceded, terminated},
     Finish, Parser,
 };
 use nom_locate::position;
@@ -285,7 +285,7 @@ pub struct Directive<D> {
 impl<D: Decimal> FromStr for Directive<D> {
     type Err = Error;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        match all_consuming(directive)(Span::new(s)).finish() {
+        match all_consuming(directive).parse(Span::new(s)).finish() {
             Ok((_, d)) => Ok(d),
             Err(err) => Err(Error::new(s, err.input)),
         }
@@ -350,18 +350,19 @@ fn entry<D: Decimal>(input: Span<'_>) -> IResult<'_, RawEntry<D>> {
         include.map(|p| RawEntry::Include(p)),
         tag_stack_operation,
         line.map(|()| RawEntry::Comment),
-    ))(input)
+    ))
+    .parse(input)
 }
 
 fn directive<D: Decimal>(input: Span<'_>) -> IResult<'_, Directive<D>> {
     let (input, position) = position(input)?;
     let (input, date) = date::parse(input)?;
-    let (input, _) = cut(space1)(input)?;
+    let (input, _) = cut(space1).parse(input)?;
     let (input, (content, metadata)) = alt((
         map(transaction::parse, |(t, m)| {
             (DirectiveContent::Transaction(t), m)
         }),
-        tuple((
+        (
             terminated(
                 alt((
                     map(
@@ -396,8 +397,9 @@ fn directive<D: Decimal>(input: Span<'_>) -> IResult<'_, Directive<D>> {
                 end_of_line,
             ),
             metadata::parse,
-        )),
-    ))(input)?;
+        ),
+    ))
+    .parse(input)?;
     Ok((
         input,
         Directive {
@@ -411,29 +413,30 @@ fn directive<D: Decimal>(input: Span<'_>) -> IResult<'_, Directive<D>> {
 
 fn option(input: Span<'_>) -> IResult<'_, (String, String)> {
     let (input, _) = tag("option")(input)?;
-    let (input, key) = preceded(space1, string)(input)?;
-    let (input, value) = preceded(space1, string)(input)?;
+    let (input, key) = preceded(space1, string).parse(input)?;
+    let (input, value) = preceded(space1, string).parse(input)?;
     let (input, ()) = end_of_line(input)?;
     Ok((input, (key, value)))
 }
 
 fn include(input: Span<'_>) -> IResult<'_, PathBuf> {
     let (input, _) = tag("include")(input)?;
-    let (input, path) = cut(delimited(space1, string, end_of_line))(input)?;
+    let (input, path) = cut(delimited(space1, string, end_of_line)).parse(input)?;
     Ok((input, path.into()))
 }
 
 fn tag_stack_operation<D>(input: Span<'_>) -> IResult<'_, RawEntry<D>> {
     alt((
-        preceded(tuple((tag("pushtag"), space1)), transaction::parse_tag).map(RawEntry::PushTag),
-        preceded(tuple((tag("poptag"), space1)), transaction::parse_tag).map(RawEntry::PopTag),
-    ))(input)
+        preceded((tag("pushtag"), space1), transaction::parse_tag).map(RawEntry::PushTag),
+        preceded((tag("poptag"), space1), transaction::parse_tag).map(RawEntry::PopTag),
+    ))
+    .parse(input)
 }
 
 fn end_of_line(input: Span<'_>) -> IResult<'_, ()> {
     let (input, _) = space0(input)?;
-    let (input, _) = opt(comment)(input)?;
-    let (input, _) = alt((line_ending, eof))(input)?;
+    let (input, _) = opt(comment).parse(input)?;
+    let (input, _) = alt((line_ending, eof)).parse(input)?;
     Ok((input, ()))
 }
 
@@ -450,22 +453,22 @@ fn line(input: Span<'_>) -> IResult<'_, ()> {
 }
 
 fn empty_line(input: Span<'_>) -> IResult<'_, ()> {
-    let (input, ()) = not(eof)(input)?;
+    let (input, ()) = not(eof).parse(input)?;
     end_of_line(input)
 }
 
 fn string(input: Span<'_>) -> IResult<'_, String> {
     let (input, _) = char('"')(input)?;
     let mut string = String::new();
-    let take_data = take_while(|c: char| c != '"' && c != '\\');
-    let (mut input, mut part) = take_data(input)?;
+    let mut take_data = take_while(|c: char| c != '"' && c != '\\');
+    let (mut input, mut part) = take_data.parse(input)?;
     while !part.fragment().is_empty() {
         string.push_str(part.fragment());
         let (new_input, escaped) =
-            opt(alt((value('"', tag("\\\"")), value('\\', tag("\\\\")))))(input)?;
+            opt(alt((value('"', tag("\\\"")), value('\\', tag("\\\\"))))).parse_complete(input)?;
         let Some(escaped) = escaped else { break };
         string.push(escaped);
-        let (new_input, new_part) = take_data(new_input)?;
+        let (new_input, new_part) = take_data.parse(new_input)?;
         input = new_input;
         part = new_part;
     }

@@ -4,8 +4,7 @@ use nom::{
     bytes::complete::take,
     character::complete::{char, digit1},
     combinator::{all_consuming, cut, map_res, peek, verify},
-    sequence::tuple,
-    Finish,
+    Finish, Parser,
 };
 
 use super::{IResult, Span};
@@ -66,7 +65,7 @@ impl FromStr for Date {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let span = Span::new(s);
-        match all_consuming(parse)(span).finish() {
+        match all_consuming(parse).parse(span).finish() {
             Ok((_, date)) => Ok(date),
             Err(_) => Err(crate::Error::new(s, span)),
         }
@@ -74,8 +73,8 @@ impl FromStr for Date {
 }
 
 pub(super) fn parse(input: Span<'_>) -> IResult<'_, Date> {
-    let (input, _) = peek(tuple((digit1, char('-'), digit1, char('-'), digit1)))(input)?;
-    cut(do_parse)(input)
+    let (input, _) = peek((digit1, char('-'), digit1, char('-'), digit1)).parse(input)?;
+    cut(do_parse).parse(input)
 }
 
 fn do_parse(input: Span<'_>) -> IResult<'_, Date> {
@@ -88,21 +87,23 @@ fn do_parse(input: Span<'_>) -> IResult<'_, Date> {
 }
 
 fn year(input: Span<'_>) -> IResult<'_, u16> {
-    map_res(take(4usize), |s: Span<'_>| s.fragment().parse())(input)
+    map_res(take(4usize), |s: Span<'_>| s.fragment().parse()).parse(input)
 }
 
 fn month(input: Span<'_>) -> IResult<'_, u8> {
     verify(
         map_res(take(2usize), |s: Span<'_>| s.fragment().parse()),
         |&n| n > 0 && n < 13,
-    )(input)
+    )
+    .parse(input)
 }
 
 fn day(input: Span<'_>) -> IResult<'_, u8> {
     verify(
         map_res(take(2usize), |s: Span<'_>| s.fragment().parse()),
         |&n| n > 0 && n < 32,
-    )(input)
+    )
+    .parse(input)
 }
 
 #[cfg(test)]
