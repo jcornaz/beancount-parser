@@ -16,7 +16,6 @@
 
 use std::{
     borrow::Borrow,
-    collections::HashMap,
     fmt::{Debug, Display, Formatter},
     str::FromStr,
     sync::Arc,
@@ -36,7 +35,7 @@ use crate::{amount, empty_line, end_of_line, string, Currency, Decimal, IResult,
 /// Metadata map
 ///
 /// See the [`metadata`](crate::metadata) module for an example
-pub type Map<D> = HashMap<Key, Value<D>>;
+pub type Map<D> = indexmap::IndexMap<Key, Value<D>>;
 
 /// Metadata key
 ///
@@ -66,7 +65,7 @@ impl FromStr for Key {
     type Err = crate::Error;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let span = Span::new(s);
-        match all_consuming(key)(span) {
+        match all_consuming(key).parse(span) {
             Ok((_, key)) => Ok(key),
             Err(_) => Err(crate::Error::new(s, span)),
         }
@@ -89,7 +88,7 @@ pub enum Value<D> {
 
 pub(crate) fn parse<D: Decimal>(input: Span<'_>) -> IResult<'_, Map<D>> {
     let mut iter = iterator(input, alt((entry.map(Some), empty_line.map(|()| None))));
-    let map: HashMap<_, _> = iter.flatten().collect();
+    let map: Map<_> = iter.by_ref().flatten().collect();
     let (input, ()) = iter.finish()?;
     Ok((input, map))
 }
@@ -103,7 +102,8 @@ fn entry<D: Decimal>(input: Span<'_>) -> IResult<'_, (Key, Value<D>)> {
         string.map(Value::String),
         amount::expression.map(Value::Number),
         amount::currency.map(Value::Currency),
-    ))(input)?;
+    ))
+    .parse(input)?;
     let (input, ()) = end_of_line(input)?;
     Ok((input, (key, value)))
 }
@@ -115,7 +115,8 @@ fn key(input: Span<'_>) -> IResult<'_, Key> {
             take_while(|c: char| c.is_alphanumeric() || c == '-' || c == '_'),
         )),
         |s: Span<'_>| Key((*s.fragment()).into()),
-    )(input)
+    )
+    .parse(input)
 }
 
 #[cfg(test)]
@@ -140,14 +141,14 @@ mod tests {
 #[cfg(test)]
 pub(crate) mod chumsky {
 
-    use std::collections::HashMap;
+    use indexmap::IndexMap;
 
     use super::{Key, Value};
     use crate::{ChumskyParser, Decimal};
 
     use chumsky::prelude::*;
 
-    pub(crate) fn map<D: Decimal + 'static>() -> impl ChumskyParser<HashMap<Key, Value<D>>> {
+    pub(crate) fn map<D: Decimal + 'static>() -> impl ChumskyParser<IndexMap<Key, Value<D>>> {
         entry().padded().repeated().collect().labelled("metadata")
     }
 
@@ -176,7 +177,7 @@ pub(crate) mod chumsky {
         #[rstest]
         fn should_parse_metadata_map() {
             let input = "foo: 1\n  bar: 2\n\nbaz: 3";
-            let mut expected = HashMap::<Key, Value<i32>>::new();
+            let mut expected = IndexMap::<Key, Value<i32>>::new();
             expected.insert("foo".parse().unwrap(), Value::Number(1));
             expected.insert("bar".parse().unwrap(), Value::Number(2));
             expected.insert("baz".parse().unwrap(), Value::Number(3));

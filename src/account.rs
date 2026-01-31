@@ -1,18 +1,18 @@
 use std::{
     borrow::Borrow,
-    collections::HashSet,
     fmt::{Display, Formatter},
     str::FromStr,
     sync::Arc,
 };
 
+use indexmap::IndexSet;
 use nom::{
     bytes::complete::take_while,
     character::complete::{char, satisfy, space0, space1},
     combinator::{all_consuming, cut, iterator, opt, recognize},
     multi::many1_count,
     sequence::{delimited, preceded},
-    Finish,
+    Finish, Parser,
 };
 
 use crate::{
@@ -68,7 +68,7 @@ impl FromStr for Account {
 
     fn from_str(input: &str) -> Result<Self, Self::Err> {
         let spanned = Span::new(input);
-        match all_consuming(parse)(spanned).finish() {
+        match all_consuming(parse).parse(spanned).finish() {
             Ok((_, account)) => Ok(account),
             Err(err) => {
                 println!("{err:?}");
@@ -95,7 +95,7 @@ pub struct Open {
     /// Account being open
     pub account: Account,
     /// Currency constraints
-    pub currencies: HashSet<Currency>,
+    pub currencies: IndexSet<Currency>,
     /// Booking method
     pub booking_method: Option<BookingMethod>,
 }
@@ -202,14 +202,15 @@ pub(super) fn parse(input: Span<'_>) -> IResult<'_, Account> {
                 take_while(|c: char| c.is_alphanumeric() || c == '-'),
             ),
         ))),
-    ))(input)?;
+    ))
+    .parse(input)?;
     Ok((input, Account(Arc::from(*name.fragment()))))
 }
 
 pub(super) fn open(input: Span<'_>) -> IResult<'_, Open> {
     let (input, account) = parse(input)?;
-    let (input, currencies) = opt(preceded(space1, currencies))(input)?;
-    let (input, booking_method) = opt(preceded(space1, crate::string))(input)?;
+    let (input, currencies) = opt(preceded(space1, currencies)).parse(input)?;
+    let (input, booking_method) = opt(preceded(space1, crate::string)).parse(input)?;
     Ok((
         input,
         Open {
@@ -220,11 +221,11 @@ pub(super) fn open(input: Span<'_>) -> IResult<'_, Open> {
     ))
 }
 
-fn currencies(input: Span<'_>) -> IResult<'_, HashSet<Currency>> {
+fn currencies(input: Span<'_>) -> IResult<'_, IndexSet<Currency>> {
     let (input, first) = amount::currency(input)?;
     let sep = delimited(space0, char(','), space0);
     let mut iter = iterator(input, preceded(sep, amount::currency));
-    let mut currencies = HashSet::new();
+    let mut currencies = IndexSet::new();
     currencies.insert(first);
     currencies.extend(&mut iter);
     let (input, ()) = iter.finish()?;
@@ -240,7 +241,7 @@ pub(super) fn balance<D: Decimal>(input: Span<'_>) -> IResult<'_, Balance<D>> {
     let (input, account) = parse(input)?;
     let (input, _) = space1(input)?;
     let (input, value) = amount::expression(input)?;
-    let (input, tolerance) = opt(preceded(space0, tolerance))(input)?;
+    let (input, tolerance) = opt(preceded(space0, tolerance)).parse(input)?;
     let (input, _) = space1(input)?;
     let (input, currency) = amount::currency(input)?;
     Ok((
