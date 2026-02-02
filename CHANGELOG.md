@@ -9,7 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Dependencies
 
-* Lower version requirement for all dependencies
+* Update private dependencies to the latest major version (thanks @jakobhellermann)
 * Lower MSRV to 1.65
 
 
