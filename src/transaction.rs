@@ -9,7 +9,7 @@ use nom::{
     character::complete::satisfy,
     character::complete::{char as char_tag, space0, space1},
     combinator::{cut, iterator, map, opt, success, value},
-    sequence::{delimited, preceded, separated_pair, terminated, tuple},
+    sequence::{delimited, preceded, separated_pair, terminated},
     Parser,
 };
 
@@ -222,8 +222,8 @@ impl Borrow<str> for Link {
 pub(crate) fn parse<D: Decimal>(
     input: Span<'_>,
 ) -> IResult<'_, (Transaction<D>, metadata::Map<D>)> {
-    let (input, flag) = alt((map(flag, Some), value(None, tag("txn"))))(input)?;
-    cut(do_parse(flag))(input)
+    let (input, flag) = alt((map(flag, Some), value(None, tag("txn")))).parse(input)?;
+    cut(do_parse(flag)).parse(input)
 }
 
 fn flag(input: Span<'_>) -> IResult<'_, char> {
@@ -234,12 +234,13 @@ fn do_parse<D: Decimal>(
     flag: Option<char>,
 ) -> impl Fn(Span<'_>) -> IResult<'_, (Transaction<D>, metadata::Map<D>)> {
     move |input| {
-        let (input, payee_and_narration) = opt(preceded(space1, payee_and_narration))(input)?;
+        let (input, payee_and_narration) =
+            opt(preceded(space1, payee_and_narration)).parse(input)?;
         let (input, (tags, links)) = tags_and_links(input)?;
         let (input, ()) = end_of_line(input)?;
         let (input, metadata) = metadata::parse(input)?;
         let mut iter = iterator(input, alt((posting.map(Some), empty_line.map(|()| None))));
-        let postings = iter.flatten().collect();
+        let postings = iter.by_ref().flatten().collect();
         let (input, ()) = iter.finish()?;
         let (payee, narration) = match payee_and_narration {
             Some((payee, narration)) => (payee, Some(narration)),
@@ -274,7 +275,8 @@ pub(super) fn parse_tag(input: Span<'_>) -> IResult<'_, Tag> {
             take_while(|c: char| c.is_alphanumeric() || c == '-' || c == '_'),
         ),
         |s: Span<'_>| Tag((*s.fragment()).into()),
-    )(input)
+    )
+    .parse(input)
 }
 
 pub(super) fn parse_link(input: Span<'_>) -> IResult<'_, Link> {
@@ -284,19 +286,21 @@ pub(super) fn parse_link(input: Span<'_>) -> IResult<'_, Link> {
             take_while(|c: char| c.is_alphanumeric() || c == '-' || c == '_' || c == '.'),
         ),
         |s: Span<'_>| Link((*s.fragment()).into()),
-    )(input)
+    )
+    .parse(input)
 }
 
 pub(super) fn parse_tag_or_link(input: Span<'_>) -> IResult<'_, TagOrLink> {
     alt((
         map(parse_tag, TagOrLink::Tag),
         map(parse_link, TagOrLink::Link),
-    ))(input)
+    ))
+    .parse(input)
 }
 
 fn tags_and_links(input: Span<'_>) -> IResult<'_, (HashSet<Tag>, HashSet<Link>)> {
     let mut tags_and_links_iter = iterator(input, preceded(space0, parse_tag_or_link));
-    let (tags, links) = tags_and_links_iter.fold(
+    let (tags, links) = tags_and_links_iter.by_ref().fold(
         (HashSet::new(), HashSet::new()),
         |(mut tags, mut links), x| {
             match x {
@@ -312,7 +316,7 @@ fn tags_and_links(input: Span<'_>) -> IResult<'_, (HashSet<Tag>, HashSet<Link>)>
 
 fn payee_and_narration(input: Span<'_>) -> IResult<'_, (Option<String>, String)> {
     let (input, s1) = string(input)?;
-    let (input, s2) = opt(preceded(space1, string))(input)?;
+    let (input, s2) = opt(preceded(space1, string)).parse(input)?;
     Ok((
         input,
         match s2 {
@@ -324,25 +328,26 @@ fn payee_and_narration(input: Span<'_>) -> IResult<'_, (Option<String>, String)>
 
 fn posting<D: Decimal>(input: Span<'_>) -> IResult<'_, Posting<D>> {
     let (input, _) = space1(input)?;
-    let (input, flag) = opt(terminated(flag, space1))(input)?;
+    let (input, flag) = opt(terminated(flag, space1)).parse(input)?;
     let (input, account) = account::parse(input)?;
-    let (input, amounts) = opt(tuple((
+    let (input, amounts) = opt((
         preceded(space1, amount::parse),
         opt(preceded(space1, cost)),
         opt(preceded(
             space1,
             alt((
                 map(
-                    preceded(tuple((char_tag('@'), space1)), amount::parse),
+                    preceded((char_tag('@'), space1), amount::parse),
                     PostingPrice::Unit,
                 ),
                 map(
-                    preceded(tuple((tag("@@"), space1)), amount::parse),
+                    preceded((tag("@@"), space1), amount::parse),
                     PostingPrice::Total,
                 ),
             )),
         )),
-    )))(input)?;
+    ))
+    .parse(input)?;
     let (input, ()) = end_of_line(input)?;
     let (input, metadata) = metadata::parse(input)?;
     let (amount, cost, price) = match amounts {
@@ -363,7 +368,7 @@ fn posting<D: Decimal>(input: Span<'_>) -> IResult<'_, Posting<D>> {
 }
 
 fn cost<D: Decimal>(input: Span<'_>) -> IResult<'_, Cost<D>> {
-    let (input, _) = terminated(char_tag('{'), space0)(input)?;
+    let (input, _) = terminated(char_tag('{'), space0).parse(input)?;
     let (input, (cost, date)) = alt((
         map(
             separated_pair(
@@ -384,8 +389,9 @@ fn cost<D: Decimal>(input: Span<'_>) -> IResult<'_, Cost<D>> {
         map(amount::parse, |a| (Some(a), None)),
         map(date::parse, |d| (None, Some(d))),
         map(success(true), |_| (None, None)),
-    ))(input)?;
-    let (input, _) = preceded(space0, char_tag('}'))(input)?;
+    ))
+    .parse(input)?;
+    let (input, _) = preceded(space0, char_tag('}')).parse(input)?;
     Ok((input, Cost { amount: cost, date }))
 }
 

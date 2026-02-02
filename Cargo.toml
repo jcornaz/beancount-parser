@@ -4,7 +4,7 @@ version = "2.2.1"
 license = "Unlicense"
 authors = ["Jonathan Cornaz"]
 edition = "2021"
-rust-version = "1.65"
+rust-version = "1.68"
 description = "A beancount file parser library for rust"
 repository = "https://github.com/jcornaz/beancount-parser"
 categories = ["parser-implementations"]
@@ -22,8 +22,8 @@ rustdoc-args = ["--cfg", "docsrs"]
 miette = { version = "5", optional = true }
 
 # Private
-nom = { version = "7", default-features = false, features = ["std"] }
-nom_locate = { version = "4", default-features = false }
+nom = { version = "8", default-features = false, features = ["std"] }
+nom_locate = { version = "5", default-features = false }
 thiserror = "2"
 
 [dev-dependencies]
