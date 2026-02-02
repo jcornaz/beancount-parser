@@ -68,14 +68,23 @@ impl Error {
 #[derive(Debug, Error)]
 #[cfg_attr(feature = "miette", derive(Diagnostic))]
 pub enum ReadFileError {
-    #[error("IO error in {path}: {source}")]
-    Io {
-        path: std::path::PathBuf,
-        #[source]
-        source: std::io::Error,
-    },
+    #[error("{0}")]
+    Io(#[source] ReadFileIOError),
     #[error("Syntax error")]
     Syntax(#[from] Error),
+}
+
+#[derive(Debug, Error)]
+#[non_exhaustive]
+pub struct ReadFileIOError {
+    pub path: std::path::PathBuf,
+    pub cause: std::io::Error,
+}
+
+impl std::fmt::Display for ReadFileIOError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "IO error in {}: {}", self.path.display(), self.cause)
+    }
 }
 
 /// Error that may be returned by the various `TryFrom`/`TryInto` implementation

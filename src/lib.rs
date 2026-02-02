@@ -53,7 +53,6 @@ use nom::{
 };
 use nom_locate::position;
 
-use crate::iterator::Iter;
 pub use crate::{
     account::{Account, Balance, Close, Open, Pad},
     amount::{Amount, Currency, Decimal, Price},
@@ -62,6 +61,7 @@ pub use crate::{
     event::Event,
     transaction::{Cost, Link, Posting, PostingPrice, Tag, Transaction},
 };
+use crate::{error::ReadFileIOError, iterator::Iter};
 
 #[deprecated(note = "use `metadata::Value` instead", since = "1.0.0-beta.3")]
 #[doc(hidden)]
@@ -127,9 +127,11 @@ pub fn read_files<D: Decimal, F: FnMut(Entry<D>)>(
     let mut pending: Vec<PathBuf> = files
         .into_iter()
         .map(|p| {
-            p.canonicalize().map_err(|source| ReadFileError::Io {
-                path: p.clone(),
-                source,
+            p.canonicalize().map_err(|cause| {
+                ReadFileError::Io(ReadFileIOError {
+                    path: p.clone(),
+                    cause,
+                })
             })
         })
         .collect::<Result<_, _>>()?;
@@ -142,9 +144,11 @@ pub fn read_files<D: Decimal, F: FnMut(Entry<D>)>(
         buffer.clear();
         File::open(&path)
             .and_then(|mut f| f.read_to_string(&mut buffer))
-            .map_err(|source| ReadFileError::Io {
-                path: path.clone(),
-                source,
+            .map_err(|cause| {
+                ReadFileError::Io(ReadFileIOError {
+                    path: path.clone(),
+                    cause,
+                })
             })?;
         for result in parse_iter::<D>(&buffer) {
             let entry = result?;
@@ -160,7 +164,7 @@ pub fn read_files<D: Decimal, F: FnMut(Entry<D>)>(
                     };
                     let path = path
                         .canonicalize()
-                        .map_err(|source| ReadFileError::Io { path, source })?;
+                        .map_err(|cause| ReadFileError::Io(ReadFileIOError { path, cause }))?;
                     if !loaded.contains(&path) {
                         pending.push(path);
                     }
