@@ -70,10 +70,7 @@ impl FromStr for Account {
         let spanned = Span::new(input);
         match all_consuming(parse)(spanned).finish() {
             Ok((_, account)) => Ok(account),
-            Err(err) => {
-                println!("{err:?}");
-                Err(Self::Err::new(input, spanned))
-            }
+            Err(_) => Err(Self::Err::new(input, spanned)),
         }
     }
 }
