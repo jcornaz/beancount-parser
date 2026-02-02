@@ -3,3 +3,4 @@
 "cargo:cargo-msrv" = "0.18.4"
 just = "1.46.0"
 rust = "1.93.0"
+rust-analyzer = "2026-02-02"
