@@ -7,6 +7,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+
+## [2.3.0] - 2026-02-03
+
 ### Features
 
 * Add constructors to `Open`, `Close`, `Balance`, `Pad`, `Event` and `Posting` (thanks to @jakobhellermann)
@@ -547,7 +550,8 @@ Announce new status of the project in readme: The project is now in "maintenance
  - `Parser` iterator type
 
 
-[Unreleased]: https://github.com/jcornaz/beancount-parser/compare/v2.2.1...HEAD
+[Unreleased]: https://github.com/jcornaz/beancount-parser/compare/v2.3.0...HEAD
+[2.3.0]: https://github.com/jcornaz/beancount-parser/compare/v2.2.1...v2.3.0
 [2.2.1]: https://github.com/jcornaz/beancount-parser/compare/v2.2.0...v2.2.1
 [2.2.0]: https://github.com/jcornaz/beancount-parser/compare/v2.1.0...v2.2.0
 [2.1.0]: https://github.com/jcornaz/beancount-parser/compare/v2.0.4...v2.1.0
