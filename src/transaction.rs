@@ -42,7 +42,7 @@ use crate::{
 /// assert!(trx.tags.contains("food"));
 /// assert_eq!(trx.postings.len(), 2);
 /// ```
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Default)]
 #[non_exhaustive]
 pub struct Transaction<D> {
     /// Transaction flag (`*` or `!` or `None` when using the `txn` keyword)
@@ -101,6 +101,21 @@ pub struct Posting<D> {
     pub price: Option<PostingPrice<D>>,
     /// The metadata attached to the posting
     pub metadata: metadata::Map<D>,
+}
+
+impl<D> Posting<D> {
+    /// Create a new empty posting for the given account
+    #[must_use]
+    pub fn from_account(account: Account) -> Posting<D> {
+        Posting {
+            flag: None,
+            account,
+            amount: None,
+            cost: None,
+            price: None,
+            metadata: metadata::Map::new(),
+        }
+    }
 }
 
 /// Cost of a posting
