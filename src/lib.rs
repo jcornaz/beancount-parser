@@ -53,7 +53,6 @@ use nom::{
 };
 use nom_locate::position;
 
-use crate::iterator::Iter;
 pub use crate::{
     account::{Account, Balance, Close, Open, Pad},
     amount::{Amount, Currency, Decimal, Price},
@@ -62,6 +61,7 @@ pub use crate::{
     event::Event,
     transaction::{Cost, Link, Posting, PostingPrice, Tag, Transaction},
 };
+use crate::{error::ReadFileIOError, iterator::Iter};
 
 #[deprecated(note = "use `metadata::Value` instead", since = "1.0.0-beta.3")]
 #[doc(hidden)]
@@ -126,7 +126,14 @@ pub fn read_files<D: Decimal, F: FnMut(Entry<D>)>(
     let mut loaded: HashSet<PathBuf> = HashSet::new();
     let mut pending: Vec<PathBuf> = files
         .into_iter()
-        .map(|p| p.canonicalize())
+        .map(|p| {
+            p.canonicalize().map_err(|cause| {
+                ReadFileError::Io(ReadFileIOError {
+                    path: p.clone(),
+                    cause,
+                })
+            })
+        })
         .collect::<Result<_, _>>()?;
     let mut buffer = String::new();
     while let Some(path) = pending.pop() {
@@ -135,7 +142,14 @@ pub fn read_files<D: Decimal, F: FnMut(Entry<D>)>(
         }
         loaded.insert(path.clone());
         buffer.clear();
-        File::open(&path)?.read_to_string(&mut buffer)?;
+        File::open(&path)
+            .and_then(|mut f| f.read_to_string(&mut buffer))
+            .map_err(|cause| {
+                ReadFileError::Io(ReadFileIOError {
+                    path: path.clone(),
+                    cause,
+                })
+            })?;
         for result in parse_iter::<D>(&buffer) {
             let entry = result?;
             match entry {
@@ -148,7 +162,9 @@ pub fn read_files<D: Decimal, F: FnMut(Entry<D>)>(
                     } else {
                         include
                     };
-                    let path = path.canonicalize()?;
+                    let path = path
+                        .canonicalize()
+                        .map_err(|cause| ReadFileError::Io(ReadFileIOError { path, cause }))?;
                     if !loaded.contains(&path) {
                         pending.push(path);
                     }
