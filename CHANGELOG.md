@@ -7,10 +7,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Features
+
+* Add constructors to `Open`, `Close`, `Balance`, `Pad`, `Event` and `Posting` (thanks to @jakobhellermann)
+* `Transaction` now implements `Default` (thanks to @jakobhellermann)
+
 ### Dependencies
 
-* Update private dependencies to the latest major version (thanks @jakobhellermann)
-* Lower MSRV to 1.65
+* Update private dependencies to the latest major version (thanks to @jakobhellermann)
+* Lower MSRV to 1.68
 
 
 ## [2.2.1] - 2024-04-28
