@@ -7,6 +7,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### Breaking changes
+
+* The `ReadFileError::Io` representation is changed to contain the path of the file having an error
+
 
 ## [2.3.0] - 2026-02-03
 
