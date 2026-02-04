@@ -15,6 +15,6 @@ fn can_parse_example_files(#[case] file_name: &str, #[case] expected_directive_c
     let mut path: PathBuf = "./tests/samples".into();
     path.push(file_name);
     let mut file = BeancountFile::<f64>::default();
-    beancount_parser::read_files([path], |entry| file.extend(Some(entry))).unwrap();
+    beancount_parser::read_files_v2([path], |entry| file.extend(Some(entry))).unwrap();
     assert_eq!(file.directives.len(), expected_directive_count);
 }

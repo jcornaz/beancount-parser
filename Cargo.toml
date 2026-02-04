@@ -44,7 +44,3 @@ pedantic = "warn"
 [[bench]]
 name = "benchmark"
 harness = false
-
-[[example]]
-name = "balance"
-required-features = ["miette"]

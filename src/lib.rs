@@ -57,11 +57,14 @@ pub use crate::{
     account::{Account, Balance, Close, Open, Pad},
     amount::{Amount, Currency, Decimal, Price},
     date::Date,
-    error::{ConversionError, Error, ReadFileError},
+    error::{ConversionError, Error},
     event::Event,
     transaction::{Cost, Link, Posting, PostingPrice, Tag, Transaction},
 };
-use crate::{error::ReadFileIOError, iterator::Iter};
+use crate::{
+    error::{ReadFileErrorContent, ReadFileErrorV2},
+    iterator::Iter,
+};
 
 #[deprecated(note = "use `metadata::Value` instead", since = "1.0.0-beta.3")]
 #[doc(hidden)]
@@ -119,20 +122,36 @@ impl<D: Decimal> FromStr for BeancountFile<D> {
 ///
 /// Returns an error if any file could not be read (IO error)
 /// or if there is a beancount syntax error in any file read
+#[allow(deprecated)]
+#[deprecated(since = "2.4.0", note = "use `read_files_v2 instead`")]
 pub fn read_files<D: Decimal, F: FnMut(Entry<D>)>(
     files: impl IntoIterator<Item = PathBuf>,
+    on_entry: F,
+) -> Result<(), error::ReadFileError> {
+    read_files_v2(files, on_entry).map_err(|err| match err.error {
+        ReadFileErrorContent::Io(err) => error::ReadFileError::Io(err),
+        ReadFileErrorContent::Syntax(err) => error::ReadFileError::Syntax(err),
+    })
+}
+
+/// Read the files from disk and parse their content.
+///
+/// It follows the `include` directives found.
+///
+/// # Errors
+///
+/// Returns an error if any file could not be read (IO error)
+/// or if there is a beancount syntax error in any file read
+pub fn read_files_v2<D: Decimal, F: FnMut(Entry<D>)>(
+    files: impl IntoIterator<Item = PathBuf>,
     mut on_entry: F,
-) -> Result<(), ReadFileError> {
+) -> Result<(), ReadFileErrorV2> {
     let mut loaded: HashSet<PathBuf> = HashSet::new();
     let mut pending: Vec<PathBuf> = files
         .into_iter()
         .map(|p| {
-            p.canonicalize().map_err(|cause| {
-                ReadFileError::Io(ReadFileIOError {
-                    path: p.clone(),
-                    cause,
-                })
-            })
+            p.canonicalize()
+                .map_err(|err| ReadFileErrorV2::from_io(p, err))
         })
         .collect::<Result<_, _>>()?;
     let mut buffer = String::new();
@@ -144,14 +163,12 @@ pub fn read_files<D: Decimal, F: FnMut(Entry<D>)>(
         buffer.clear();
         File::open(&path)
             .and_then(|mut f| f.read_to_string(&mut buffer))
-            .map_err(|cause| {
-                ReadFileError::Io(ReadFileIOError {
-                    path: path.clone(),
-                    cause,
-                })
-            })?;
+            .map_err(|err| ReadFileErrorV2::from_io(path.clone(), err))?;
         for result in parse_iter::<D>(&buffer) {
-            let entry = result?;
+            let entry = match result {
+                Ok(entry) => entry,
+                Err(err) => return Err(ReadFileErrorV2::from_syntax(path, err)),
+            };
             match entry {
                 Entry::Include(include) => {
                     let path = if include.is_relative() {
@@ -164,7 +181,7 @@ pub fn read_files<D: Decimal, F: FnMut(Entry<D>)>(
                     };
                     let path = path
                         .canonicalize()
-                        .map_err(|cause| ReadFileError::Io(ReadFileIOError { path, cause }))?;
+                        .map_err(|err| ReadFileErrorV2::from_io(path, err))?;
                     if !loaded.contains(&path) {
                         pending.push(path);
                     }

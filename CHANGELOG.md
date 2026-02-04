@@ -7,9 +7,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
-### Breaking changes
+### Deprecations
 
-* The `ReadFileError::Io` representation is changed to contain the path of the file having an error
+* `error::ReadFileError` is deprecated in favor of `error::ReadFileErrorV2` which contains the name of the problematic file
+* `read_files` is deprecated in favor of `read_files_v2` which has `error::ReadFileErrorV2` as its error type
+
+
+### Features
+
+* The `read_files_v2` is the replacement for the (now deprecated) `read_files`.
+  The main difference is that it's error type contains the information of which file file had an error.
 
 
 ## [2.3.0] - 2026-02-03

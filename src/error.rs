@@ -1,6 +1,11 @@
 #![allow(clippy::module_name_repetitions)]
+#![allow(deprecated)]
 
-use std::fmt::Debug;
+use std::{
+    fmt::{Debug, Display},
+    io,
+    path::PathBuf,
+};
 
 #[cfg(feature = "miette")]
 use miette::{Diagnostic, SourceSpan};
@@ -65,26 +70,61 @@ impl Error {
 
 /// Error returned when reading a beancount file from disk
 #[allow(missing_docs)]
+#[derive(Debug)]
+pub struct ReadFileErrorV2 {
+    path: PathBuf,
+    pub(crate) error: ReadFileErrorContent,
+}
+
+impl ReadFileErrorV2 {
+    pub(crate) fn from_io(path: PathBuf, err: io::Error) -> Self {
+        Self {
+            path,
+            error: ReadFileErrorContent::Io(err),
+        }
+    }
+
+    pub(crate) fn from_syntax(path: PathBuf, err: Error) -> Self {
+        Self {
+            path,
+            error: ReadFileErrorContent::Syntax(err),
+        }
+    }
+}
+
+impl Display for ReadFileErrorV2 {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match &self.error {
+            ReadFileErrorContent::Io(err) => {
+                write!(f, "Cannot read {}: {}", self.path.display(), err)
+            }
+            ReadFileErrorContent::Syntax(err) => {
+                write!(f, "Invalid syntax in {}: {}", self.path.display(), err)
+            }
+        }
+    }
+}
+
+impl std::error::Error for ReadFileErrorV2 {}
+
+/// Content of the error returned when reading a beancount file from disk
+#[allow(missing_docs)]
+#[derive(Debug)]
+pub(crate) enum ReadFileErrorContent {
+    Io(std::io::Error),
+    Syntax(Error),
+}
+
+/// Content of the error returned when reading a beancount file from disk
+#[allow(missing_docs)]
 #[derive(Debug, Error)]
 #[cfg_attr(feature = "miette", derive(Diagnostic))]
+#[deprecated(since = "2.4.0", note = "use `ReadFileErrorV2 instead`")]
 pub enum ReadFileError {
-    #[error("{0}")]
-    Io(#[source] ReadFileIOError),
+    #[error("IO error")]
+    Io(#[from] std::io::Error),
     #[error("Syntax error")]
     Syntax(#[from] Error),
-}
-
-#[derive(Debug, Error)]
-#[non_exhaustive]
-pub struct ReadFileIOError {
-    pub path: std::path::PathBuf,
-    pub cause: std::io::Error,
-}
-
-impl std::fmt::Display for ReadFileIOError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "IO error in {}: {}", self.path.display(), self.cause)
-    }
 }
 
 /// Error that may be returned by the various `TryFrom`/`TryInto` implementation

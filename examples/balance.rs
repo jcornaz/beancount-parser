@@ -15,9 +15,9 @@ use beancount_parser::{
 
 type Report = HashMap<Account, HashMap<Currency, Decimal>>;
 
-fn main() -> miette::Result<()> {
+fn main() -> Result<(), Box<dyn std::error::Error>> {
     let mut directives = Vec::<Directive<Decimal>>::new();
-    beancount_parser::read_files(args().skip(1).map(Into::into), |entry| {
+    beancount_parser::read_files_v2(args().skip(1).map(Into::into), |entry| {
         if let Entry::Directive(d) = entry {
             if matches!(
                 d.content,
