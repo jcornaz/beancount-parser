@@ -114,7 +114,7 @@ impl<D: Decimal> FromStr for BeancountFile<D> {
     }
 }
 
-/// Read the files from disk and parse their content. Invokes [`on_entry`] for each entries found.
+/// Read the files from disk and parse their content. Invokes `on_entry` for each entries found.
 ///
 /// It follows the `include` directives found.
 ///

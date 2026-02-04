@@ -1,5 +1,6 @@
 #![allow(clippy::module_name_repetitions)]
 #![allow(deprecated)]
+#![allow(unused_assignments)]
 
 use std::{
     fmt::{Debug, Display},
