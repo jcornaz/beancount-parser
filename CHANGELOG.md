@@ -7,6 +7,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+
+## [2.4.0] - 2026-02-04
+
 ### Deprecations
 
 * `error::ReadFileError` is deprecated in favor of `error::ReadFileErrorV2` which contains the name of the problematic file
@@ -562,7 +565,8 @@ Announce new status of the project in readme: The project is now in "maintenance
  - `Parser` iterator type
 
 
-[Unreleased]: https://github.com/jcornaz/beancount-parser/compare/v2.3.0...HEAD
+[Unreleased]: https://github.com/jcornaz/beancount-parser/compare/v2.4.0...HEAD
+[2.4.0]: https://github.com/jcornaz/beancount-parser/compare/v2.3.0...v2.4.0
 [2.3.0]: https://github.com/jcornaz/beancount-parser/compare/v2.2.1...v2.3.0
 [2.2.1]: https://github.com/jcornaz/beancount-parser/compare/v2.2.0...v2.2.1
 [2.2.0]: https://github.com/jcornaz/beancount-parser/compare/v2.1.0...v2.2.0
