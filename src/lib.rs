@@ -114,7 +114,7 @@ impl<D: Decimal> FromStr for BeancountFile<D> {
     }
 }
 
-/// Read the files from disk and parse their content.
+/// Read the files from disk and parse their content. Invokes [`on_entry`] for each entries found.
 ///
 /// It follows the `include` directives found.
 ///
@@ -123,7 +123,10 @@ impl<D: Decimal> FromStr for BeancountFile<D> {
 /// Returns an error if any file could not be read (IO error)
 /// or if there is a beancount syntax error in any file read
 #[allow(deprecated)]
-#[deprecated(since = "2.4.0", note = "use `read_files_v2 instead`")]
+#[deprecated(
+    since = "2.4.0",
+    note = "use `read_files_v2` or `read_files_to_vec` instead"
+)]
 pub fn read_files<D: Decimal, F: FnMut(Entry<D>)>(
     files: impl IntoIterator<Item = PathBuf>,
     on_entry: F,
@@ -132,6 +135,22 @@ pub fn read_files<D: Decimal, F: FnMut(Entry<D>)>(
         ReadFileErrorContent::Io(err) => error::ReadFileError::Io(err),
         ReadFileErrorContent::Syntax(err) => error::ReadFileError::Syntax(err),
     })
+}
+
+/// Read the files from disk and parse their content. Returns a [`Vec`] of each entries found.
+///
+/// It follows the `include` directives found.
+///
+/// # Errors
+///
+/// Returns an error if any file could not be read (IO error)
+/// or if there is a beancount syntax error in any file read
+pub fn read_files_to_vec<D: Decimal>(
+    files: impl IntoIterator<Item = PathBuf>,
+) -> Result<Vec<Entry<D>>, ReadFileErrorV2> {
+    let mut vec = Vec::new();
+    read_files_v2(files, |entry| vec.push(entry))?;
+    Ok(vec)
 }
 
 /// Read the files from disk and parse their content.

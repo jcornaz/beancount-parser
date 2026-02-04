@@ -15,8 +15,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Features
 
-* The `read_files_v2` is the replacement for the (now deprecated) `read_files`.
+* `read_files_v2` is the replacement for the (now deprecated) `read_files`.
   The main difference is that it's error type contains the information of which file file had an error.
+* `read_files_to_vec` reads files and returns the entries as a `Vec`
 
 
 ## [2.3.0] - 2026-02-03
