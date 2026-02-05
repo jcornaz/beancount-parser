@@ -41,7 +41,14 @@
 //! # Ok(()) }
 //! ```
 
-use std::{collections::HashSet, fs::File, io::Read, path::PathBuf, str::FromStr};
+use std::{
+    collections::HashSet,
+    fmt::{Debug, Display},
+    fs::File,
+    io::Read,
+    path::PathBuf,
+    str::FromStr,
+};
 
 use nom::{
     branch::alt,
@@ -334,6 +341,20 @@ pub struct Directive<D> {
     pub line_number: u32,
 }
 
+impl<D: Display> Display for Directive<D> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        Display::fmt(&self.date, f)?;
+        f.write_str(" ")?;
+        Display::fmt(&self.content, f)?;
+
+        for (key, value) in &self.metadata {
+            write!(f, "\n  {key}: {value}")?;
+        }
+
+        Ok(())
+    }
+}
+
 impl<D: Decimal> FromStr for Directive<D> {
     type Err = Error;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
@@ -357,6 +378,21 @@ pub enum DirectiveContent<D> {
     Pad(Pad),
     Commodity(Currency),
     Event(Event),
+}
+
+impl<D: Display> Display for DirectiveContent<D> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            DirectiveContent::Transaction(transaction) => Display::fmt(transaction, f),
+            DirectiveContent::Price(price) => Display::fmt(price, f),
+            DirectiveContent::Balance(balance) => Display::fmt(balance, f),
+            DirectiveContent::Open(open) => Display::fmt(open, f),
+            DirectiveContent::Close(close) => Display::fmt(close, f),
+            DirectiveContent::Pad(pad) => Display::fmt(pad, f),
+            DirectiveContent::Commodity(currency) => write!(f, "commodity {currency}"),
+            DirectiveContent::Event(event) => Display::fmt(event, f),
+        }
+    }
 }
 
 type Span<'a> = nom_locate::LocatedSpan<&'a str>;
