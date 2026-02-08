@@ -24,7 +24,6 @@ miette = { version = "5", optional = true }
 # Private
 nom = { version = "8", default-features = false, features = ["std"] }
 nom_locate = { version = "5", default-features = false }
-thiserror = "2"
 
 [dev-dependencies]
 criterion = "0.8"

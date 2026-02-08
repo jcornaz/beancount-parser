@@ -10,7 +10,6 @@ use std::{
 
 #[cfg(feature = "miette")]
 use miette::{Diagnostic, SourceSpan};
-use thiserror::Error;
 
 use crate::Span;
 
@@ -24,9 +23,8 @@ use crate::Span;
 /// let error = result.unwrap_err();
 /// assert_eq!(error.line_number(), 1);
 /// ```
-#[derive(Clone, Error)]
+#[derive(Clone)]
 #[cfg_attr(feature = "miette", derive(Diagnostic))]
-#[error("Invalid beancount syntax at line: {line_number}")]
 pub struct Error {
     #[cfg(feature = "miette")]
     #[source_code]
@@ -44,6 +42,14 @@ impl Debug for Error {
             .finish()
     }
 }
+
+impl Display for Error {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Invalid beancount syntax at line: {}", self.line_number)
+    }
+}
+
+impl std::error::Error for Error {}
 
 impl Error {
     #[cfg(not(feature = "miette"))]
@@ -118,19 +124,47 @@ pub(crate) enum ReadFileErrorContent {
 
 /// Content of the error returned when reading a beancount file from disk
 #[allow(missing_docs)]
-#[derive(Debug, Error)]
+#[derive(Debug)]
 #[cfg_attr(feature = "miette", derive(Diagnostic))]
 #[deprecated(since = "2.4.0", note = "use `ReadFileErrorV2 instead`")]
 pub enum ReadFileError {
-    #[error("IO error")]
-    Io(#[from] std::io::Error),
-    #[error("Syntax error")]
-    Syntax(#[from] Error),
+    Io(std::io::Error),
+    Syntax(Error),
 }
+
+impl From<std::io::Error> for ReadFileError {
+    fn from(value: std::io::Error) -> Self {
+        Self::Io(value)
+    }
+}
+
+impl From<Error> for ReadFileError {
+    fn from(value: Error) -> Self {
+        Self::Syntax(value)
+    }
+}
+
+impl Display for ReadFileError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            ReadFileError::Io(_) => write!(f, "IO error"),
+            ReadFileError::Syntax(_) => write!(f, "Syntax error"),
+        }
+    }
+}
+
+impl std::error::Error for ReadFileError {}
 
 /// Error that may be returned by the various `TryFrom`/`TryInto` implementation
 /// to signify that the value cannot be converted to the desired type
-#[derive(Debug, Clone, Error)]
+#[derive(Debug, Clone)]
 #[non_exhaustive]
-#[error("Cannot convert to the desired type")]
 pub struct ConversionError;
+
+impl Display for ConversionError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "Cannot convert to the desired type")
+    }
+}
+
+impl std::error::Error for ConversionError {}
