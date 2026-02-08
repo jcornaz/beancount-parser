@@ -5,7 +5,7 @@
 //!
 //! This example should play well with `grep`: `just run balance $LEDGER_PATH | grep Assets`
 
-use std::{cmp::Ordering, collections::HashMap, env::args};
+use std::{cmp::Ordering, collections::HashMap, env::args, process};
 
 use rust_decimal::Decimal;
 
@@ -15,7 +15,19 @@ use beancount_parser::{
 
 type Report = HashMap<Account, HashMap<Currency, Decimal>>;
 
-fn main() -> Result<(), Box<dyn std::error::Error>> {
+fn main() {
+    let directives = match load_directive() {
+        Ok(directives) => directives,
+        Err(err) => {
+            eprintln!("{err}");
+            process::exit(1);
+        }
+    };
+    let report = build_report(directives);
+    print(&report);
+}
+
+fn load_directive() -> Result<Vec<Directive<Decimal>>, Box<dyn std::error::Error>> {
     let mut directives = Vec::<Directive<Decimal>>::new();
     beancount_parser::read_files_v2(args().skip(1).map(Into::into), |entry| {
         if let Entry::Directive(d) = entry {
@@ -27,9 +39,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             }
         }
     })?;
-    let report = build_report(directives);
-    print(&report);
-    Ok(())
+    Ok(directives)
 }
 
 fn compare_directives<D>(a: &Directive<D>, b: &Directive<D>) -> Ordering {
