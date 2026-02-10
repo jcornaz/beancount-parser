@@ -4,7 +4,7 @@
 [![Crates.io](https://img.shields.io/crates/v/beancount-parser)](https://crates.io/crates/beancount-parser)
 ![rustc](https://img.shields.io/badge/rustc-1.68+-blue?logo=rust)
 [![Docs](https://docs.rs/beancount-parser/badge.svg)](https://docs.rs/beancount-parser)
-![Maintenance](https://img.shields.io/maintenance/passively/2025)
+![Maintenance](https://img.shields.io/maintenance/passively/2026)
 
 A [beancount] file parser library for rust
 
