@@ -1,5 +1,3 @@
-#![cfg_attr(docsrs, feature(doc_auto_cfg))]
-
 //! A parsing library for the [beancount language](https://beancount.github.io/docs/beancount_language_syntax.html)
 //!
 //! # Usage

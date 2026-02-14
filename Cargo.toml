@@ -13,10 +13,6 @@ keywords = ["parsing", "beancount", "accounting"]
 [badges.maintenance]
 status = "passively-maintained"
 
-[package.metadata.docs.rs]
-all-features = true
-rustdoc-args = ["--cfg", "docsrs"]
-
 [dependencies]
 # Public
 miette = { version = "5", optional = true }
