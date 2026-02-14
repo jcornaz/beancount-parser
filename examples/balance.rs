@@ -10,13 +10,13 @@ use std::{cmp::Ordering, collections::HashMap, env::args, process};
 use rust_decimal::Decimal;
 
 use beancount_parser::{
-    Account, Amount, Currency, Directive, DirectiveContent, Entry, Transaction,
+    Account, Amount, BeancountFile, Currency, Directive, DirectiveContent, Transaction,
 };
 
 type Report = HashMap<Account, HashMap<Currency, Decimal>>;
 
 fn main() {
-    let directives = match load_directive() {
+    let directives = match load_directives() {
         Ok(directives) => directives,
         Err(err) => {
             eprintln!("{err}");
@@ -27,19 +27,10 @@ fn main() {
     print(&report);
 }
 
-fn load_directive() -> Result<Vec<Directive<Decimal>>, Box<dyn std::error::Error>> {
-    let mut directives = Vec::<Directive<Decimal>>::new();
-    beancount_parser::read_files_v2(args().skip(1).map(Into::into), |entry| {
-        if let Entry::Directive(d) = entry {
-            if matches!(
-                d.content,
-                DirectiveContent::Transaction(_) | DirectiveContent::Balance(_)
-            ) {
-                directives.push(d);
-            }
-        }
-    })?;
-    Ok(directives)
+fn load_directives() -> Result<Vec<Directive<Decimal>>, Box<dyn std::error::Error>> {
+    let file = BeancountFile::read_files(args().skip(1).map(Into::into))?;
+    println!("{:?}", file.includes);
+    Ok(file.directives)
 }
 
 fn compare_directives<D>(a: &Directive<D>, b: &Directive<D>) -> Ordering {

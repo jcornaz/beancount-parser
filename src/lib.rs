@@ -275,6 +275,21 @@ impl<D> BeancountFile<D> {
     }
 }
 
+impl<D: Decimal> BeancountFile<D> {
+    /// Read from files
+    ///
+    /// # Errors
+    ///
+    /// Return an error if any of the files cannot be read or contains a syntax error
+    pub fn read_files(files: impl IntoIterator<Item = PathBuf>) -> Result<Self, ReadFileErrorV2> {
+        let mut file = BeancountFile::default();
+        read_files_v2(files, |entry| {
+            file.extend(std::iter::once(entry));
+        })?;
+        Ok(file)
+    }
+}
+
 impl<D> Extend<Entry<D>> for BeancountFile<D> {
     fn extend<T: IntoIterator<Item = Entry<D>>>(&mut self, iter: T) {
         for entry in iter {
