@@ -194,7 +194,7 @@ pub fn read_files_v2<D: Decimal, F: FnMut(Entry<D>)>(
                         let Some(parent) = path.parent() else {
                             unreachable!("there must be a parent if the file was valid")
                         };
-                        parent.join(include)
+                        parent.join(&include)
                     } else {
                         include
                     };
@@ -202,8 +202,9 @@ pub fn read_files_v2<D: Decimal, F: FnMut(Entry<D>)>(
                         .canonicalize()
                         .map_err(|err| ReadFileErrorV2::from_io(path, err))?;
                     if !loaded.contains(&path) {
-                        pending.push(path);
+                        pending.push(path.clone());
                     }
+                    on_entry(Entry::Include(path));
                 }
                 entry => on_entry(entry),
             }
