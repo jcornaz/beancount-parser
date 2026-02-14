@@ -16,8 +16,8 @@ use beancount_parser::{
 type Report = HashMap<Account, HashMap<Currency, Decimal>>;
 
 fn main() {
-    let directives = match load_directives() {
-        Ok(directives) => directives,
+    let directives = match BeancountFile::read_files(args().skip(1).map(Into::into)) {
+        Ok(file) => file.directives,
         Err(err) => {
             eprintln!("{err}");
             process::exit(1);
@@ -25,12 +25,6 @@ fn main() {
     };
     let report = build_report(directives);
     print(&report);
-}
-
-fn load_directives() -> Result<Vec<Directive<Decimal>>, Box<dyn std::error::Error>> {
-    let file = BeancountFile::read_files(args().skip(1).map(Into::into))?;
-    println!("{:?}", file.includes);
-    Ok(file.directives)
 }
 
 fn compare_directives<D>(a: &Directive<D>, b: &Directive<D>) -> Ordering {
