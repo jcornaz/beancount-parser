@@ -8,6 +8,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Unreleased]
 
 
+## [2.5.0] - 2026-02-14
+
+
 ### Features
 
 * Reading from files now emits the include directives
@@ -576,7 +579,8 @@ Announce new status of the project in readme: The project is now in "maintenance
  - `Parser` iterator type
 
 
-[Unreleased]: https://github.com/jcornaz/beancount-parser/compare/v2.4.0...HEAD
+[Unreleased]: https://github.com/jcornaz/beancount-parser/compare/v2.5.0...HEAD
+[2.5.0]: https://github.com/jcornaz/beancount-parser/compare/v2.4.0...v2.5.0
 [2.4.0]: https://github.com/jcornaz/beancount-parser/compare/v2.3.0...v2.4.0
 [2.3.0]: https://github.com/jcornaz/beancount-parser/compare/v2.2.1...v2.3.0
 [2.2.1]: https://github.com/jcornaz/beancount-parser/compare/v2.2.0...v2.2.1
