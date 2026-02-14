@@ -11,7 +11,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Features
 
 * Reading from files now emits the include directives
-* `BeancountFile::read_files` to read files directly into a `BeancountFile`
+* Added `BeancountFile::read_files` to read files directly into a `BeancountFile`
 
 
 ### Dependencies
