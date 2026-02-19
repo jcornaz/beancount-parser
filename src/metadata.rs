@@ -87,6 +87,32 @@ pub enum Value<D> {
     Currency(Currency),
 }
 
+impl<D> Value<D> {
+    /// Returns `Some` if the value is a `String` variant, `None` otherwise
+    pub fn as_string(&self) -> Option<&str> {
+        match self {
+            Value::String(s) => Some(s.as_str()),
+            _ => None,
+        }
+    }
+
+    /// Returns `Some` if the value is a `Number` variant, `None` otherwise
+    pub fn as_number(&self) -> Option<&D> {
+        match self {
+            Value::Number(n) => Some(n),
+            _ => None,
+        }
+    }
+
+    /// Returns `Some` if the value is a `Currency` variant, `None` otherwise
+    pub fn as_currency(&self) -> Option<&Currency> {
+        match self {
+            Value::Currency(c) => Some(c),
+            _ => None,
+        }
+    }
+}
+
 pub(crate) fn parse<D: Decimal>(input: Span<'_>) -> IResult<'_, Map<D>> {
     let mut iter = iterator(input, alt((entry.map(Some), empty_line.map(|()| None))));
     let map: HashMap<_, _> = iter.by_ref().flatten().collect();
