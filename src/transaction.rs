@@ -59,6 +59,41 @@ pub struct Transaction<D> {
     pub postings: Vec<Posting<D>>,
 }
 
+impl<D: Display> Display for Transaction<D> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        match self.flag {
+            Some(flag) => write!(f, "{flag}")?,
+            None => write!(f, "txn")?,
+        }
+
+        if let Some(payee) = &self.payee {
+            write!(f, r#" "{payee}""#)?;
+        }
+
+        write!(f, r#" "{}""#, self.narration.as_deref().unwrap_or_default())?;
+
+        // Sort tags and links for deterministic output
+        let mut tags: Vec<_> = self.tags.iter().collect();
+        tags.sort();
+        for tag in tags {
+            write!(f, " #{tag}")?;
+        }
+
+        let mut links: Vec<_> = self.links.iter().collect();
+        links.sort();
+        for link in links {
+            write!(f, " ^{link}")?;
+        }
+
+        for posting in &self.postings {
+            writeln!(f)?;
+            fmt_posting(posting, "  ", f)?;
+        }
+
+        Ok(())
+    }
+}
+
 /// A transaction posting
 ///
 /// # Example
@@ -116,6 +151,57 @@ impl<D> Posting<D> {
             metadata: metadata::Map::new(),
         }
     }
+}
+
+impl<D: Display> Display for Posting<D> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        fmt_posting(self, "", f)
+    }
+}
+
+fn fmt_posting<D: Display>(
+    posting: &Posting<D>,
+    indent: &str,
+    f: &mut Formatter<'_>,
+) -> std::fmt::Result {
+    write!(f, "{indent}")?;
+
+    if let Some(flag) = posting.flag {
+        write!(f, "{flag} ")?;
+    }
+
+    write!(f, "{}", posting.account)?;
+
+    if let Some(amount) = &posting.amount {
+        write!(f, " {amount}")?;
+    }
+
+    if let Some(cost) = &posting.cost {
+        write!(f, " {{")?;
+        if let Some(date) = &cost.date {
+            write!(f, "{date}")?;
+            if cost.amount.is_some() {
+                write!(f, ", ")?;
+            }
+        }
+        if let Some(amount) = &cost.amount {
+            write!(f, "{amount}")?;
+        }
+        write!(f, "}}")?;
+    }
+
+    if let Some(price) = &posting.price {
+        match price {
+            PostingPrice::Unit(amount) => write!(f, " @ {amount}")?,
+            PostingPrice::Total(amount) => write!(f, " @@ {amount}")?,
+        }
+    }
+
+    for (key, value) in &posting.metadata {
+        write!(f, "\n{indent}  {key}: {value}")?;
+    }
+
+    Ok(())
 }
 
 /// Cost of a posting

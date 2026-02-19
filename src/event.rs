@@ -30,6 +30,12 @@ impl Event {
     }
 }
 
+impl std::fmt::Display for Event {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "event \"{}\" \"{}\"", self.name, self.value)
+    }
+}
+
 pub(super) fn parse(input: Span<'_>) -> IResult<'_, Event> {
     let (input, name) = string(input)?;
     let (input, _) = space1(input)?;

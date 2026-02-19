@@ -109,6 +109,29 @@ impl Open {
     }
 }
 
+impl Display for Open {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "open {}", self.account)?;
+
+        let mut first = true;
+        for currency in &self.currencies {
+            if first {
+                write!(f, " ")?;
+                first = false;
+            } else {
+                write!(f, ",")?;
+            }
+            write!(f, "{currency}")?;
+        }
+
+        if let Some(booking_method) = &self.booking_method {
+            write!(f, " \"{booking_method}\"")?;
+        }
+
+        Ok(())
+    }
+}
+
 #[derive(Debug, Clone, Eq, PartialEq, Ord, PartialOrd)]
 pub struct BookingMethod(Arc<str>);
 
@@ -161,6 +184,12 @@ impl Close {
     }
 }
 
+impl Display for Close {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "close {}", self.account)
+    }
+}
+
 /// Balance assertion
 ///
 /// # Example
@@ -197,6 +226,20 @@ impl<D> Balance<D> {
     }
 }
 
+impl<D: Display> Display for Balance<D> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "balance {} {}", self.account, self.amount.value)?;
+
+        if let Some(tolerance) = &self.tolerance {
+            write!(f, " ~ {}", &tolerance)?;
+        }
+
+        write!(f, " {}", self.amount.currency)?;
+
+        Ok(())
+    }
+}
+
 /// Pad directive
 ///
 /// # Example
@@ -225,6 +268,12 @@ impl Pad {
             account,
             source_account,
         }
+    }
+}
+
+impl Display for Pad {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "pad {} {}", self.account, self.source_account)
     }
 }
 

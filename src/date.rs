@@ -1,4 +1,4 @@
-use std::{cmp::Ordering, str::FromStr};
+use std::{cmp::Ordering, fmt::Display, str::FromStr};
 
 use nom::{
     bytes::complete::take,
@@ -35,6 +35,12 @@ pub struct Date {
     pub month: u8,
     /// Day (of month)
     pub day: u8,
+}
+
+impl Display for Date {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}-{:02}-{:02}", self.year, self.month, self.day)
+    }
 }
 
 impl Date {

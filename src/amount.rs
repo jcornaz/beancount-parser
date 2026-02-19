@@ -38,6 +38,12 @@ pub struct Price<D> {
     pub amount: Amount<D>,
 }
 
+impl<D: Display> Display for Price<D> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "price {} {}", self.currency, self.amount)
+    }
+}
+
 /// Amount
 ///
 /// Where `D` is the decimal type (like `f64` or `rust_decimal::Decimal`)
@@ -49,6 +55,12 @@ pub struct Amount<D> {
     pub value: D,
     /// Currency
     pub currency: Currency,
+}
+
+impl<D: Display> Display for Amount<D> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{} {}", self.value, self.currency)
+    }
 }
 
 /// Currency
