@@ -207,31 +207,23 @@ pub(crate) fn currency(input: Span<'_>) -> IResult<'_, Currency> {
 ///
 pub trait Decimal:
     FromStr
-    + Default
     + Clone
-    + Debug
     + Add<Output = Self>
     + Sub<Output = Self>
     + Mul<Output = Self>
     + Div<Output = Self>
     + Neg<Output = Self>
-    + PartialEq
-    + PartialOrd
 {
 }
 
 impl<D> Decimal for D where
     D: FromStr
-        + Default
         + Clone
-        + Debug
         + Add<Output = Self>
         + Sub<Output = Self>
         + Mul<Output = Self>
         + Div<Output = Self>
         + Neg<Output = Self>
-        + PartialEq
-        + PartialOrd
 {
 }
 
