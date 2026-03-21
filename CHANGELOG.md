@@ -7,6 +7,14 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+### BREAKING CHANGES
+
+The metadata map type (`metadata::Map`) is no longer an `HashMap`, but a custom map type that
+holds the order of the metadata entries seen in the source file.
+
+It can still be queried as if it was a map and converted from/to `HashMap`.
+
+
 ### Feature
 
 * Relax requirements of the `Decimal` trait

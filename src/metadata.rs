@@ -18,6 +18,7 @@ use std::{
     borrow::Borrow,
     collections::HashMap,
     fmt::{Debug, Display, Formatter},
+    hash::BuildHasher,
     str::FromStr,
     sync::Arc,
 };
@@ -36,7 +37,78 @@ use crate::{amount, empty_line, end_of_line, string, Currency, Decimal, IResult,
 /// Metadata map
 ///
 /// See the [`metadata`](crate::metadata) module for an example
-pub type Map<D> = HashMap<Key, Value<D>>;
+#[derive(Debug, Clone, PartialEq)]
+pub struct Map<D>(Vec<(Key, Value<D>)>);
+
+impl<D> Map<D> {
+    /// Create a new empty map
+    #[must_use]
+    pub fn new() -> Self {
+        Self(Vec::new())
+    }
+
+    /// Returns the value associated to the given key
+    ///
+    /// Or `None` if the key is not present
+    pub fn get<Q>(&self, key: &Q) -> Option<&Value<D>>
+    where
+        Key: Borrow<Q>,
+        Q: ?Sized + Eq,
+    {
+        self.0
+            .iter()
+            .rev()
+            .find(|(k, _)| k.borrow() == key)
+            .map(|(_, v)| v)
+    }
+
+    /// Returns `true` if the map contains a value for the specified key.
+    pub fn contains_key<Q>(&self, key: &Q) -> bool
+    where
+        Key: Borrow<Q>,
+        Q: ?Sized + Eq,
+    {
+        self.0.iter().any(|(k, _)| k.borrow() == key)
+    }
+
+    /// Returns an interator over the key and value pairs
+    pub fn iter(&self) -> impl Iterator<Item = (Key, &Value<D>)> {
+        self.0.iter().map(|(k, v)| (k.clone(), v))
+    }
+}
+
+impl<D> Default for Map<D> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl<D> FromIterator<(Key, Value<D>)> for Map<D> {
+    fn from_iter<T: IntoIterator<Item = (Key, Value<D>)>>(iter: T) -> Self {
+        Self(Vec::from_iter(iter))
+    }
+}
+
+impl<D> IntoIterator for Map<D> {
+    type Item = (Key, Value<D>);
+    type IntoIter = std::vec::IntoIter<(Key, Value<D>)>;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.0.into_iter()
+    }
+}
+
+impl<S, D> From<HashMap<Key, Value<D>, S>> for Map<D> {
+    fn from(value: HashMap<Key, Value<D>, S>) -> Self {
+        Self(value.into_iter().collect())
+    }
+}
+
+impl<S: Default + BuildHasher, D> From<Map<D>> for HashMap<Key, Value<D>, S> {
+    fn from(value: Map<D>) -> Self {
+        value.into_iter().collect()
+    }
+}
 
 /// Metadata key
 ///
@@ -115,7 +187,7 @@ impl<D> Value<D> {
 
 pub(crate) fn parse<D: Decimal>(input: Span<'_>) -> IResult<'_, Map<D>> {
     let mut iter = iterator(input, alt((entry.map(Some), empty_line.map(|()| None))));
-    let map: HashMap<_, _> = iter.by_ref().flatten().collect();
+    let map: Map<D> = iter.by_ref().flatten().collect();
     let (input, ()) = iter.finish()?;
     Ok((input, map))
 }
