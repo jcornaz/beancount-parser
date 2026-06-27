@@ -10,6 +10,9 @@ repository = "https://github.com/jcornaz/beancount-parser"
 categories = ["parser-implementations"]
 keywords = ["parsing", "beancount", "accounting"]
 
+[features]
+unstable-v3 = []
+
 [badges.maintenance]
 status = "passively-maintained"
 
