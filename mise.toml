@@ -1,7 +1,22 @@
 [tools]
-"cargo:cargo-hack" = "0.6.43"
-"cargo:cargo-msrv" = "0.18.4"
-"cargo:cargo-release" = "1.0.0"
-just = "1.46.0"
-rust = "1.93.1"
-rust-analyzer = "2026-02-09"
+"cargo:cargo-edit" = "0.13.11"
+"cargo:cargo-hack" = "0.6.45"
+"cargo:cargo-msrv" = "0.19.3"
+"cargo:cargo-release" = "1.1.2"
+rust = "1.96.0"
+
+[tasks.verify]
+run = [
+  "cargo hack test --tests --feature-powerset",
+  "cargo test --doc --all-features",
+  "cargo fmt -- --check",
+  "cargo hack clippy --all-targets",
+  "cargo msrv verify",
+  "mise run-example tests/samples/includes.beancount | grep 'Expenses:Taxes:Y2022:US:Federal:PreTax401k                18500.00 IRAUSD' > /dev/null",
+]
+
+[tasks.run-example]
+run = "cargo run --all-features --example balance --"
+
+[tasks.release]
+run = "cargo release"
