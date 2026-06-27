@@ -4,11 +4,6 @@ use std::{
     str::FromStr,
 };
 
-/// Currency
-///
-/// One may use [`Currency::as_str`] to get the string representation of the currency
-///
-/// For an example, look at the [`Price`] directive
 #[derive(Debug, Clone, PartialOrd, Ord, PartialEq, Eq, Hash)]
 pub struct Currency<'a>(Cow<'a, str>);
 
@@ -52,28 +47,29 @@ impl<'a> From<Currency<'a>> for String {
 impl<'a> TryFrom<&'a str> for Currency<'a> {
     type Error = Invalid;
     fn try_from(value: &'a str) -> Result<Self, Self::Error> {
-        if is_valid(value) {
-            Ok(Self(Cow::Borrowed(value)))
-        } else {
-            Err(Invalid)
-        }
+        parse(value).ok_or(Invalid)
     }
 }
 
 impl FromStr for Currency<'static> {
     type Err = Invalid;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        if is_valid(s) {
-            Ok(Self(Cow::Owned(s.into())))
-        } else {
-            Err(Invalid)
-        }
+        parse(s).ok_or(Invalid).map(Currency::into_owned)
     }
 }
 
 /// Error returned when failing to convert a string into a currency
 #[derive(Debug)]
 pub struct Invalid;
+
+#[must_use]
+pub fn parse(input: &str) -> Option<Currency<'_>> {
+    if is_valid(input) {
+        Some(Currency(input.into()))
+    } else {
+        None
+    }
+}
 
 /// Returns `true` only if the `currency` is a valid currency according to beancount syntax rules.
 ///
@@ -112,7 +108,7 @@ mod tests {
     #[case("CHF")]
     #[case("A")]
     #[case("THIS_IS-ALSO.42..VALID")]
-    fn parse_valid_currency(#[case] input: &str) {
+    fn should_parse_valid_currency(#[case] input: &str) {
         let currency: Currency = input.parse().unwrap();
         assert_eq!(currency.as_ref(), input);
     }
@@ -129,7 +125,7 @@ mod tests {
     #[case("1A")]
     #[case("A1")]
     #[case("IT_CANNOT_BE_MORE_THAN_24_CHARACTER")]
-    fn parse_invalid_currency(#[case] input: &str) {
+    fn should_fail_to_parse_invalid_currency(#[case] input: &str) {
         Currency::from_str(input).unwrap_err();
     }
 }
