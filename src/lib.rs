@@ -83,7 +83,7 @@ mod iterator;
 pub mod metadata;
 mod transaction;
 #[cfg(feature = "unstable-v3")]
-#[allow(missing_docs)]
+#[allow(missing_docs, dead_code)]
 pub mod v3;
 
 /// Parse the input beancount file and return an instance of [`BeancountFile`] on success

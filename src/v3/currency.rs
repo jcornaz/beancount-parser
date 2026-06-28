@@ -4,13 +4,18 @@ use std::{
     str::FromStr,
 };
 
+use crate::v3::error::ParseError;
+
 #[derive(Debug, Clone, PartialOrd, Ord, PartialEq, Eq, Hash)]
 pub struct Currency<'a>(Cow<'a, str>);
 
 impl Currency<'_> {
-    #[must_use]
+    pub fn as_str(&self) -> &str {
+        &self.0
+    }
+
     pub fn into_owned(self) -> Currency<'static> {
-        Currency(self.0.into_owned().into())
+        Currency(Cow::Owned(self.0.into_owned()))
     }
 }
 
@@ -22,19 +27,13 @@ impl Display for Currency<'_> {
 
 impl AsRef<str> for Currency<'_> {
     fn as_ref(&self) -> &str {
-        &self.0
+        self.as_str()
     }
 }
 
 impl Borrow<str> for Currency<'_> {
     fn borrow(&self) -> &str {
-        &self.0
-    }
-}
-
-impl<'a> From<Currency<'a>> for Cow<'a, str> {
-    fn from(value: Currency<'a>) -> Self {
-        value.0
+        self.as_str()
     }
 }
 
@@ -45,27 +44,23 @@ impl<'a> From<Currency<'a>> for String {
 }
 
 impl<'a> TryFrom<&'a str> for Currency<'a> {
-    type Error = Invalid;
+    type Error = ParseError;
     fn try_from(value: &'a str) -> Result<Self, Self::Error> {
-        parse(value).ok_or(Invalid)
+        parse(value).ok_or(ParseError)
     }
 }
 
 impl FromStr for Currency<'static> {
-    type Err = Invalid;
+    type Err = ParseError;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        parse(s).ok_or(Invalid).map(Currency::into_owned)
+        parse(s).ok_or(ParseError).map(Currency::into_owned)
     }
 }
-
-/// Error returned when failing to convert a string into a currency
-#[derive(Debug)]
-pub struct Invalid;
 
 #[must_use]
 pub fn parse(input: &str) -> Option<Currency<'_>> {
     if is_valid(input) {
-        Some(Currency(input.into()))
+        Some(Currency(Cow::Owned(input.to_owned())))
     } else {
         None
     }

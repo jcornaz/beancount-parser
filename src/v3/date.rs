@@ -1,5 +1,7 @@
 use std::{cmp::Ordering, str::FromStr};
 
+use crate::v3::error::ParseError;
+
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
 pub struct Date {
     year: u16,
@@ -9,17 +11,17 @@ pub struct Date {
 
 impl Date {
     #[must_use]
-    pub fn year(&self) -> u16 {
+    pub fn year(self) -> u16 {
         self.year
     }
 
     #[must_use]
-    pub fn month(&self) -> u8 {
+    pub fn month(self) -> u8 {
         self.month
     }
 
     #[must_use]
-    pub fn day(&self) -> u8 {
+    pub fn day(self) -> u8 {
         self.day
     }
 
@@ -60,16 +62,12 @@ impl Ord for Date {
 }
 
 impl FromStr for Date {
-    type Err = Invalid;
+    type Err = ParseError;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        parse(s).ok_or(Invalid)
+        parse(s).ok_or(ParseError)
     }
 }
-
-/// Error returned when failing to convert a string into a date
-#[derive(Debug)]
-pub struct Invalid;
 
 #[must_use]
 pub fn parse(input: &str) -> Option<Date> {
